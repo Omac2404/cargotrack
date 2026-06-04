@@ -10,7 +10,7 @@ const { toInt, sanitizeText, sendSuccess, sendError } = require('../helpers/util
 
 const router = express.Router();
 
-const UPLOAD_ROOT = path.join(__dirname, '..', '..', process.env.UPLOAD_DIR || 'uploads');
+const UPLOAD_ROOT = path.resolve(process.env.UPLOAD_DIR || path.join(__dirname, '..', '..', 'uploads'));
 const ALLOWED_EXTS = ['.pdf', '.jpg', '.jpeg', '.png', '.doc', '.docx', '.xls', '.xlsx'];
 
 if (!fs.existsSync(UPLOAD_ROOT)) {

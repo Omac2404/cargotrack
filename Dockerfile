@@ -49,7 +49,9 @@ COPY ecosystem.config.js ./
 COPY --from=frontend-builder /build/public/ ./public/
 
 # Uploads dizini (persistent volume olarak mount edilir)
-RUN mkdir -p /app/uploads && chown -R node:node /app/uploads
+# 1777 = world-writable + sticky → EasyPanel/Docker named volume root-owned mount'unu
+# override etse de node user yazabilir. Sticky bit cross-user delete'i engeller.
+RUN mkdir -p /app/uploads && chown -R node:node /app/uploads && chmod 1777 /app/uploads
 
 # Non-root user (güvenlik)
 USER node

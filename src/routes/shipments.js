@@ -330,7 +330,7 @@ router.post('/bulk-action', verifyToken, requirePermission('shipments.bulk_actio
     if (action === 'delete') {
       const fs = require('fs');
       const path = require('path');
-      const uploadBase = path.join(__dirname, '..', '..', process.env.UPLOAD_DIR || 'uploads');
+      const uploadBase = path.resolve(process.env.UPLOAD_DIR || path.join(__dirname, '..', '..', 'uploads'));
       // assignments CASCADE ile gider; uploads klasörü manuel
       for (const r of rows) {
         const uploadDir = path.join(uploadBase, String(r.id));
@@ -470,7 +470,8 @@ router.delete('/:id', verifyToken, async (req, res) => {
     // Belge klasörünü temizle (varsa)
     const fs = require('fs');
     const path = require('path');
-    const uploadDir = path.join(__dirname, '..', '..', process.env.UPLOAD_DIR || 'uploads', String(id));
+    const uploadBase = path.resolve(process.env.UPLOAD_DIR || path.join(__dirname, '..', '..', 'uploads'));
+    const uploadDir = path.join(uploadBase, String(id));
     if (fs.existsSync(uploadDir)) {
       try {
         fs.rmSync(uploadDir, { recursive: true, force: true });
