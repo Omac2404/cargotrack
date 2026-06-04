@@ -1,0 +1,67 @@
+# ============================================================
+# CargoTrack — Docker Compose
+# ============================================================
+# Lokal test:
+#   docker compose up -d
+#   docker compose logs -f app
+#   docker compose down
+#
+# EasyPanel: bu compose yapısını UI'de "Service > MySQL" + "Service > App"
+# olarak ayrı ayrı oluştururuz — EasyPanel compose import desteklemez.
+# Bu dosya esasen LOKAL test için (production'a benzer ortam).
+# ============================================================
+
+services:
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpw_change_me}
+      MYSQL_DATABASE: ${DB_NAME:-cargotrack}
+      MYSQL_USER: ${DB_USER:-cargotrack}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-cargotrack_change_me}
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-authentication-plugin=caching_sha2_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p$$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    # Production'da sadece app container'ı erişebilsin (host'a açma)
+    # ports:
+    #   - "3306:3306"
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: ${DB_USER:-cargotrack}
+      DB_PASSWORD: ${DB_PASSWORD:-cargotrack_change_me}
+      DB_NAME: ${DB_NAME:-cargotrack}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET zorunlu (generate-secrets.js)}
+      JWT_EXPIRES_IN: 8h
+      PORT: 3000
+      UPLOAD_DIR: /app/uploads
+      TRUST_PROXY: "1"
+      FORCE_HTTPS: "false"  # nginx/EasyPanel SSL hallediyorsa false
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
+      DEFAULT_ADMIN_PASSWORD: ${DEFAULT_ADMIN_PASSWORD:-}
+    volumes:
+      - uploads:/app/uploads
+    ports:
+      - "3000:3000"
+
+volumes:
+  mysql_data:
+  uploads:

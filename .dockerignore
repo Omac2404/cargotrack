@@ -1,0 +1,53 @@
+# Bağımlılıklar — build sırasında yeniden kurulur
+node_modules/
+frontend/node_modules/
+
+# Build artifact'ları — Dockerfile içinde yeniden build edilir
+public/assets/
+public/index.html
+public/vite.svg
+frontend/dist/
+frontend/.vite/
+
+# Env / secret
+.env
+.env.local
+.env.development
+.env.production
+.env.staging
+
+# Veri
+uploads/
+backups/
+*.sql.gz
+logs/
+.pm2/
+
+# Geliştirme
+.git/
+.github/
+.vscode/
+.idea/
+.claude/
+.specstory/
+
+# Test/debug
+*.log
+/tmp/
+
+# Eski PHP plugin
+cargotrack.php
+
+# Excel / referans dosyaları (incele klasörü)
+incele/
+
+# Dökümantasyon — image'a gerek yok (panel'den okunur)
+deploy/DEPLOY.md
+deploy/READY.md
+deploy/install.sh
+deploy/nginx.conf.example
+README.md
+
+# OS
+.DS_Store
+Thumbs.db
