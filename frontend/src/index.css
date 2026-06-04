@@ -1,0 +1,125 @@
+@import url('https://rsms.me/inter/inter.css');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light theme — kurumsal lojistik tonu */
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    /* Primary: derin indigo (CargoTrack tonu) */
+    --primary: 234 89% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 220 14% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 234 89% 95%;
+    --accent-foreground: 234 89% 30%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 234 89% 60%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222 47% 6%;
+    --foreground: 213 31% 91%;
+
+    --card: 222 47% 8%;
+    --card-foreground: 213 31% 91%;
+
+    --popover: 222 47% 8%;
+    --popover-foreground: 213 31% 91%;
+
+    --primary: 234 89% 70%;
+    --primary-foreground: 222 47% 11%;
+
+    --secondary: 222 47% 14%;
+    --secondary-foreground: 213 31% 91%;
+
+    --muted: 222 47% 14%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 222 47% 14%;
+    --accent-foreground: 213 31% 91%;
+
+    --destructive: 0 63% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 222 47% 11%;
+
+    --border: 222 47% 18%;
+    --input: 222 47% 18%;
+    --ring: 234 89% 70%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ERP density — tablo & form spacing'leri sıkılaştır */
+  table { @apply text-sm; }
+
+  /* Scrollbar — modern ince */
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground)); }
+
+  /* Klavye J/K navigasyon vurgusu */
+  tr[data-row-focused="true"] {
+    background-color: hsl(var(--primary) / 0.10) !important;
+    box-shadow: inset 3px 0 0 hsl(var(--primary));
+  }
+
+  /* Mobil: dense tablo + yatay scroll */
+  @media (max-width: 768px) {
+    /* Tablo içeren Card'lar otomatik yatay scroll */
+    div[class*="overflow-hidden"]:has(> table) {
+      overflow-x: auto !important;
+    }
+    /* Tablo metinleri biraz küçült */
+    table { font-size: 12px; }
+    th, td { padding-left: 0.5rem !important; padding-right: 0.5rem !important; }
+  }
+}

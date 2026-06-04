@@ -1,0 +1,109 @@
+# ============================================================
+# CARGOTRACK — nginx Reverse Proxy + Static Server
+# ============================================================
+# Bu config /etc/nginx/sites-available/ altına koyup
+# /etc/nginx/sites-enabled/ altına symlink yap:
+#
+#   sudo cp deploy/nginx.conf.example /etc/nginx/sites-available/cargotrack
+#   sudo ln -s /etc/nginx/sites-available/cargotrack /etc/nginx/sites-enabled/
+#   sudo nginx -t && sudo systemctl reload nginx
+#
+# HTTPS sertifikası için Let's Encrypt:
+#   sudo certbot --nginx -d cargotrack.example.com
+#   (certbot otomatik bu config'i HTTPS-enabled yapar)
+# ============================================================
+
+# ---- HTTP → HTTPS yönlendirme ----
+server {
+    listen 80;
+    listen [::]:80;
+    server_name cargotrack.example.com www.cargotrack.example.com;
+
+    # Let's Encrypt challenge için (certbot kullanıyorsanız)
+    location /.well-known/acme-challenge/ {
+        root /var/www/letsencrypt;
+    }
+
+    # Diğer her şey HTTPS'e
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+# ---- HTTPS sunucu ----
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name cargotrack.example.com www.cargotrack.example.com;
+
+    # SSL sertifikaları (certbot doldurur)
+    ssl_certificate     /etc/letsencrypt/live/cargotrack.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/cargotrack.example.com/privkey.pem;
+
+    # Modern TLS — TLS 1.2+ önerilir
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers off;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 1d;
+
+    # Güvenlik header'ları (helmet zaten ekliyor; nginx'te ekstra)
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    # Permissions-Policy: kamera/mikrofon yok
+    add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
+
+    # Body size — dosya upload limiti (20 MB backend ile uyumlu)
+    client_max_body_size 25M;
+
+    # Gzip
+    gzip on;
+    gzip_vary on;
+    gzip_min_length 1024;
+    gzip_types text/plain text/css text/xml application/json application/javascript application/xml+rss text/javascript image/svg+xml;
+
+    # ---- Frontend static dosyalar ----
+    # Vite build çıktısı /opt/cargotrack/public altında
+    root /opt/cargotrack/public;
+    index index.html;
+
+    # JS/CSS chunk'ları için uzun cache (immutable)
+    location /assets/ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+        try_files $uri =404;
+    }
+
+    # ---- API → Node backend ----
+    location /api/ {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Host $host;
+
+        # Upload için timeout artır (büyük dosyalar)
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 600s;
+        proxy_read_timeout 600s;
+
+        # Buffer kapat — streaming response için
+        proxy_buffering off;
+    }
+
+    # ---- SPA fallback — frontend router'ı için ----
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # ---- Sızıntı engelleme — gizli dosyalara erişim engeli ----
+    location ~ /\. { deny all; }
+    location ~ \.(env|env\..*|sql|sql\.gz|log)$ { deny all; }
+
+    # ---- Access log ----
+    access_log /var/log/nginx/cargotrack.access.log;
+    error_log  /var/log/nginx/cargotrack.error.log;
+}
