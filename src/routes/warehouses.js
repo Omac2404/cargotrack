@@ -15,7 +15,7 @@ const VALID_STATUS = ['active', 'inactive'];
 router.get('/', verifyToken, async (req, res) => {
   try {
     const [rows] = await pool.execute(
-      'SELECT * FROM warehouses ORDER BY warehouse_code ASC'
+      'SELECT * FROM warehouses WHERE deleted_at IS NULL ORDER BY warehouse_code ASC'
     );
     sendSuccess(res, rows);
   } catch (err) {
@@ -96,24 +96,25 @@ router.delete('/:id', verifyToken, async (req, res) => {
     const id = toInt(req.params.id);
     if (!id) return sendError(res, 'Geçersiz ID');
 
-    const [rows] = await pool.execute('SELECT name FROM warehouses WHERE id = ? LIMIT 1', [id]);
+    const [rows] = await pool.execute('SELECT name FROM warehouses WHERE id = ? AND deleted_at IS NULL LIMIT 1', [id]);
     if (rows.length === 0) return sendError(res, 'Kayıt bulunamadı', 404);
 
-    // RESTRICT: bu depo sevkiyatlarda kullanılıyor mu?
+    // RESTRICT: bu depo aktif sevkiyatlarda kullanılıyor mu?
     const [refs] = await pool.execute(
-      'SELECT COUNT(*) AS c FROM shipments WHERE warehouse = ?',
+      'SELECT COUNT(*) AS c FROM shipments WHERE warehouse = ? AND deleted_at IS NULL',
       [rows[0].name]
     );
     if (refs[0].c > 0) {
       return sendError(
         res,
-        `Bu depo ${refs[0].c} sevkiyatta kullanılıyor. Önce bu sevkiyatları güncelleyin ya da silin.`
+        `Bu depo ${refs[0].c} aktif sevkiyatta kullanılıyor. Önce bu sevkiyatları güncelleyin ya da arşivleyin.`
       );
     }
 
-    await pool.execute('DELETE FROM warehouses WHERE id = ?', [id]);
+    // Soft-delete
+    await pool.execute('UPDATE warehouses SET deleted_at = NOW(), deleted_by = ? WHERE id = ?', [req.user.id, id]);
     await logAudit(req, 'delete', 'warehouses', id, rows[0].name);
-    sendSuccess(res, { message: 'Depo silindi' });
+    sendSuccess(res, { message: 'Depo arşive taşındı' });
   } catch (err) {
     console.error('[warehouses/delete]', err);
     sendError(res, 'Silme sırasında hata: ' + err.message, 500);

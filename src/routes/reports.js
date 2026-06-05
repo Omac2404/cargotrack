@@ -22,7 +22,7 @@ router.get('/monthly-revenue', async (req, res) => {
     const year = toInt(req.query.year) || new Date().getFullYear();
     const transportType = sanitizeText(req.query.transport_type || '');
 
-    const where = ['YEAR(created_at) = ?'];
+    const where = ['deleted_at IS NULL', 'YEAR(created_at) = ?'];
     const params = [year];
     if (transportType) {
       where.push('transport_type = ?');
@@ -89,7 +89,7 @@ router.get('/customer-ranking', async (req, res) => {
     const year = toInt(req.query.year) || new Date().getFullYear();
     const limit = Math.min(100, Math.max(5, toInt(req.query.limit) || 20));
 
-    const where = ['YEAR(s.created_at) = ?', 's.client_billing IS NOT NULL', "s.client_billing != ''"];
+    const where = ['s.deleted_at IS NULL', 'YEAR(s.created_at) = ?', 's.client_billing IS NOT NULL', "s.client_billing != ''"];
     const params = [year];
     if (!hasRole(req.user, 'admin')) {
       where.push('s.created_by = ?');
@@ -135,7 +135,7 @@ router.get('/customer-ranking', async (req, res) => {
  */
 router.get('/aging', async (req, res) => {
   try {
-    const where = ['s.invoice_generated = 1', 's.payment_received = 0', 's.invoice_date IS NOT NULL'];
+    const where = ['s.deleted_at IS NULL', 's.invoice_generated = 1', 's.payment_received = 0', 's.invoice_date IS NOT NULL'];
     const params = [];
     if (!hasRole(req.user, 'admin')) {
       where.push('s.created_by = ?');
@@ -216,8 +216,9 @@ router.get('/vehicle-utilization', async (req, res) => {
          COALESCE(SUM(a.assigned_weight), 0) AS total_weight
        FROM vehicles v
        LEFT JOIN vehicle_assignments a ON a.vehicle_id = v.id
+         AND a.deleted_at IS NULL
          AND a.loading_date BETWEEN ? AND ?
-       WHERE v.status = 'active'
+       WHERE v.status = 'active' AND v.deleted_at IS NULL
        GROUP BY v.id
        ORDER BY assignment_count DESC`,
       [start, end]

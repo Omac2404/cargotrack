@@ -17,11 +17,11 @@ router.get('/', verifyToken, async (req, res) => {
     let rows;
     if (type && VALID_TYPES.includes(type)) {
       [rows] = await pool.execute(
-        'SELECT * FROM partners WHERE type = ? ORDER BY company_name ASC',
+        'SELECT * FROM partners WHERE type = ? AND deleted_at IS NULL ORDER BY company_name ASC',
         [type]
       );
     } else {
-      [rows] = await pool.execute('SELECT * FROM partners ORDER BY type, company_name ASC');
+      [rows] = await pool.execute('SELECT * FROM partners WHERE deleted_at IS NULL ORDER BY type, company_name ASC');
     }
 
     // extra_roles CSV → array
@@ -104,7 +104,7 @@ router.get('/:id', verifyToken, async (req, res) => {
   try {
     const id = toInt(req.params.id);
     if (!id) return sendError(res, 'Geçersiz ID');
-    const [rows] = await pool.execute('SELECT * FROM partners WHERE id = ? LIMIT 1', [id]);
+    const [rows] = await pool.execute('SELECT * FROM partners WHERE id = ? AND deleted_at IS NULL LIMIT 1', [id]);
     if (rows.length === 0) return sendError(res, 'Kayıt bulunamadı', 404);
     sendSuccess(res, rows[0]);
   } catch (err) {
@@ -122,16 +122,17 @@ router.get('/:id/shipments', verifyToken, async (req, res) => {
     if (!id) return sendError(res, 'Geçersiz ID');
 
     // Partner adını al
-    const [pRows] = await pool.execute('SELECT id, company_name FROM partners WHERE id = ? LIMIT 1', [id]);
+    const [pRows] = await pool.execute('SELECT id, company_name FROM partners WHERE id = ? AND deleted_at IS NULL LIMIT 1', [id]);
     if (pRows.length === 0) return sendError(res, 'Kayıt bulunamadı', 404);
     const company = pRows[0].company_name;
 
-    // Bu şirket adının geçtiği sevkiyatlar (4 farklı rolde)
+    // Bu şirket adının geçtiği sevkiyatlar (4 farklı rolde, arşivde değil)
     const sql = `
       SELECT s.*, u.username AS created_by_username
       FROM shipments s
       LEFT JOIN users u ON u.id = s.created_by
-      WHERE (s.client_billing = ? OR s.sender = ? OR s.receiver = ? OR s.agent = ?)
+      WHERE s.deleted_at IS NULL
+        AND (s.client_billing = ? OR s.sender = ? OR s.receiver = ? OR s.agent = ?)
       ORDER BY s.created_at DESC
     `;
     const [shipments] = await pool.execute(sql, [company, company, company, company]);
@@ -183,27 +184,29 @@ router.delete('/:id', verifyToken, async (req, res) => {
     const id = toInt(req.params.id);
     if (!id) return sendError(res, 'Geçersiz ID');
 
-    // Mevcut mu?
-    const [rows] = await pool.execute('SELECT id, company_name FROM partners WHERE id = ? LIMIT 1', [id]);
+    // Mevcut mu? (arşivde değil)
+    const [rows] = await pool.execute('SELECT id, company_name FROM partners WHERE id = ? AND deleted_at IS NULL LIMIT 1', [id]);
     if (rows.length === 0) return sendError(res, 'Kayıt bulunamadı', 404);
     const partner = rows[0];
 
-    // RESTRICT: bu partner sevkiyatlarda kullanılıyor mu?
+    // RESTRICT: bu partner aktif sevkiyatlarda kullanılıyor mu?
     const [refs] = await pool.execute(
       `SELECT COUNT(*) AS c FROM shipments
-       WHERE client_billing = ? OR sender = ? OR receiver = ? OR agent = ? OR depo_musteri = ?`,
+       WHERE deleted_at IS NULL
+         AND (client_billing = ? OR sender = ? OR receiver = ? OR agent = ? OR depo_musteri = ?)`,
       [partner.company_name, partner.company_name, partner.company_name, partner.company_name, partner.company_name]
     );
     if (refs[0].c > 0) {
       return sendError(
         res,
-        `Bu partner ${refs[0].c} sevkiyatta kullanılıyor. Önce bu sevkiyatları güncelleyin ya da silin.`
+        `Bu partner ${refs[0].c} aktif sevkiyatta kullanılıyor. Önce bu sevkiyatları güncelleyin ya da arşivleyin.`
       );
     }
 
-    await pool.execute('DELETE FROM partners WHERE id = ?', [id]);
+    // Soft-delete (arşive taşı)
+    await pool.execute('UPDATE partners SET deleted_at = NOW(), deleted_by = ? WHERE id = ?', [req.user.id, id]);
     await logAudit(req, 'delete', 'partners', id, partner.company_name);
-    sendSuccess(res, { message: 'Silindi' });
+    sendSuccess(res, { message: 'Arşive taşındı' });
   } catch (err) {
     console.error('[partners/delete]', err);
     sendError(res, 'Silme sırasında hata: ' + err.message, 500);

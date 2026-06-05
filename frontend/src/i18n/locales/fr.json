@@ -76,6 +76,7 @@
     "reports": "Rapports",
     "users": "Utilisateurs",
     "audit": "Journal d'audit",
+    "archive": "Archives",
     "settings": "Paramètres"
   },
   "topbar": {
@@ -94,6 +95,52 @@
     "weight_pkg": "Poids / Colis",
     "sale": "Vente",
     "search_placeholder": "N° dossier, client, expéditeur, destinataire...",
+    "select_placeholder": "Sélectionner...",
+    "not_specified": "Non spécifié",
+    "sections": {
+      "general_info": "Informations Générales",
+      "mode_details": "Détails {{mode}}",
+      "client_billing_section": "Client / Facturation",
+      "parties": "Parties de l'Expédition",
+      "cargo_info": "Informations sur le Fret",
+      "special_conditions": "Conditions Spéciales",
+      "financial_items": "Éléments Financiers ({{mode}})",
+      "document_status": "Statut des Documents",
+      "warehouse_info": "Informations Entrepôt",
+      "invoice_info": "Informations Facture"
+    },
+    "fields": {
+      "created_date": "Date de Création",
+      "responsible_user": "Utilisateur Responsable",
+      "client_reference": "Référence Client",
+      "currency": "Devise",
+      "incoterm": "Incoterm",
+      "incoterm_location": "Lieu Incoterm",
+      "client_billing": "Client (Facturation)",
+      "contact_person": "Personne de Contact",
+      "phone": "Téléphone",
+      "email": "E-mail",
+      "delivery_address": "Adresse de Livraison",
+      "add_new_customer": "Ajouter un nouveau client",
+      "select_customer": "Sélectionner ou taper le client...",
+      "company_search": "Rechercher l'entreprise...",
+      "payment_type": "Type de Paiement",
+      "payment_received": "Paiement Reçu"
+    },
+    "payment_types": {
+      "wire": "Virement / EFT",
+      "check": "Chèque",
+      "cash": "Espèces",
+      "credit_card": "Carte de Crédit",
+      "letter_of_credit": "Crédit Documentaire",
+      "documents": "Contre Documents",
+      "other": "Autre"
+    },
+    "storage_pricing": {
+      "daily": "Journalier",
+      "weekly": "Hebdomadaire",
+      "monthly": "Mensuel"
+    },
     "summary": {
       "total": "Total",
       "open": "Ouvert",
@@ -182,6 +229,11 @@
     "title": "Véhicules",
     "new": "Nouveau véhicule",
     "edit": "Modifier le véhicule",
+    "status": {
+      "active": "Actif",
+      "inactive": "Inactif",
+      "maintenance": "Maintenance"
+    },
     "plate": "Plaque",
     "trailer_plate": "Plaque remorque",
     "transport_type": "Type de transport",
@@ -375,5 +427,169 @@
       "download": "Télécharger"
     },
     "no_logs": "Aucun enregistrement"
+  },
+  "transport": {
+    "modes": {
+      "road": "Route",
+      "road_short": "Route",
+      "sea": "Maritime",
+      "sea_short": "Mer",
+      "maritime": "Maritime",
+      "air": "Aérien",
+      "air_short": "Air",
+      "storage": "Stockage",
+      "import": "Importation",
+      "export": "Exportation"
+    },
+    "descriptions": {
+      "road": "Expéditions camion / TIR",
+      "maritime": "Transport maritime de conteneurs et vrac",
+      "air": "Fret aérien (AWB)",
+      "storage": "Opérations d'entrepôt / entrepôt sous douane",
+      "import": "Opérations d'importation douanière",
+      "export": "Opérations d'exportation douanière"
+    },
+    "columns": {
+      "file_no": "N° Dossier",
+      "date": "Date",
+      "client": "Client",
+      "route": "Itinéraire",
+      "route_ports": "POL → POD",
+      "route_airports": "IATA → IATA",
+      "vessel": "Navire/Voyage",
+      "bl_no": "N° B/L",
+      "flight": "Vol",
+      "awb_no": "N° AWB",
+      "status": "Étape",
+      "loading": "Chargement",
+      "sale": "Vente",
+      "margin": "Marge %",
+      "actions": "Actions"
+    },
+    "fields": {
+      "vessel_name": "Nom du Navire",
+      "voyage_no": "N° de Voyage",
+      "operator": "Opérateur/Armateur",
+      "pol": "Port de Chargement (POL)",
+      "pod": "Port de Déchargement (POD)",
+      "mbl_no": "N° MBL (Master B/L)",
+      "hbl_no": "N° HBL (House B/L)",
+      "etd": "ETD (Départ Prévu)",
+      "eta": "ETA (Arrivée Prévue)",
+      "atd": "ATD (Départ Réel)",
+      "ata": "ATA (Arrivée Réelle)",
+      "airline_code": "Code Compagnie",
+      "flight_no": "N° de Vol",
+      "flight_date": "Date du Vol",
+      "cutoff_time": "Heure Limite",
+      "origin_airport": "Aéroport de Départ (IATA)",
+      "dest_airport": "Aéroport d'Arrivée (IATA)",
+      "mawb_no": "N° MAWB (Master AWB)",
+      "hawb_no": "N° HAWB (House AWB)",
+      "volumetric_weight": "Poids Volumétrique (kg)",
+      "chargeable_weight": "Poids Taxable (kg)"
+    },
+    "vehicle_labels": {
+      "plate": "Plaque",
+      "trailer": "Plaque Remorque",
+      "volume": "Volume (m³)",
+      "capacity": "Capacité (kg)",
+      "container_no": "N° Conteneur / Navire",
+      "seal_no": "N° de Scellé",
+      "flight_tail": "N° Vol / N° Queue",
+      "registration": "N° d'Immatriculation"
+    },
+    "documents": {
+      "cmr": "CMR (Document de Transport Routier)",
+      "cmr_signed": "CMR (Signé)",
+      "invoice": "Facture Commerciale",
+      "packing_list": "Liste de Colisage",
+      "customs_dec": "Déclaration en Douane",
+      "eur1": "EUR.1 / A.TR",
+      "insurance": "Police d'Assurance",
+      "transit": "Document de Transit (T1/T2)",
+      "mbl": "Master B/L (Connaissement)",
+      "hbl": "House B/L (Connaissement)",
+      "manifest": "Manifeste",
+      "cert_origin": "Certificat d'Origine",
+      "container_list": "Liste de Conteneurs",
+      "mawb": "MAWB (Master Airway Bill)",
+      "hawb": "HAWB (House Airway Bill)",
+      "cargo_manifest": "Manifeste de Cargaison",
+      "dgd": "Déclaration de Marchandises Dangereuses (DGD)",
+      "security": "Déclaration de Sécurité"
+    },
+    "equipment": {
+      "tilt": "Bâché",
+      "frigorifik": "Frigorifique",
+      "open": "Plateau Ouvert",
+      "container": "Conteneur",
+      "tanker": "Citerne",
+      "other": "Autre",
+      "container_20": "20' Dry",
+      "container_40": "40' Dry",
+      "container_40hc": "40' High Cube",
+      "container_reefer": "Conteneur Frigorifique",
+      "bulk": "Vrac",
+      "breakbulk": "Marchandises Diverses",
+      "roro": "Ro-Ro",
+      "passenger": "Avion Passager (Soute)",
+      "freighter": "Avion Cargo",
+      "combi": "Combi",
+      "express": "Express"
+    }
+  },
+  "archive": {
+    "title": "Archives",
+    "subtitle": "Les enregistrements supprimés sont conservés ici — ils peuvent être restaurés ou supprimés définitivement",
+    "empty": "Aucun enregistrement archivé dans cette catégorie",
+    "search_placeholder": "Rechercher...",
+    "total_count": "{{count}} enregistrements",
+    "selected_count": "{{count}} sélectionnés",
+    "bulk_restore": "Restaurer en lot",
+    "bulk_purge": "Supprimer définitivement en lot",
+    "tabs": {
+      "shipments": "Expéditions",
+      "partners": "Partenaires",
+      "vehicles": "Véhicules",
+      "warehouses": "Entrepôts",
+      "assignments": "Affectations"
+    },
+    "columns": {
+      "id": "ID",
+      "code": "Code",
+      "name": "Nom",
+      "type": "Type",
+      "company_name": "Nom de l'entreprise",
+      "city": "Ville",
+      "country": "Pays",
+      "plate": "Plaque",
+      "driver": "Conducteur",
+      "transport_type": "Mode",
+      "vehicle_id": "ID véhicule",
+      "shipment_id": "ID expédition",
+      "quantity": "Quantité",
+      "weight": "Poids",
+      "deleted_at": "Supprimé le",
+      "deleted_by": "Supprimé par"
+    },
+    "row": {
+      "restore": "Restaurer",
+      "purge": "Supprimer définitivement"
+    },
+    "confirm": {
+      "restore_title": "Restaurer l'enregistrement?",
+      "restore_body": "L'enregistrement sera réactivé et apparaîtra à nouveau dans les listes.",
+      "purge_title": "Supprimer définitivement?",
+      "purge_body": "Cette action NE PEUT PAS être annulée. L'enregistrement sera complètement supprimé de la base de données. Les fichiers associés seront également supprimés.",
+      "bulk_restore_title": "Restaurer {{count}} enregistrements?",
+      "bulk_purge_title": "Supprimer définitivement {{count}} enregistrements?"
+    },
+    "toast": {
+      "restored_one": "Enregistrement restauré",
+      "purged_one": "Enregistrement supprimé définitivement",
+      "restored_n": "{{count}} enregistrements restaurés",
+      "purged_n": "{{count}} enregistrements supprimés définitivement"
+    }
   }
 }

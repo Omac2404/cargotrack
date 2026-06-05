@@ -76,6 +76,7 @@
     "reports": "Reports",
     "users": "Users",
     "audit": "Audit Log",
+    "archive": "Archive",
     "settings": "Settings"
   },
   "topbar": {
@@ -94,6 +95,52 @@
     "weight_pkg": "Weight / Package",
     "sale": "Sale",
     "search_placeholder": "File no, customer, sender, receiver...",
+    "select_placeholder": "Select...",
+    "not_specified": "Not specified",
+    "sections": {
+      "general_info": "General Information",
+      "mode_details": "{{mode}} Details",
+      "client_billing_section": "Customer / Billing",
+      "parties": "Shipment Parties",
+      "cargo_info": "Cargo Information",
+      "special_conditions": "Special Conditions",
+      "financial_items": "Financial Items ({{mode}})",
+      "document_status": "Document Status",
+      "warehouse_info": "Warehouse Information",
+      "invoice_info": "Invoice Information"
+    },
+    "fields": {
+      "created_date": "Created Date",
+      "responsible_user": "Responsible User",
+      "client_reference": "Customer Reference",
+      "currency": "Currency",
+      "incoterm": "Incoterm",
+      "incoterm_location": "Incoterm Location",
+      "client_billing": "Customer (Billing)",
+      "contact_person": "Contact Person",
+      "phone": "Phone",
+      "email": "Email",
+      "delivery_address": "Delivery Address",
+      "add_new_customer": "Add new customer",
+      "select_customer": "Select or type customer...",
+      "company_search": "Search company name...",
+      "payment_type": "Payment Type",
+      "payment_received": "Payment Received"
+    },
+    "payment_types": {
+      "wire": "Wire Transfer / EFT",
+      "check": "Check",
+      "cash": "Cash",
+      "credit_card": "Credit Card",
+      "letter_of_credit": "Letter of Credit",
+      "documents": "Documents Against",
+      "other": "Other"
+    },
+    "storage_pricing": {
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly"
+    },
     "summary": {
       "total": "Total",
       "open": "Open",
@@ -182,6 +229,11 @@
     "title": "Vehicles",
     "new": "New Vehicle",
     "edit": "Edit Vehicle",
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "maintenance": "Maintenance"
+    },
     "plate": "Plate",
     "trailer_plate": "Trailer Plate",
     "transport_type": "Transport Type",
@@ -375,5 +427,169 @@
       "download": "Download"
     },
     "no_logs": "No log entries yet"
+  },
+  "transport": {
+    "modes": {
+      "road": "Road",
+      "road_short": "Road",
+      "sea": "Maritime",
+      "sea_short": "Sea",
+      "maritime": "Maritime",
+      "air": "Air",
+      "air_short": "Air",
+      "storage": "Storage",
+      "import": "Import",
+      "export": "Export"
+    },
+    "descriptions": {
+      "road": "TIR / Truck shipments",
+      "maritime": "Container and bulk sea transport",
+      "air": "Air cargo (AWB)",
+      "storage": "Warehouse / bonded warehouse operations",
+      "import": "Customs import operations",
+      "export": "Customs export operations"
+    },
+    "columns": {
+      "file_no": "File No",
+      "date": "Date",
+      "client": "Customer",
+      "route": "Route",
+      "route_ports": "POL → POD",
+      "route_airports": "IATA → IATA",
+      "vessel": "Vessel/Voyage",
+      "bl_no": "B/L No",
+      "flight": "Flight",
+      "awb_no": "AWB No",
+      "status": "Stage",
+      "loading": "Loading",
+      "sale": "Sale",
+      "margin": "Margin %",
+      "actions": "Actions"
+    },
+    "fields": {
+      "vessel_name": "Vessel Name",
+      "voyage_no": "Voyage No",
+      "operator": "Operator/Carrier",
+      "pol": "Port of Loading (POL)",
+      "pod": "Port of Discharge (POD)",
+      "mbl_no": "MBL No (Master B/L)",
+      "hbl_no": "HBL No (House B/L)",
+      "etd": "ETD (Estimated Departure)",
+      "eta": "ETA (Estimated Arrival)",
+      "atd": "ATD (Actual Departure)",
+      "ata": "ATA (Actual Arrival)",
+      "airline_code": "Airline Code",
+      "flight_no": "Flight No",
+      "flight_date": "Flight Date",
+      "cutoff_time": "Cut-off Time",
+      "origin_airport": "Origin Airport (IATA)",
+      "dest_airport": "Destination Airport (IATA)",
+      "mawb_no": "MAWB No (Master AWB)",
+      "hawb_no": "HAWB No (House AWB)",
+      "volumetric_weight": "Volumetric Weight (kg)",
+      "chargeable_weight": "Chargeable Weight (kg)"
+    },
+    "vehicle_labels": {
+      "plate": "License Plate",
+      "trailer": "Trailer Plate",
+      "volume": "Volume (m³)",
+      "capacity": "Capacity (kg)",
+      "container_no": "Container No / Vessel",
+      "seal_no": "Seal No",
+      "flight_tail": "Flight No / Tail Number",
+      "registration": "Registration No"
+    },
+    "documents": {
+      "cmr": "CMR (Road Transport Document)",
+      "cmr_signed": "CMR (Signed)",
+      "invoice": "Commercial Invoice",
+      "packing_list": "Packing List",
+      "customs_dec": "Customs Declaration",
+      "eur1": "EUR.1 / A.TR",
+      "insurance": "Insurance Policy",
+      "transit": "Transit Document (T1/T2)",
+      "mbl": "Master B/L (Bill of Lading)",
+      "hbl": "House B/L (Bill of Lading)",
+      "manifest": "Manifest",
+      "cert_origin": "Certificate of Origin",
+      "container_list": "Container List",
+      "mawb": "MAWB (Master Airway Bill)",
+      "hawb": "HAWB (House Airway Bill)",
+      "cargo_manifest": "Cargo Manifest",
+      "dgd": "Dangerous Goods Declaration (DGD)",
+      "security": "Security Declaration"
+    },
+    "equipment": {
+      "tilt": "Tilt",
+      "frigorifik": "Reefer",
+      "open": "Open Top",
+      "container": "Container",
+      "tanker": "Tanker",
+      "other": "Other",
+      "container_20": "20' Dry",
+      "container_40": "40' Dry",
+      "container_40hc": "40' High Cube",
+      "container_reefer": "Reefer Container",
+      "bulk": "Bulk",
+      "breakbulk": "Breakbulk",
+      "roro": "Ro-Ro",
+      "passenger": "Passenger Aircraft (Belly Hold)",
+      "freighter": "Freighter",
+      "combi": "Combi",
+      "express": "Express"
+    }
+  },
+  "archive": {
+    "title": "Archive",
+    "subtitle": "Deleted records are kept here — they can be restored or permanently deleted",
+    "empty": "No archived records in this category",
+    "search_placeholder": "Search...",
+    "total_count": "{{count}} records",
+    "selected_count": "{{count}} selected",
+    "bulk_restore": "Bulk Restore",
+    "bulk_purge": "Bulk Delete Permanently",
+    "tabs": {
+      "shipments": "Shipments",
+      "partners": "Partners",
+      "vehicles": "Vehicles",
+      "warehouses": "Warehouses",
+      "assignments": "Assignments"
+    },
+    "columns": {
+      "id": "ID",
+      "code": "Code",
+      "name": "Name",
+      "type": "Type",
+      "company_name": "Company Name",
+      "city": "City",
+      "country": "Country",
+      "plate": "Plate",
+      "driver": "Driver",
+      "transport_type": "Mode",
+      "vehicle_id": "Vehicle ID",
+      "shipment_id": "Shipment ID",
+      "quantity": "Quantity",
+      "weight": "Weight",
+      "deleted_at": "Deleted At",
+      "deleted_by": "Deleted By"
+    },
+    "row": {
+      "restore": "Restore",
+      "purge": "Delete Permanently"
+    },
+    "confirm": {
+      "restore_title": "Restore record?",
+      "restore_body": "The record will be reactivated and appear in lists again.",
+      "purge_title": "Delete permanently?",
+      "purge_body": "This action CANNOT be undone. The record will be completely removed from the database. Related files will also be deleted.",
+      "bulk_restore_title": "Restore {{count}} records?",
+      "bulk_purge_title": "Permanently delete {{count}} records?"
+    },
+    "toast": {
+      "restored_one": "Record restored",
+      "purged_one": "Record permanently deleted",
+      "restored_n": "{{count}} records restored",
+      "purged_n": "{{count}} records permanently deleted"
+    }
   }
 }

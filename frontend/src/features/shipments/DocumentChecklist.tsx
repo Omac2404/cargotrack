@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import {
@@ -35,6 +36,7 @@ const STAGE_COLORS: Record<DocStage, string> = {
 }
 
 export function DocumentChecklist({ shipmentId, docList, documentsData, onStageChange }: Props) {
+  const { t } = useTranslation()
   const qc = useQueryClient()
   const uploadMut = useUploadDocument()
   const deleteMut = useDeleteDocument()
@@ -116,7 +118,7 @@ export function DocumentChecklist({ shipmentId, docList, documentsData, onStageC
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium truncate">{item.label}</span>
+                  <span className="text-sm font-medium truncate">{t(item.label)}</span>
                   <Badge className={cn('text-[10px]', STAGE_COLORS[stage])}>
                     {STAGE_LABELS[stage]}
                   </Badge>
@@ -158,7 +160,7 @@ export function DocumentChecklist({ shipmentId, docList, documentsData, onStageC
                 {hasFile && (
                   <>
                     <Button type="button" variant="ghost" size="icon" className="h-7 w-7"
-                            onClick={() => setPreviewKey({ key: item.key, label: item.label })}
+                            onClick={() => setPreviewKey({ key: item.key, label: t(item.label) })}
                             title="Önizle / Versiyonlar">
                       <Eye className="w-3.5 h-3.5" />
                     </Button>

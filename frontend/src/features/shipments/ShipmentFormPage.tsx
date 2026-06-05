@@ -59,35 +59,36 @@ function incotermLabel(code: string): { code: string; tr: string } {
   const info = INCOTERMS_INFO.find((i) => i.code === code)
   return { code, tr: info?.tr || code }
 }
+// i18n key'leri — UI'de t() ile çevrilir
 const STATUSES = [
-  { value: 'draft', label: 'Taslak' },
-  { value: 'in_progress', label: 'Devam Ediyor' },
-  { value: 'to_invoice', label: 'Faturalanacak' },
-  { value: 'closed', label: 'Kapalı' },
+  { value: 'draft', label: 'shipment.status.draft' },
+  { value: 'in_progress', label: 'shipment.status.in_progress' },
+  { value: 'to_invoice', label: 'shipment.status.to_invoice' },
+  { value: 'closed', label: 'shipment.status.closed' },
 ]
 const PAYMENT_TYPES = [
-  { value: '__none__', label: 'Belirtilmedi' },
-  { value: 'havale', label: 'Havale / EFT' },
-  { value: 'cek', label: 'Çek' },
-  { value: 'nakit', label: 'Nakit' },
-  { value: 'kredi_karti', label: 'Kredi Kartı' },
-  { value: 'akreditif', label: 'Akreditif' },
-  { value: 'vesaik', label: 'Vesaik Mukabili' },
-  { value: 'diger', label: 'Diğer' },
+  { value: '__none__', label: 'shipment.not_specified' },
+  { value: 'havale', label: 'shipment.payment_types.wire' },
+  { value: 'cek', label: 'shipment.payment_types.check' },
+  { value: 'nakit', label: 'shipment.payment_types.cash' },
+  { value: 'kredi_karti', label: 'shipment.payment_types.credit_card' },
+  { value: 'akreditif', label: 'shipment.payment_types.letter_of_credit' },
+  { value: 'vesaik', label: 'shipment.payment_types.documents' },
+  { value: 'diger', label: 'shipment.payment_types.other' },
 ]
 const STORAGE_PRICING = [
-  { value: 'gun', label: 'Günlük' },
-  { value: 'hafta', label: 'Haftalık' },
-  { value: 'ay', label: 'Aylık' },
+  { value: 'gun', label: 'shipment.storage_pricing.daily' },
+  { value: 'hafta', label: 'shipment.storage_pricing.weekly' },
+  { value: 'ay', label: 'shipment.storage_pricing.monthly' },
 ]
 
 // Mode'a göre zorunlu belge listesi getTransportMode().docList'ten gelir.
-// Genel temel (eski geriye uyumluluk):
+// Genel temel (eski geriye uyumluluk) — i18n keys
 const REQUIRED_DOCS_FALLBACK = [
-  { key: 'commercial_invoice', label: 'Ticari Fatura' },
-  { key: 'packing_list', label: 'Çeki Listesi' },
-  { key: 'cmr', label: 'CMR (Karayolu)' },
-  { key: 'customs_docs', label: 'Gümrük Belgeleri' },
+  { key: 'commercial_invoice', label: 'transport.documents.invoice' },
+  { key: 'packing_list', label: 'transport.documents.packing_list' },
+  { key: 'cmr', label: 'transport.documents.cmr' },
+  { key: 'customs_docs', label: 'transport.documents.customs_dec' },
 ]
 
 export function ShipmentFormPage() {
@@ -391,24 +392,24 @@ export function ShipmentFormPage() {
           {/* === GENEL === */}
           <TabsContent value="general" className="mt-0">
             <Card className="p-5 space-y-4">
-              <SectionTitle>Genel Bilgiler</SectionTitle>
+              <SectionTitle>{t('shipment.sections.general_info')}</SectionTitle>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Field label="Oluşturma Tarihi" name="created_date" register={register} errors={errors} type="date" />
-                <Field label="Sorumlu Kullanıcı" name="responsible_user" register={register} errors={errors} />
-                <Field label="Müşteri Referansı" name="client_reference" register={register} errors={errors} />
+                <Field label={t('shipment.fields.created_date')} name="created_date" register={register} errors={errors} type="date" />
+                <Field label={t('shipment.fields.responsible_user')} name="responsible_user" register={register} errors={errors} />
+                <Field label={t('shipment.fields.client_reference')} name="client_reference" register={register} errors={errors} />
 
                 <div className="space-y-1.5">
-                  <Label>Durum</Label>
+                  <Label>{t('common.status')}</Label>
                   <Select value={watch('status') || 'draft'} onValueChange={(v) => setValue('status', v as ShipmentFormValues['status'])}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      {STATUSES.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+                      {STATUSES.map((s) => <SelectItem key={s.value} value={s.value}>{t(s.label)}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label>Para Birimi</Label>
+                  <Label>{t('shipment.fields.currency')}</Label>
                   <CurrencyCombobox
                     value={watch('currency_code') || 'EUR'}
                     onChange={(v) => setValue('currency_code', v)}
@@ -416,11 +417,11 @@ export function ShipmentFormPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label>Incoterm</Label>
+                  <Label>{t('shipment.fields.incoterm')}</Label>
                   <Select value={watch('incoterm') || '__none__'} onValueChange={(v) => setValue('incoterm', v === '__none__' ? '' : v)}>
-                    <SelectTrigger><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder={t('shipment.select_placeholder')} /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="__none__">Belirtilmedi</SelectItem>
+                      <SelectItem value="__none__">{t('shipment.not_specified')}</SelectItem>
                       {INCOTERMS.map((c) => {
                         const info = incotermLabel(c)
                         return (
@@ -433,26 +434,26 @@ export function ShipmentFormPage() {
                     </SelectContent>
                   </Select>
                 </div>
-                <Field label="Incoterm Lokasyon" name="incoterm_location" register={register} errors={errors} className="md:col-span-2" />
+                <Field label={t('shipment.fields.incoterm_location')} name="incoterm_location" register={register} errors={errors} className="md:col-span-2" />
               </div>
             </Card>
 
             {/* Mode-spesifik alanlar (PHP TRANSPORT_MODES.generalFields) */}
             {modeCfg.generalFields.length > 0 && (
               <Card className="p-5 mt-4 space-y-4">
-                <SectionTitle>{modeCfg.label} Detayları</SectionTitle>
+                <SectionTitle>{t('shipment.sections.mode_details', { mode: t(modeCfg.label) })}</SectionTitle>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {modeCfg.generalFields.map((f) => (
                     <div key={f.key} className="space-y-1.5">
-                      <Label htmlFor={`mode_${f.key}`}>{f.label}</Label>
+                      <Label htmlFor={`mode_${f.key}`}>{t(f.label)}</Label>
                       {f.type === 'select' ? (
                         <Select
                           value={String(modeData[f.key] ?? '__none__')}
                           onValueChange={(v) => setModeField(f.key, v === '__none__' ? '' : v)}
                         >
-                          <SelectTrigger><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                          <SelectTrigger><SelectValue placeholder={t('shipment.select_placeholder')} /></SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="__none__">Belirtilmedi</SelectItem>
+                            <SelectItem value="__none__">{t('shipment.not_specified')}</SelectItem>
                             {(f.options || []).filter((o) => o !== '').map((o) => (
                               <SelectItem key={o} value={o}>{o}</SelectItem>
                             ))}
@@ -479,18 +480,18 @@ export function ShipmentFormPage() {
           <TabsContent value="parties" className="mt-0">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <Card className="p-5 space-y-4">
-                <SectionTitle>Müşteri / Faturalama</SectionTitle>
+                <SectionTitle>{t('shipment.sections.client_billing_section')}</SectionTitle>
                 <div className="space-y-3">
                   <div className="space-y-1.5">
-                    <Label>Müşteri (Faturalama)</Label>
+                    <Label>{t('shipment.fields.client_billing')}</Label>
                     <div className="flex items-center gap-1">
                       <div className="flex-1">
                         <Combobox value={watch('client_billing') || ''} onChange={(v) => setValue('client_billing', v)}
-                          options={partnerOptionsByRole.customer} placeholder="Müşteri seçin veya yazın..."
-                          searchPlaceholder="Şirket adı ara..." allowCustom />
+                          options={partnerOptionsByRole.customer} placeholder={t('shipment.fields.select_customer')}
+                          searchPlaceholder={t('shipment.fields.company_search')} allowCustom />
                       </div>
                       <Button type="button" variant="outline" size="icon" className="h-9 w-9 shrink-0"
-                        title="Yeni müşteri ekle"
+                        title={t('shipment.fields.add_new_customer')}
                         onClick={() => setQuickAddType('customer')}>
                         <Plus className="w-4 h-4" />
                       </Button>
@@ -498,12 +499,12 @@ export function ShipmentFormPage() {
                     <PartyInfoCard partner={findPartnerByName(watch('client_billing'))} showCustomerExtras />
                   </div>
 
-                  <Field label="İletişim Kişi" name="client_contact" register={register} errors={errors} />
+                  <Field label={t('shipment.fields.contact_person')} name="client_contact" register={register} errors={errors} />
                   <div className="grid grid-cols-2 gap-3">
-                    <Field label="Telefon" name="client_phone" register={register} errors={errors} />
-                    <Field label="E-posta" name="client_email" register={register} errors={errors} type="email" />
+                    <Field label={t('shipment.fields.phone')} name="client_phone" register={register} errors={errors} />
+                    <Field label={t('shipment.fields.email')} name="client_email" register={register} errors={errors} type="email" />
                   </div>
-                  <FieldArea label="Teslim Adresi" name="client_delivery_address" register={register} errors={errors} />
+                  <FieldArea label={t('shipment.fields.delivery_address')} name="client_delivery_address" register={register} errors={errors} />
 
                   <PartySecondaryFields
                     partyKey="client"
@@ -514,7 +515,7 @@ export function ShipmentFormPage() {
               </Card>
 
               <Card className="p-5 space-y-4">
-                <SectionTitle>Sevkiyat Tarafları</SectionTitle>
+                <SectionTitle>{t('shipment.sections.parties')}</SectionTitle>
                 <div className="space-y-3">
                   {/* Gönderici */}
                   <div className="space-y-1.5">
@@ -616,7 +617,7 @@ export function ShipmentFormPage() {
           {/* === YÜK === */}
           <TabsContent value="cargo" className="mt-0">
             <Card className="p-5 space-y-4">
-              <SectionTitle>Yük Bilgileri</SectionTitle>
+              <SectionTitle>{t('shipment.sections.cargo_info')}</SectionTitle>
               <FieldArea label="Mal Tanımı" name="goods_description" register={register} errors={errors} />
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -724,7 +725,7 @@ export function ShipmentFormPage() {
           <TabsContent value="financial" className="mt-0">
             <Card className="p-5 space-y-4">
               <div className="flex items-center justify-between">
-                <SectionTitle>Finansal Kalemler ({modeCfg.label})</SectionTitle>
+                <SectionTitle>{t('shipment.sections.financial_items', { mode: t(modeCfg.label) })}</SectionTitle>
                 <div className="text-[10px] text-muted-foreground">
                   Para birimi: <strong className="text-foreground">{watch('currency_code') || 'EUR'}</strong>
                 </div>
@@ -756,7 +757,7 @@ export function ShipmentFormPage() {
           {/* === BELGELER === */}
           <TabsContent value="documents" className="mt-0">
             <Card className="p-5 space-y-4">
-              <SectionTitle>Belge Durumu</SectionTitle>
+              <SectionTitle>{t('shipment.sections.document_status')}</SectionTitle>
               {!isEdit ? (
                 <div className="p-4 rounded-md bg-warning/10 border border-warning/30 text-sm flex items-start gap-2">
                   <AlertCircle className="w-4 h-4 text-warning shrink-0 mt-0.5" />
@@ -824,7 +825,7 @@ export function ShipmentFormPage() {
               <TransitStorageCard form={form} warehouseTypeFromDb={warehouses.find((w) => w.name === watch('warehouse'))?.type_code} />
 
               <Card className="p-5 space-y-4">
-                <SectionTitle>Depo Bilgileri</SectionTitle>
+                <SectionTitle>{t('shipment.sections.warehouse_info')}</SectionTitle>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <Label>Depo</Label>
@@ -972,23 +973,23 @@ export function ShipmentFormPage() {
           {/* === FATURALAMA === */}
           <TabsContent value="invoice" className="mt-0">
             <Card className="p-5 space-y-4">
-              <SectionTitle>Fatura Bilgileri</SectionTitle>
+              <SectionTitle>{t('shipment.sections.invoice_info')}</SectionTitle>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <Field label="Fatura No" name="invoice_no" register={register} errors={errors} />
-                <Field label="Fatura Tarihi" name="invoice_date" register={register} errors={errors} type="date" />
-                <Field label="Fatura Tutarı" name="invoice_amount" register={register} errors={errors} type="number" step="0.01" />
+                <Field label={t('invoice.invoice_no', { defaultValue: 'Fatura No' })} name="invoice_no" register={register} errors={errors} />
+                <Field label={t('invoice.invoice_date', { defaultValue: 'Fatura Tarihi' })} name="invoice_date" register={register} errors={errors} type="date" />
+                <Field label={t('invoice.invoice_amount', { defaultValue: 'Fatura Tutarı' })} name="invoice_amount" register={register} errors={errors} type="number" step="0.01" />
                 <div className="space-y-1.5">
-                  <Label>Ödeme Tipi</Label>
+                  <Label>{t('shipment.fields.payment_type')}</Label>
                   <Select value={watch('payment_type') || '__none__'} onValueChange={(v) => setValue('payment_type', v === '__none__' ? '' : v)}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      {PAYMENT_TYPES.map((p) => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
+                      {PAYMENT_TYPES.map((p) => <SelectItem key={p.value} value={p.value}>{t(p.label)}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
-                <CheckboxField label="Ödeme Alındı" name="payment_received" form={form} />
+                <CheckboxField label={t('shipment.fields.payment_received')} name="payment_received" form={form} />
               </div>
-              <FieldArea label="Ödeme Notları" name="payment_notes" register={register} errors={errors} />
+              <FieldArea label={t('invoice.payment_notes', { defaultValue: 'Ödeme Notları' })} name="payment_notes" register={register} errors={errors} />
             </Card>
             <TabSaveBar isEdit={isEdit} isPending={saveMut.isPending} hasErrors={hasErrors} />
           </TabsContent>

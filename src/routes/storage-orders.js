@@ -16,7 +16,7 @@ router.get('/', verifyToken, async (req, res) => {
     const statusFilter = sanitizeText(req.query.status) || 'active';
     const warehouseId = toInt(req.query.warehouse_id);
 
-    let where = "transport_type = 'storage'";
+    let where = "transport_type = 'storage' AND deleted_at IS NULL";
     const params = [];
 
     if (statusFilter === 'active') {

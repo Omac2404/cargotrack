@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useForm, type UseFormRegister, type FieldErrors } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -40,13 +41,15 @@ const schema = z.object({
 })
 type FormValues = z.infer<typeof schema>
 
+// label = i18n key (t() ile çevrilir)
 const MODE_CONFIG: Record<VehicleTransport, { label: string; icon: React.ReactNode; gradient: string }> = {
-  road: { label: 'Karayolu', icon: <Truck className="w-5 h-5" />, gradient: 'from-blue-500 to-indigo-600' },
-  sea: { label: 'Denizyolu', icon: <Ship className="w-5 h-5" />, gradient: 'from-cyan-500 to-blue-600' },
-  air: { label: 'Havayolu', icon: <Plane className="w-5 h-5" />, gradient: 'from-sky-500 to-cyan-600' },
+  road: { label: 'transport.modes.road', icon: <Truck className="w-5 h-5" />, gradient: 'from-blue-500 to-indigo-600' },
+  sea:  { label: 'transport.modes.sea',  icon: <Ship className="w-5 h-5" />,  gradient: 'from-cyan-500 to-blue-600' },
+  air:  { label: 'transport.modes.air',  icon: <Plane className="w-5 h-5" />, gradient: 'from-sky-500 to-cyan-600' },
 }
 
 export function VehicleFormPage() {
+  const { t } = useTranslation()
   const { id } = useParams<{ id?: string }>()
   const navigate = useNavigate()
   const isEdit = !!id
@@ -143,7 +146,7 @@ export function VehicleFormPage() {
               </div>
               <div className="min-w-0">
                 <h1 className="text-base font-bold tracking-tight truncate">
-                  {isEdit ? `${existing?.plate || ''} düzenle` : `Yeni ${modeCfg.label} Aracı`}
+                  {isEdit ? `${existing?.plate || ''} ${t('common.edit')}` : `${t('common.new')} ${t(modeCfg.label)} ${t('nav.vehicles')}`}
                 </h1>
                 {existing?.vehicle_code && (
                   <div className="text-xs text-muted-foreground font-mono">{existing.vehicle_code}</div>
@@ -207,7 +210,7 @@ export function VehicleFormPage() {
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {equipmentOptions.map((e) => (
-                        <SelectItem key={e.value} value={e.value}>{e.label}</SelectItem>
+                        <SelectItem key={e.value} value={e.value}>{t(e.label)}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>

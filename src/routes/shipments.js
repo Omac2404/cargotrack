@@ -151,7 +151,7 @@ async function generateShipmentNo(conn, type) {
   const today = new Date();
   const ymd = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
   const [rows] = await conn.execute(
-    'SELECT COUNT(*) AS c FROM shipments WHERE DATE(created_at) = CURDATE()'
+    'SELECT COUNT(*) AS c FROM shipments WHERE DATE(created_at) = CURDATE() AND deleted_at IS NULL'
   );
   const seq = String((rows[0].c || 0) + 1).padStart(3, '0');
   return `${prefix}-${ymd}-${seq}`;
@@ -162,7 +162,7 @@ async function generateShipmentNo(conn, type) {
 router.get('/', verifyToken, async (req, res) => {
   try {
     const type = normalizeTransportType(req.query.transport_type || 'road');
-    let sql = 'SELECT * FROM shipments WHERE transport_type = ?';
+    let sql = 'SELECT * FROM shipments WHERE transport_type = ? AND deleted_at IS NULL';
     const params = [type];
     if (!hasRole(req.user, 'admin')) {
       sql += ' AND created_by = ?';
@@ -183,7 +183,7 @@ router.get('/:id', verifyToken, async (req, res) => {
     const id = toInt(req.params.id);
     if (!id) return sendError(res, 'Geçersiz ID');
 
-    const [rows] = await pool.execute('SELECT * FROM shipments WHERE id = ? LIMIT 1', [id]);
+    const [rows] = await pool.execute('SELECT * FROM shipments WHERE id = ? AND deleted_at IS NULL LIMIT 1', [id]);
     if (rows.length === 0) return sendError(res, 'Kayıt bulunamadı', 404);
 
     const shipment = rows[0];
@@ -226,7 +226,7 @@ router.post('/', verifyToken, async (req, res) => {
     if (shipmentId) {
       // UPDATE — önce eski satırın TAMAMINI çek (diff için)
       const [existingRows] = await conn.execute(
-        'SELECT * FROM shipments WHERE id = ? LIMIT 1',
+        'SELECT * FROM shipments WHERE id = ? AND deleted_at IS NULL LIMIT 1',
         [shipmentId]
       );
       if (existingRows.length === 0) {
@@ -312,7 +312,7 @@ router.post('/bulk-action', verifyToken, requirePermission('shipments.bulk_actio
 
     // Ownership kontrolü: user sadece kendi sahip olduklarıyla işlem yapabilir
     const placeholders = ids.map(() => '?').join(',');
-    let ownerSql = `SELECT id, shipment_no, created_by FROM shipments WHERE id IN (${placeholders})`;
+    let ownerSql = `SELECT id, shipment_no, created_by FROM shipments WHERE id IN (${placeholders}) AND deleted_at IS NULL`;
     const [rows] = await conn.execute(ownerSql, ids);
     if (rows.length === 0) {
       await conn.rollback();
@@ -328,17 +328,11 @@ router.post('/bulk-action', verifyToken, requirePermission('shipments.bulk_actio
 
     let affected = 0;
     if (action === 'delete') {
-      const fs = require('fs');
-      const path = require('path');
-      const uploadBase = path.resolve(process.env.UPLOAD_DIR || path.join(__dirname, '..', '..', 'uploads'));
-      // assignments CASCADE ile gider; uploads klasörü manuel
-      for (const r of rows) {
-        const uploadDir = path.join(uploadBase, String(r.id));
-        if (fs.existsSync(uploadDir)) {
-          try { fs.rmSync(uploadDir, { recursive: true, force: true }); } catch (_) { /* sessiz */ }
-        }
-      }
-      const [del] = await conn.execute(`DELETE FROM shipments WHERE id IN (${placeholders})`, ids);
+      // Soft-delete (arşive taşı) — uploads klasörü kalıcı silmede temizlenir
+      const [del] = await conn.execute(
+        `UPDATE shipments SET deleted_at = NOW(), deleted_by = ? WHERE id IN (${placeholders}) AND deleted_at IS NULL`,
+        [req.user.id, ...ids]
+      );
       affected = del.affectedRows;
       await conn.commit();
       for (const r of rows.slice(0, affected)) {
@@ -346,7 +340,7 @@ router.post('/bulk-action', verifyToken, requirePermission('shipments.bulk_actio
       }
     } else if (action === 'set_status') {
       const [upd] = await conn.execute(
-        `UPDATE shipments SET status = ? WHERE id IN (${placeholders})`,
+        `UPDATE shipments SET status = ? WHERE id IN (${placeholders}) AND deleted_at IS NULL`,
         [body.status, ...ids]
       );
       affected = upd.affectedRows;
@@ -395,7 +389,7 @@ router.get('/:id/history', verifyToken, async (req, res) => {
               u.username AS created_by_username, u.full_name AS created_by_fullname
        FROM shipments s
        LEFT JOIN users u ON u.id = s.created_by
-       WHERE s.id = ? LIMIT 1`,
+       WHERE s.id = ? AND s.deleted_at IS NULL LIMIT 1`,
       [id]
     );
     if (shipRows.length === 0) return sendError(res, 'Kayıt bulunamadı', 404);
@@ -442,7 +436,7 @@ router.delete('/:id', verifyToken, async (req, res) => {
       : null;
 
     const [rows] = await pool.execute(
-      'SELECT id, shipment_no, transport_type, created_by FROM shipments WHERE id = ? LIMIT 1',
+      'SELECT id, shipment_no, transport_type, created_by FROM shipments WHERE id = ? AND deleted_at IS NULL LIMIT 1',
       [id]
     );
     if (rows.length === 0) return sendError(res, 'Kayıt bulunamadı', 404);
@@ -467,23 +461,13 @@ router.delete('/:id', verifyToken, async (req, res) => {
       }
     }
 
-    // Belge klasörünü temizle (varsa)
-    const fs = require('fs');
-    const path = require('path');
-    const uploadBase = path.resolve(process.env.UPLOAD_DIR || path.join(__dirname, '..', '..', 'uploads'));
-    const uploadDir = path.join(uploadBase, String(id));
-    if (fs.existsSync(uploadDir)) {
-      try {
-        fs.rmSync(uploadDir, { recursive: true, force: true });
-      } catch (e) {
-        console.warn('[shipments/delete] uploads cleanup failed:', e.message);
-      }
-    }
-
-    // assignments CASCADE ile siler (FK ON DELETE CASCADE)
-    await pool.execute('DELETE FROM shipments WHERE id = ?', [id]);
+    // Soft-delete (arşive taşı) — uploads klasörü kalıcı silmede temizlenir
+    await pool.execute(
+      'UPDATE shipments SET deleted_at = NOW(), deleted_by = ? WHERE id = ?',
+      [req.user.id, id]
+    );
     await logAudit(req, 'delete', 'shipments', id, shipment.shipment_no || `#${id}`);
-    sendSuccess(res, { message: 'Kayıt silindi' });
+    sendSuccess(res, { message: 'Kayıt arşive taşındı' });
   } catch (err) {
     console.error('[shipments/delete]', err);
     sendError(res, 'Silme sırasında hata: ' + err.message, 500);

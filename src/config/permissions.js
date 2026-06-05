@@ -62,6 +62,11 @@ const PERMISSIONS = {
   'audit.view':             'Audit log görür',
   'reports.view':           'Raporları görür',
   'statistics.view':        'İstatistikleri görür',
+
+  // === Arşiv ===
+  'archive.view':           'Arşivlenen kayıtları görür',
+  'archive.restore':        'Arşivden geri yükler',
+  'archive.purge':          'Arşivden kalıcı siler (geri alınamaz)',
 };
 
 // Default rol → permission listesi (wildcard ve liste karması destekli)
@@ -79,6 +84,9 @@ const DEFAULT_ROLE_PERMISSIONS = {
     'reports.view',
     'statistics.view',
     'users.read', // Kullanıcı listesini görebilir ama yönetemez (super_admin için)
+    'archive.view',
+    'archive.restore',
+    // archive.purge YOK — sadece super_admin kalıcı silebilir
   ],
 
   user: [
@@ -108,7 +116,10 @@ const DEFAULT_ROLE_PERMISSIONS = {
     // İstatistik (kendi sevkiyatları)
     'statistics.view',
 
-    // YOKLAR: bulk_action, audit, reports, users
+    // Arşiv: görme yetkisi var ama geri yükleme/kalıcı silme yok
+    'archive.view',
+
+    // YOKLAR: bulk_action, audit, reports, users, archive.restore, archive.purge
   ],
 };
 

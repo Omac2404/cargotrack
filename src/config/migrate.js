@@ -110,6 +110,14 @@ async function migrate() {
   await ensureColumn('users', 'permissions', 'JSON NULL AFTER `role`');
   await ensureColumn('users', 'must_change_password', 'TINYINT(1) NOT NULL DEFAULT 0 AFTER `password`');
 
+  // === Soft-delete / Arşiv için deleted_at + deleted_by kolonları ===
+  for (const tbl of ['shipments', 'partners', 'vehicles', 'warehouses', 'vehicle_assignments']) {
+    if (await tableExists(tbl)) {
+      await ensureColumn(tbl, 'deleted_at', 'TIMESTAMP NULL DEFAULT NULL');
+      await ensureColumn(tbl, 'deleted_by', 'INT NULL DEFAULT NULL');
+    }
+  }
+
   await ensureDefaultAdmin();
   console.log('[migrate] Tamamlandı');
 }

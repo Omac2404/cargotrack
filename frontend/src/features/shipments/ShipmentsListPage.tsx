@@ -188,25 +188,28 @@ export function ShipmentsListPage() {
         <ExportButton
           data={filteredSorted}
           filename={`sevkiyatlar_${config.slug}`}
-          sheetName={`${config.label} Sevkiyatları`}
+          sheetName={t('shipment.title_with_mode', { mode: modeLabel })}
           columns={[
-            { header: 'Sevkiyat No', key: 'shipment_no' },
-            { header: 'Durum', key: 'status', format: (v) => STATUS_LABELS[v as string]?.label || String(v ?? '') },
-            { header: 'Müşteri', key: 'client_billing' },
-            { header: 'Gönderici', key: 'sender' },
-            { header: 'Alıcı', key: 'receiver' },
-            { header: 'Çıkış', key: 'departure_country' },
-            { header: 'Varış', key: 'arrival_country' },
-            { header: 'Kap', key: 'quantity', format: (v) => exportFormatters.number(v, 0) },
-            { header: 'Brüt Ağırlık (kg)', key: 'gross_weight', format: (v) => exportFormatters.number(v) },
-            { header: 'Hacim (m³)', key: 'volume_cbm', format: (v) => exportFormatters.number(v, 3) },
-            { header: 'Para Birimi', key: 'currency_code' },
-            { header: 'Toplam Alış', key: 'purchase_price', format: (v) => exportFormatters.number(v) },
-            { header: 'Toplam Satış', key: 'sale_price', format: (v) => exportFormatters.number(v) },
-            { header: 'Fatura No', key: 'invoice_no' },
-            { header: 'Fatura Tarihi', key: 'invoice_date', format: exportFormatters.date },
-            { header: 'Ödeme Alındı', key: 'payment_received', format: exportFormatters.yesNo },
-            { header: 'Oluşturma Tarihi', key: 'created_date', format: exportFormatters.date },
+            { header: t('shipment.shipment_no'), key: 'shipment_no' },
+            { header: t('common.status'), key: 'status', format: (v) => {
+              const k = STATUS_LABELS[v as string]?.label
+              return k ? t(k) : String(v ?? '')
+            }},
+            { header: t('shipment.client'), key: 'client_billing' },
+            { header: t('partner.types.sender', { defaultValue: 'Gönderici' }), key: 'sender' },
+            { header: t('partner.types.receiver', { defaultValue: 'Alıcı' }), key: 'receiver' },
+            { header: t('shipment.fields.departure_country', { defaultValue: 'Çıkış' }), key: 'departure_country' },
+            { header: t('shipment.fields.arrival_country', { defaultValue: 'Varış' }), key: 'arrival_country' },
+            { header: t('shipment.cargo.quantity', { defaultValue: 'Kap' }), key: 'quantity', format: (v) => exportFormatters.number(v, 0) },
+            { header: t('shipment.cargo.gross_weight', { defaultValue: 'Brüt Ağırlık (kg)' }), key: 'gross_weight', format: (v) => exportFormatters.number(v) },
+            { header: t('shipment.cargo.volume', { defaultValue: 'Hacim (m³)' }), key: 'volume_cbm', format: (v) => exportFormatters.number(v, 3) },
+            { header: t('shipment.fields.currency'), key: 'currency_code' },
+            { header: t('shipment.financial.total_purchase', { defaultValue: 'Toplam Alış' }), key: 'purchase_price', format: (v) => exportFormatters.number(v) },
+            { header: t('shipment.financial.total_sale', { defaultValue: 'Toplam Satış' }), key: 'sale_price', format: (v) => exportFormatters.number(v) },
+            { header: t('invoice.invoice_no', { defaultValue: 'Fatura No' }), key: 'invoice_no' },
+            { header: t('invoice.invoice_date', { defaultValue: 'Fatura Tarihi' }), key: 'invoice_date', format: exportFormatters.date },
+            { header: t('shipment.fields.payment_received'), key: 'payment_received', format: exportFormatters.yesNo },
+            { header: t('shipment.fields.created_date'), key: 'created_date', format: exportFormatters.date },
           ]}
         />
       </Card>
@@ -367,7 +370,7 @@ export function ShipmentsListPage() {
                       {formatMoney(s.sale_price, s.currency_code || 'EUR')}
                     </TableCell>
                     <TableCell>
-                      <Badge variant={status.variant}>{status.label}</Badge>
+                      <Badge variant={status.variant}>{t(status.label)}</Badge>
                     </TableCell>
                     <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-end gap-1">

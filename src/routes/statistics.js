@@ -48,8 +48,8 @@ router.post('/', verifyToken, async (req, res) => {
   try {
     const f = parseFilters(req.body || {});
 
-    // WHERE inşa et
-    const whereParts = ['DATE(created_at) BETWEEN ? AND ?'];
+    // WHERE inşa et (arşivde olanlar istatistiklerden hariç)
+    const whereParts = ['deleted_at IS NULL', 'DATE(created_at) BETWEEN ? AND ?'];
     const params = [f.dateFrom, f.dateTo];
     if (f.ttFilter) { whereParts.push('transport_type = ?'); params.push(f.ttFilter); }
 
@@ -122,7 +122,7 @@ router.post('/', verifyToken, async (req, res) => {
       DATE_FORMAT(created_at, '%Y-%m') AS month,
       SUM(sale_price) AS revenue, SUM(purchase_price) AS cost,
       SUM(sale_price - purchase_price) AS profit, COUNT(*) AS count
-      FROM shipments WHERE created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)`;
+      FROM shipments WHERE deleted_at IS NULL AND created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)`;
     const monthlyParams = [];
     if (f.ttFilter) { monthlySql += ' AND transport_type = ?'; monthlyParams.push(f.ttFilter); }
     if (f.currency) { monthlySql += ' AND currency_code = ?'; monthlyParams.push(f.currency); }
@@ -132,7 +132,7 @@ router.post('/', verifyToken, async (req, res) => {
     // Para birimi dağılımı (tarih aralığı)
     const [currencyBreakdown] = await pool.execute(
       `SELECT currency_code, SUM(sale_price) AS revenue, COUNT(*) AS count
-       FROM shipments WHERE DATE(created_at) BETWEEN ? AND ?
+       FROM shipments WHERE deleted_at IS NULL AND DATE(created_at) BETWEEN ? AND ?
        GROUP BY currency_code ORDER BY revenue DESC`,
       [f.dateFrom, f.dateTo]
     );
@@ -181,7 +181,7 @@ router.post('/', verifyToken, async (req, res) => {
     let modeSql = `SELECT transport_type, COUNT(*) AS count, SUM(sale_price) AS revenue,
       SUM(sale_price - purchase_price) AS profit,
       AVG(CASE WHEN sale_price > 0 THEN ((sale_price - purchase_price) / sale_price) * 100 ELSE NULL END) AS avg_margin
-      FROM shipments WHERE DATE(created_at) BETWEEN ? AND ?`;
+      FROM shipments WHERE deleted_at IS NULL AND DATE(created_at) BETWEEN ? AND ?`;
     const modeParams = [f.dateFrom, f.dateTo];
     if (f.currency) { modeSql += ' AND currency_code = ?'; modeParams.push(f.currency); }
     modeSql += ' GROUP BY transport_type ORDER BY revenue DESC';
@@ -195,8 +195,8 @@ router.post('/', verifyToken, async (req, res) => {
        SUM(va.assigned_weight) AS total_load,
        SUM(v.capacity_kg) AS total_capacity
        FROM vehicles v
-       LEFT JOIN vehicle_assignments va ON va.vehicle_id = v.id
-       WHERE v.status = 'active'
+       LEFT JOIN vehicle_assignments va ON va.vehicle_id = v.id AND va.deleted_at IS NULL
+       WHERE v.status = 'active' AND v.deleted_at IS NULL
        GROUP BY v.transport_type`
     );
 
@@ -221,10 +221,11 @@ router.post('/', verifyToken, async (req, res) => {
     const [[newCustRow]] = await pool.execute(
       `SELECT COUNT(DISTINCT client_billing) AS new_count
        FROM shipments s1
-       WHERE DATE(s1.created_at) BETWEEN ? AND ? AND s1.client_billing != ''
+       WHERE s1.deleted_at IS NULL
+         AND DATE(s1.created_at) BETWEEN ? AND ? AND s1.client_billing != ''
        AND NOT EXISTS (
          SELECT 1 FROM shipments s2
-         WHERE s2.client_billing = s1.client_billing AND DATE(s2.created_at) < ?
+         WHERE s2.deleted_at IS NULL AND s2.client_billing = s1.client_billing AND DATE(s2.created_at) < ?
        )`,
       [f.dateFrom, f.dateTo, f.dateFrom]
     );
@@ -235,7 +236,7 @@ router.post('/', verifyToken, async (req, res) => {
     const [inactiveCustomers] = await pool.execute(
       `SELECT client_billing, MAX(created_at) AS last_activity,
        COUNT(*) AS total_shipments, SUM(sale_price) AS lifetime_revenue
-       FROM shipments WHERE client_billing != ''
+       FROM shipments WHERE deleted_at IS NULL AND client_billing != ''
        GROUP BY client_billing
        HAVING MAX(created_at) < ?
        ORDER BY last_activity DESC LIMIT 20`,
@@ -275,8 +276,9 @@ router.post('/', verifyToken, async (req, res) => {
        SUM(va.assigned_weight) AS total_weight
        FROM vehicles v
        LEFT JOIN vehicle_assignments va ON va.vehicle_id = v.id
+         AND va.deleted_at IS NULL
          AND DATE(va.created_at) BETWEEN ? AND ?
-       WHERE v.status = 'active'
+       WHERE v.deleted_at IS NULL AND v.status = 'active'
        GROUP BY v.id, v.vehicle_code, v.plate, v.transport_type, v.driver_name
        HAVING assignment_count > 0
        ORDER BY assignment_count DESC LIMIT 10`,
@@ -289,9 +291,10 @@ router.post('/', verifyToken, async (req, res) => {
        COUNT(s.id) AS active_shipments
        FROM warehouses w
        LEFT JOIN shipments s ON
-         s.transport_type = 'storage' AND s.status != 'closed'
+         s.transport_type = 'storage' AND s.status != 'closed' AND s.deleted_at IS NULL
          AND s.storage_data IS NOT NULL
          AND s.storage_data LIKE CONCAT('%"warehouse_id":"', w.id, '"%')
+       WHERE w.deleted_at IS NULL
        GROUP BY w.id, w.warehouse_code, w.name, w.type_code
        ORDER BY active_shipments DESC`
     );
@@ -369,7 +372,7 @@ router.post('/', verifyToken, async (req, res) => {
 router.post('/export-excel', verifyToken, async (req, res) => {
   try {
     const f = parseFilters(req.body || {});
-    const whereParts = ['DATE(created_at) BETWEEN ? AND ?'];
+    const whereParts = ['deleted_at IS NULL', 'DATE(created_at) BETWEEN ? AND ?'];
     const params = [f.dateFrom, f.dateTo];
     if (f.ttFilter) { whereParts.push('transport_type = ?'); params.push(f.ttFilter); }
     if (f.currency) { whereParts.push('currency_code = ?'); params.push(f.currency); }

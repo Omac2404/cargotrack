@@ -86,38 +86,39 @@ export function useDeleteVehicle() {
   })
 }
 
-// Ekipman tipleri mode'a göre değişir (backend ile birebir uyumlu)
+// Ekipman tipleri mode'a göre değişir — label i18n key (t() ile çevrilir)
 export const EQUIPMENT_BY_MODE: Record<VehicleTransport, Array<{ value: string; label: string }>> = {
   road: [
-    { value: 'tilt', label: 'Tenteli (Tilt)' },
-    { value: 'frigorifik', label: 'Frigorifik' },
-    { value: 'open', label: 'Açık' },
-    { value: 'container', label: 'Konteyner' },
-    { value: 'tanker', label: 'Tanker' },
-    { value: 'other', label: 'Diğer' },
+    { value: 'tilt',       label: 'transport.equipment.tilt' },
+    { value: 'frigorifik', label: 'transport.equipment.frigorifik' },
+    { value: 'open',       label: 'transport.equipment.open' },
+    { value: 'container',  label: 'transport.equipment.container' },
+    { value: 'tanker',     label: 'transport.equipment.tanker' },
+    { value: 'other',      label: 'transport.equipment.other' },
   ],
   sea: [
-    { value: 'container_20', label: 'Konteyner 20\'' },
-    { value: 'container_40', label: 'Konteyner 40\'' },
-    { value: 'container_40hc', label: 'Konteyner 40\' HC' },
-    { value: 'container_reefer', label: 'Reefer Konteyner' },
-    { value: 'bulk', label: 'Dökme' },
-    { value: 'breakbulk', label: 'Parça' },
-    { value: 'tanker', label: 'Tanker' },
-    { value: 'roro', label: 'RoRo' },
-    { value: 'other', label: 'Diğer' },
+    { value: 'container_20',     label: 'transport.equipment.container_20' },
+    { value: 'container_40',     label: 'transport.equipment.container_40' },
+    { value: 'container_40hc',   label: 'transport.equipment.container_40hc' },
+    { value: 'container_reefer', label: 'transport.equipment.container_reefer' },
+    { value: 'bulk',             label: 'transport.equipment.bulk' },
+    { value: 'breakbulk',        label: 'transport.equipment.breakbulk' },
+    { value: 'tanker',           label: 'transport.equipment.tanker' },
+    { value: 'roro',             label: 'transport.equipment.roro' },
+    { value: 'other',            label: 'transport.equipment.other' },
   ],
   air: [
-    { value: 'passenger', label: 'Yolcu' },
-    { value: 'freighter', label: 'Kargo' },
-    { value: 'combi', label: 'Combi' },
-    { value: 'express', label: 'Express' },
-    { value: 'other', label: 'Diğer' },
+    { value: 'passenger', label: 'transport.equipment.passenger' },
+    { value: 'freighter', label: 'transport.equipment.freighter' },
+    { value: 'combi',     label: 'transport.equipment.combi' },
+    { value: 'express',   label: 'transport.equipment.express' },
+    { value: 'other',     label: 'transport.equipment.other' },
   ],
 }
 
+// label i18n key — UI'de t(VEHICLE_STATUS_LABELS[s].label) ile çevrilir
 export const VEHICLE_STATUS_LABELS: Record<string, { label: string; variant: 'success' | 'secondary' | 'warning' }> = {
-  active: { label: 'Aktif', variant: 'success' },
-  inactive: { label: 'Pasif', variant: 'secondary' },
-  maintenance: { label: 'Bakım', variant: 'warning' },
+  active:      { label: 'vehicle.status.active',      variant: 'success' },
+  inactive:    { label: 'vehicle.status.inactive',    variant: 'secondary' },
+  maintenance: { label: 'vehicle.status.maintenance', variant: 'warning' },
 }

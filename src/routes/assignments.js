@@ -25,7 +25,7 @@ router.get('/', verifyToken, async (req, res) => {
     const vehicleId = toInt(req.query.vehicle_id);
     const shipmentId = toInt(req.query.shipment_id);
 
-    let where = '1=1';
+    let where = 'a.deleted_at IS NULL';
     const params = [];
     if (vehicleId > 0) { where += ' AND a.vehicle_id = ?'; params.push(vehicleId); }
     if (shipmentId > 0) { where += ' AND a.shipment_id = ?'; params.push(shipmentId); }
@@ -34,6 +34,8 @@ router.get('/', verifyToken, async (req, res) => {
       where += ' AND s.created_by = ?';
       params.push(req.user.id);
     }
+    // İlişkili sevkiyat arşivde değilse göster (NULL = LEFT JOIN'de eşleşme yoksa)
+    where += ' AND (s.deleted_at IS NULL OR s.id IS NULL)';
 
     const sql = `
       SELECT a.*,
@@ -69,7 +71,7 @@ router.get('/load-pool', verifyToken, async (req, res) => {
     const transportType = sanitizeText(req.query.transport_type || '');
     const q = sanitizeText(req.query.q || '');
 
-    let where = `s.transport_type != 'storage' AND s.status != 'closed'`;
+    let where = `s.transport_type != 'storage' AND s.status != 'closed' AND s.deleted_at IS NULL`;
     const params = [];
 
     if (transportType) {
@@ -89,9 +91,9 @@ router.get('/load-pool', verifyToken, async (req, res) => {
       SELECT s.id, s.shipment_no, s.transport_type, s.status,
              s.client_billing, s.departure_country, s.arrival_country,
              s.quantity AS total_quantity, s.gross_weight AS total_weight,
-             COALESCE(SUM(a.assigned_quantity), 0) AS assigned_quantity,
-             COALESCE(SUM(a.assigned_weight), 0) AS assigned_weight,
-             COUNT(a.id) AS assignment_count
+             COALESCE(SUM(CASE WHEN a.deleted_at IS NULL THEN a.assigned_quantity ELSE 0 END), 0) AS assigned_quantity,
+             COALESCE(SUM(CASE WHEN a.deleted_at IS NULL THEN a.assigned_weight ELSE 0 END), 0) AS assigned_weight,
+             SUM(CASE WHEN a.deleted_at IS NULL THEN 1 ELSE 0 END) AS assignment_count
       FROM shipments s
       LEFT JOIN vehicle_assignments a ON a.shipment_id = s.id
       WHERE ${where}
@@ -156,7 +158,7 @@ router.post('/', verifyToken, async (req, res) => {
 
     // Pessimistic lock: shipment satırını kilitle (concurrent overbooking'i engelle)
     const [shipmentRows] = await conn.execute(
-      'SELECT id, quantity, gross_weight, transport_type FROM shipments WHERE id = ? FOR UPDATE',
+      'SELECT id, quantity, gross_weight, transport_type FROM shipments WHERE id = ? AND deleted_at IS NULL FOR UPDATE',
       [shipmentId]
     );
     if (shipmentRows.length === 0) {
@@ -167,7 +169,7 @@ router.post('/', verifyToken, async (req, res) => {
 
     // Vehicle satırını da kilitle (silinmesini engellemek için)
     const [vehicleRows] = await conn.execute(
-      'SELECT id, transport_type, capacity_kg FROM vehicles WHERE id = ? FOR UPDATE',
+      'SELECT id, transport_type, capacity_kg FROM vehicles WHERE id = ? AND deleted_at IS NULL FOR UPDATE',
       [vehicleId]
     );
     if (vehicleRows.length === 0) {
@@ -191,8 +193,8 @@ router.post('/', verifyToken, async (req, res) => {
       );
     }
 
-    // Mevcut atamaları topla (bu güncellenen hariç) — lock altında
-    let sumSql = 'SELECT COALESCE(SUM(assigned_quantity),0) AS qty, COALESCE(SUM(assigned_weight),0) AS wgt FROM vehicle_assignments WHERE shipment_id = ?';
+    // Mevcut atamaları topla (bu güncellenen hariç, arşivde olmayanlar) — lock altında
+    let sumSql = 'SELECT COALESCE(SUM(assigned_quantity),0) AS qty, COALESCE(SUM(assigned_weight),0) AS wgt FROM vehicle_assignments WHERE shipment_id = ? AND deleted_at IS NULL';
     const sumParams = [shipmentId];
     if (id > 0) { sumSql += ' AND id != ?'; sumParams.push(id); }
     const [sumRows] = await conn.execute(sumSql, sumParams);
@@ -221,9 +223,9 @@ router.post('/', verifyToken, async (req, res) => {
       );
     }
 
-    // Araç kapasitesi kontrolü (bu aracın mevcut atamaları + yeni)
+    // Araç kapasitesi kontrolü (bu aracın mevcut atamaları + yeni, arşivde olmayanlar)
     const [vehSumRows] = await conn.execute(
-      'SELECT COALESCE(SUM(assigned_weight),0) AS wgt FROM vehicle_assignments WHERE vehicle_id = ?' + (id > 0 ? ' AND id != ?' : ''),
+      'SELECT COALESCE(SUM(assigned_weight),0) AS wgt FROM vehicle_assignments WHERE vehicle_id = ? AND deleted_at IS NULL' + (id > 0 ? ' AND id != ?' : ''),
       id > 0 ? [vehicleId, id] : [vehicleId]
     );
     const vehAlreadyWgt = parseFloat(vehSumRows[0].wgt || 0);
@@ -302,10 +304,18 @@ router.delete('/:id', verifyToken, async (req, res) => {
   try {
     const id = toInt(req.params.id);
     if (!id) return sendError(res, 'Geçersiz ID');
-    const [result] = await pool.execute('DELETE FROM vehicle_assignments WHERE id = ?', [id]);
-    if (result.affectedRows === 0) return sendError(res, 'Kayıt bulunamadı', 404);
+    const [rows] = await pool.execute(
+      'SELECT id FROM vehicle_assignments WHERE id = ? AND deleted_at IS NULL LIMIT 1',
+      [id]
+    );
+    if (rows.length === 0) return sendError(res, 'Kayıt bulunamadı', 404);
+    // Soft-delete
+    await pool.execute(
+      'UPDATE vehicle_assignments SET deleted_at = NOW(), deleted_by = ? WHERE id = ?',
+      [req.user.id, id]
+    );
     await logAudit(req, 'delete', 'assignments', id);
-    sendSuccess(res, { message: 'Atama silindi' });
+    sendSuccess(res, { message: 'Atama arşive taşındı' });
   } catch (err) {
     console.error('[assignments/delete]', err);
     sendError(res, 'Silme sırasında hata: ' + err.message, 500);

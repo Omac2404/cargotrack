@@ -76,6 +76,7 @@
     "reports": "Raporlar",
     "users": "Kullanıcılar",
     "audit": "Audit Log",
+    "archive": "Arşiv",
     "settings": "Ayarlar"
   },
   "topbar": {
@@ -94,6 +95,52 @@
     "weight_pkg": "Ağırlık / Kap",
     "sale": "Satış",
     "search_placeholder": "Dosya no, müşteri, gönderici, alıcı...",
+    "select_placeholder": "Seçiniz...",
+    "not_specified": "Belirtilmedi",
+    "sections": {
+      "general_info": "Genel Bilgiler",
+      "mode_details": "{{mode}} Detayları",
+      "client_billing_section": "Müşteri / Faturalama",
+      "parties": "Sevkiyat Tarafları",
+      "cargo_info": "Yük Bilgileri",
+      "special_conditions": "Özel Koşullar",
+      "financial_items": "Finansal Kalemler ({{mode}})",
+      "document_status": "Belge Durumu",
+      "warehouse_info": "Depo Bilgileri",
+      "invoice_info": "Fatura Bilgileri"
+    },
+    "fields": {
+      "created_date": "Oluşturma Tarihi",
+      "responsible_user": "Sorumlu Kullanıcı",
+      "client_reference": "Müşteri Referansı",
+      "currency": "Para Birimi",
+      "incoterm": "Incoterm",
+      "incoterm_location": "Incoterm Lokasyon",
+      "client_billing": "Müşteri (Faturalama)",
+      "contact_person": "İletişim Kişi",
+      "phone": "Telefon",
+      "email": "E-posta",
+      "delivery_address": "Teslim Adresi",
+      "add_new_customer": "Yeni müşteri ekle",
+      "select_customer": "Müşteri seçin veya yazın...",
+      "company_search": "Şirket adı ara...",
+      "payment_type": "Ödeme Tipi",
+      "payment_received": "Ödeme Alındı"
+    },
+    "payment_types": {
+      "wire": "Havale / EFT",
+      "check": "Çek",
+      "cash": "Nakit",
+      "credit_card": "Kredi Kartı",
+      "letter_of_credit": "Akreditif",
+      "documents": "Vesaik Mukabili",
+      "other": "Diğer"
+    },
+    "storage_pricing": {
+      "daily": "Günlük",
+      "weekly": "Haftalık",
+      "monthly": "Aylık"
+    },
     "summary": {
       "total": "Toplam",
       "open": "Açık",
@@ -182,6 +229,11 @@
     "title": "Araçlar",
     "new": "Yeni Araç",
     "edit": "Aracı Düzenle",
+    "status": {
+      "active": "Aktif",
+      "inactive": "Pasif",
+      "maintenance": "Bakım"
+    },
     "plate": "Plaka",
     "trailer_plate": "Dorse Plakası",
     "transport_type": "Taşıma Tipi",
@@ -375,5 +427,169 @@
       "download": "İndirme"
     },
     "no_logs": "Henüz log kaydı yok"
+  },
+  "transport": {
+    "modes": {
+      "road": "Karayolu",
+      "road_short": "Karayolu",
+      "sea": "Denizyolu",
+      "sea_short": "Deniz",
+      "maritime": "Denizyolu",
+      "air": "Havayolu",
+      "air_short": "Hava",
+      "storage": "Depolama",
+      "import": "İthalat",
+      "export": "İhracat"
+    },
+    "descriptions": {
+      "road": "TIR / Kamyon sevkiyatları",
+      "maritime": "Konteyner ve bulk gemi taşımacılığı",
+      "air": "Hava kargo (AWB)",
+      "storage": "Depo / antrepo işlemleri",
+      "import": "Gümrük ithalat operasyonları",
+      "export": "Gümrük ihracat operasyonları"
+    },
+    "columns": {
+      "file_no": "Dosya No",
+      "date": "Tarih",
+      "client": "Müşteri",
+      "route": "Güzergah",
+      "route_ports": "POL → POD",
+      "route_airports": "IATA → IATA",
+      "vessel": "Vessel/Voyage",
+      "bl_no": "B/L No",
+      "flight": "Uçuş",
+      "awb_no": "AWB No",
+      "status": "Etap",
+      "loading": "Yükleme",
+      "sale": "Satış",
+      "margin": "Marj %",
+      "actions": "İşlem"
+    },
+    "fields": {
+      "vessel_name": "Vessel Adı",
+      "voyage_no": "Voyage No",
+      "operator": "Operatör/Armatör",
+      "pol": "Yükleme Limanı (POL)",
+      "pod": "Boşaltma Limanı (POD)",
+      "mbl_no": "MBL No (Master B/L)",
+      "hbl_no": "HBL No (House B/L)",
+      "etd": "ETD (Tahmini Kalkış)",
+      "eta": "ETA (Tahmini Varış)",
+      "atd": "ATD (Fiili Kalkış)",
+      "ata": "ATA (Fiili Varış)",
+      "airline_code": "Havayolu Kodu",
+      "flight_no": "Uçuş No",
+      "flight_date": "Uçuş Tarihi",
+      "cutoff_time": "Cut-off Saati",
+      "origin_airport": "Kalkış Havalimanı (IATA)",
+      "dest_airport": "Varış Havalimanı (IATA)",
+      "mawb_no": "MAWB No (Master AWB)",
+      "hawb_no": "HAWB No (House AWB)",
+      "volumetric_weight": "Volumetric Weight (kg)",
+      "chargeable_weight": "Chargeable Weight (kg)"
+    },
+    "vehicle_labels": {
+      "plate": "Plaka",
+      "trailer": "Dorse Plakası",
+      "volume": "Hacim (m³)",
+      "capacity": "Kapasite (kg)",
+      "container_no": "Konteyner No / Vessel",
+      "seal_no": "Mühür No",
+      "flight_tail": "Uçuş No / Tail Number",
+      "registration": "Tescil No"
+    },
+    "documents": {
+      "cmr": "CMR (Karayolu Taşıma Belgesi)",
+      "cmr_signed": "CMR (İmzalı)",
+      "invoice": "Ticari Fatura",
+      "packing_list": "Çeki Listesi",
+      "customs_dec": "Gümrük Beyannamesi",
+      "eur1": "EUR.1 / A.TR",
+      "insurance": "Sigorta Poliçesi",
+      "transit": "Transit Belgesi (T1/T2)",
+      "mbl": "Master B/L (Konşimento)",
+      "hbl": "House B/L (Konşimento)",
+      "manifest": "Manifest",
+      "cert_origin": "Menşe Şahadetnamesi",
+      "container_list": "Konteyner Listesi",
+      "mawb": "MAWB (Master Airway Bill)",
+      "hawb": "HAWB (House Airway Bill)",
+      "cargo_manifest": "Cargo Manifest",
+      "dgd": "Tehlikeli Madde Beyanı (DGD)",
+      "security": "Güvenlik Beyanı"
+    },
+    "equipment": {
+      "tilt": "Tenteli",
+      "frigorifik": "Frigorifik",
+      "open": "Açık Kasa",
+      "container": "Konteyner",
+      "tanker": "Tanker",
+      "other": "Diğer",
+      "container_20": "20' Dry",
+      "container_40": "40' Dry",
+      "container_40hc": "40' High Cube",
+      "container_reefer": "Reefer (Soğutuculu)",
+      "bulk": "Bulk (Dökme)",
+      "breakbulk": "Breakbulk",
+      "roro": "Ro-Ro",
+      "passenger": "Yolcu Uçağı (Belly Hold)",
+      "freighter": "Kargo Uçağı",
+      "combi": "Combi",
+      "express": "Express"
+    }
+  },
+  "archive": {
+    "title": "Arşiv",
+    "subtitle": "Silinen kayıtlar burada saklanır — geri yüklenebilir veya kalıcı silinebilir",
+    "empty": "Bu kategoride arşivlenmiş kayıt yok",
+    "search_placeholder": "Ara...",
+    "total_count": "{{count}} kayıt",
+    "selected_count": "{{count}} seçildi",
+    "bulk_restore": "Toplu Geri Yükle",
+    "bulk_purge": "Toplu Kalıcı Sil",
+    "tabs": {
+      "shipments": "Sevkiyatlar",
+      "partners": "Partnerler",
+      "vehicles": "Araçlar",
+      "warehouses": "Depolar",
+      "assignments": "Atamalar"
+    },
+    "columns": {
+      "id": "ID",
+      "code": "Kod",
+      "name": "Ad",
+      "type": "Tür",
+      "company_name": "Şirket Adı",
+      "city": "Şehir",
+      "country": "Ülke",
+      "plate": "Plaka",
+      "driver": "Sürücü",
+      "transport_type": "Mod",
+      "vehicle_id": "Araç ID",
+      "shipment_id": "Sevkiyat ID",
+      "quantity": "Miktar",
+      "weight": "Ağırlık",
+      "deleted_at": "Silinme",
+      "deleted_by": "Silen"
+    },
+    "row": {
+      "restore": "Geri Yükle",
+      "purge": "Kalıcı Sil"
+    },
+    "confirm": {
+      "restore_title": "Geri yüklensin mi?",
+      "restore_body": "Kayıt yeniden aktif hale gelecek ve listelerde görünmeye başlayacak.",
+      "purge_title": "Kalıcı silinsin mi?",
+      "purge_body": "Bu işlem GERİ ALINAMAZ. Kayıt veritabanından tamamen silinecek. İlişkili belgeler de silinir.",
+      "bulk_restore_title": "{{count}} kayıt geri yüklensin mi?",
+      "bulk_purge_title": "{{count}} kayıt kalıcı silinsin mi?"
+    },
+    "toast": {
+      "restored_one": "Kayıt geri yüklendi",
+      "purged_one": "Kayıt kalıcı silindi",
+      "restored_n": "{{count}} kayıt geri yüklendi",
+      "purged_n": "{{count}} kayıt kalıcı silindi"
+    }
   }
 }

@@ -11,22 +11,22 @@ export * from './handling'
 export * from './storage'
 export * from './currencies'
 
-// === Status labels ===
+// === Status labels (i18n keys) — UI'de t(SHIPMENT_STATUS_LABELS[s]) ile çevrilir ===
 export const SHIPMENT_STATUS_LABELS: Record<string, string> = {
-  draft: 'Taslak',
-  in_progress: 'Devam Ediyor',
-  to_invoice: 'Faturalanacak',
-  closed: 'Kapalı',
+  draft: 'shipment.status.draft',
+  in_progress: 'shipment.status.in_progress',
+  to_invoice: 'shipment.status.to_invoice',
+  closed: 'shipment.status.closed',
 }
 
-// === Ödeme tipleri ===
+// === Ödeme tipleri (i18n key'leri ile) ===
 export const PAYMENT_TYPES = [
-  { value: '', label: 'Belirtilmedi' },
-  { value: 'havale', label: 'Havale / EFT' },
-  { value: 'cek', label: 'Çek' },
-  { value: 'nakit', label: 'Nakit' },
-  { value: 'kredi_karti', label: 'Kredi Kartı' },
-  { value: 'akreditif', label: 'Akreditif' },
-  { value: 'vesaik', label: 'Vesaik Mukabili' },
-  { value: 'diger', label: 'Diğer' },
+  { value: '', label: 'shipment.not_specified' },
+  { value: 'havale', label: 'shipment.payment_types.wire' },
+  { value: 'cek', label: 'shipment.payment_types.check' },
+  { value: 'nakit', label: 'shipment.payment_types.cash' },
+  { value: 'kredi_karti', label: 'shipment.payment_types.credit_card' },
+  { value: 'akreditif', label: 'shipment.payment_types.letter_of_credit' },
+  { value: 'vesaik', label: 'shipment.payment_types.documents' },
+  { value: 'diger', label: 'shipment.payment_types.other' },
 ]

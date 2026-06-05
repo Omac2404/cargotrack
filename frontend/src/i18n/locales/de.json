@@ -76,6 +76,7 @@
     "reports": "Berichte",
     "users": "Benutzer",
     "audit": "Prüfprotokoll",
+    "archive": "Archiv",
     "settings": "Einstellungen"
   },
   "topbar": {
@@ -94,6 +95,52 @@
     "weight_pkg": "Gewicht / Stück",
     "sale": "Verkauf",
     "search_placeholder": "Akten-Nr., Kunde, Absender, Empfänger...",
+    "select_placeholder": "Auswählen...",
+    "not_specified": "Nicht angegeben",
+    "sections": {
+      "general_info": "Allgemeine Informationen",
+      "mode_details": "{{mode}} Details",
+      "client_billing_section": "Kunde / Rechnungsstellung",
+      "parties": "Sendungsparteien",
+      "cargo_info": "Frachtinformationen",
+      "special_conditions": "Besondere Bedingungen",
+      "financial_items": "Finanzposten ({{mode}})",
+      "document_status": "Dokumentenstatus",
+      "warehouse_info": "Lagerinformationen",
+      "invoice_info": "Rechnungsinformationen"
+    },
+    "fields": {
+      "created_date": "Erstellungsdatum",
+      "responsible_user": "Verantwortlicher Benutzer",
+      "client_reference": "Kundenreferenz",
+      "currency": "Währung",
+      "incoterm": "Incoterm",
+      "incoterm_location": "Incoterm-Ort",
+      "client_billing": "Kunde (Rechnung)",
+      "contact_person": "Ansprechpartner",
+      "phone": "Telefon",
+      "email": "E-Mail",
+      "delivery_address": "Lieferadresse",
+      "add_new_customer": "Neuen Kunden hinzufügen",
+      "select_customer": "Kunde auswählen oder eingeben...",
+      "company_search": "Firmennamen suchen...",
+      "payment_type": "Zahlungsart",
+      "payment_received": "Zahlung Erhalten"
+    },
+    "payment_types": {
+      "wire": "Überweisung / EFT",
+      "check": "Scheck",
+      "cash": "Bargeld",
+      "credit_card": "Kreditkarte",
+      "letter_of_credit": "Akkreditiv",
+      "documents": "Gegen Dokumente",
+      "other": "Sonstige"
+    },
+    "storage_pricing": {
+      "daily": "Täglich",
+      "weekly": "Wöchentlich",
+      "monthly": "Monatlich"
+    },
     "summary": {
       "total": "Gesamt",
       "open": "Offen",
@@ -182,6 +229,11 @@
     "title": "Fahrzeuge",
     "new": "Neues Fahrzeug",
     "edit": "Fahrzeug bearbeiten",
+    "status": {
+      "active": "Aktiv",
+      "inactive": "Inaktiv",
+      "maintenance": "Wartung"
+    },
     "plate": "Kennzeichen",
     "trailer_plate": "Anhänger-Kennzeichen",
     "transport_type": "Transporttyp",
@@ -375,5 +427,169 @@
       "download": "Herunterladen"
     },
     "no_logs": "Noch keine Protokolleinträge"
+  },
+  "transport": {
+    "modes": {
+      "road": "Straße",
+      "road_short": "Straße",
+      "sea": "Seeweg",
+      "sea_short": "See",
+      "maritime": "Seeweg",
+      "air": "Luft",
+      "air_short": "Luft",
+      "storage": "Lager",
+      "import": "Import",
+      "export": "Export"
+    },
+    "descriptions": {
+      "road": "LKW / TIR Sendungen",
+      "maritime": "Container- und Bulk-Schiffstransport",
+      "air": "Luftfracht (AWB)",
+      "storage": "Lager- / Zolllageroperationen",
+      "import": "Zollimport-Operationen",
+      "export": "Zollexport-Operationen"
+    },
+    "columns": {
+      "file_no": "Akten-Nr.",
+      "date": "Datum",
+      "client": "Kunde",
+      "route": "Route",
+      "route_ports": "POL → POD",
+      "route_airports": "IATA → IATA",
+      "vessel": "Schiff/Reise",
+      "bl_no": "B/L Nr.",
+      "flight": "Flug",
+      "awb_no": "AWB Nr.",
+      "status": "Etappe",
+      "loading": "Beladung",
+      "sale": "Verkauf",
+      "margin": "Marge %",
+      "actions": "Aktionen"
+    },
+    "fields": {
+      "vessel_name": "Schiffsname",
+      "voyage_no": "Reise-Nr.",
+      "operator": "Betreiber/Reeder",
+      "pol": "Verladehafen (POL)",
+      "pod": "Entladehafen (POD)",
+      "mbl_no": "MBL-Nr. (Master B/L)",
+      "hbl_no": "HBL-Nr. (House B/L)",
+      "etd": "ETD (Geschätzte Abfahrt)",
+      "eta": "ETA (Geschätzte Ankunft)",
+      "atd": "ATD (Tatsächliche Abfahrt)",
+      "ata": "ATA (Tatsächliche Ankunft)",
+      "airline_code": "Fluggesellschaft Code",
+      "flight_no": "Flug-Nr.",
+      "flight_date": "Flugdatum",
+      "cutoff_time": "Annahmeschluss",
+      "origin_airport": "Abflughafen (IATA)",
+      "dest_airport": "Zielflughafen (IATA)",
+      "mawb_no": "MAWB-Nr. (Master AWB)",
+      "hawb_no": "HAWB-Nr. (House AWB)",
+      "volumetric_weight": "Volumengewicht (kg)",
+      "chargeable_weight": "Frachtpflichtiges Gewicht (kg)"
+    },
+    "vehicle_labels": {
+      "plate": "Kennzeichen",
+      "trailer": "Anhängerkennzeichen",
+      "volume": "Volumen (m³)",
+      "capacity": "Kapazität (kg)",
+      "container_no": "Container-Nr. / Schiff",
+      "seal_no": "Plomben-Nr.",
+      "flight_tail": "Flug-Nr. / Tail-Nr.",
+      "registration": "Registrierungs-Nr."
+    },
+    "documents": {
+      "cmr": "CMR (Straßentransportdokument)",
+      "cmr_signed": "CMR (Unterzeichnet)",
+      "invoice": "Handelsrechnung",
+      "packing_list": "Packliste",
+      "customs_dec": "Zollanmeldung",
+      "eur1": "EUR.1 / A.TR",
+      "insurance": "Versicherungspolice",
+      "transit": "Transitdokument (T1/T2)",
+      "mbl": "Master B/L (Konnossement)",
+      "hbl": "House B/L (Konnossement)",
+      "manifest": "Manifest",
+      "cert_origin": "Ursprungszeugnis",
+      "container_list": "Containerliste",
+      "mawb": "MAWB (Master Airway Bill)",
+      "hawb": "HAWB (House Airway Bill)",
+      "cargo_manifest": "Frachtmanifest",
+      "dgd": "Gefahrgutdeklaration (DGD)",
+      "security": "Sicherheitserklärung"
+    },
+    "equipment": {
+      "tilt": "Planenaufbau",
+      "frigorifik": "Kühlfahrzeug",
+      "open": "Offener Aufbau",
+      "container": "Container",
+      "tanker": "Tankwagen",
+      "other": "Sonstige",
+      "container_20": "20' Dry",
+      "container_40": "40' Dry",
+      "container_40hc": "40' High Cube",
+      "container_reefer": "Kühlcontainer",
+      "bulk": "Schüttgut",
+      "breakbulk": "Stückgut",
+      "roro": "Ro-Ro",
+      "passenger": "Passagierflugzeug (Belly Hold)",
+      "freighter": "Frachtflugzeug",
+      "combi": "Combi",
+      "express": "Express"
+    }
+  },
+  "archive": {
+    "title": "Archiv",
+    "subtitle": "Gelöschte Datensätze werden hier aufbewahrt — sie können wiederhergestellt oder endgültig gelöscht werden",
+    "empty": "Keine archivierten Datensätze in dieser Kategorie",
+    "search_placeholder": "Suchen...",
+    "total_count": "{{count}} Datensätze",
+    "selected_count": "{{count}} ausgewählt",
+    "bulk_restore": "Mehrere wiederherstellen",
+    "bulk_purge": "Mehrere endgültig löschen",
+    "tabs": {
+      "shipments": "Sendungen",
+      "partners": "Partner",
+      "vehicles": "Fahrzeuge",
+      "warehouses": "Lager",
+      "assignments": "Zuweisungen"
+    },
+    "columns": {
+      "id": "ID",
+      "code": "Code",
+      "name": "Name",
+      "type": "Typ",
+      "company_name": "Firmenname",
+      "city": "Stadt",
+      "country": "Land",
+      "plate": "Kennzeichen",
+      "driver": "Fahrer",
+      "transport_type": "Modus",
+      "vehicle_id": "Fahrzeug-ID",
+      "shipment_id": "Sendungs-ID",
+      "quantity": "Menge",
+      "weight": "Gewicht",
+      "deleted_at": "Gelöscht am",
+      "deleted_by": "Gelöscht von"
+    },
+    "row": {
+      "restore": "Wiederherstellen",
+      "purge": "Endgültig löschen"
+    },
+    "confirm": {
+      "restore_title": "Datensatz wiederherstellen?",
+      "restore_body": "Der Datensatz wird reaktiviert und erscheint wieder in den Listen.",
+      "purge_title": "Endgültig löschen?",
+      "purge_body": "Diese Aktion kann NICHT rückgängig gemacht werden. Der Datensatz wird vollständig aus der Datenbank entfernt. Zugehörige Dateien werden ebenfalls gelöscht.",
+      "bulk_restore_title": "{{count}} Datensätze wiederherstellen?",
+      "bulk_purge_title": "{{count}} Datensätze endgültig löschen?"
+    },
+    "toast": {
+      "restored_one": "Datensatz wiederhergestellt",
+      "purged_one": "Datensatz endgültig gelöscht",
+      "restored_n": "{{count}} Datensätze wiederhergestellt",
+      "purged_n": "{{count}} Datensätze endgültig gelöscht"
+    }
   }
 }

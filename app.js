@@ -107,7 +107,8 @@ const routeRegistry = [
   { path: '/api/pdf', file: './src/routes/pdf' },
   { path: '/api/lookup', file: './src/routes/lookup' },
   { path: '/api/notifications', file: './src/routes/notifications' },
-  { path: '/api/reports', file: './src/routes/reports' }
+  { path: '/api/reports', file: './src/routes/reports' },
+  { path: '/api/archive', file: './src/routes/archive' }
 ];
 
 for (const r of routeRegistry) {

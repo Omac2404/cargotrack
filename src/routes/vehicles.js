@@ -27,11 +27,11 @@ router.get('/', verifyToken, async (req, res) => {
     let rows;
     if (transportType && VALID_TRANSPORT.includes(transportType)) {
       [rows] = await pool.execute(
-        'SELECT * FROM vehicles WHERE transport_type = ? ORDER BY vehicle_code ASC',
+        'SELECT * FROM vehicles WHERE transport_type = ? AND deleted_at IS NULL ORDER BY vehicle_code ASC',
         [transportType]
       );
     } else {
-      [rows] = await pool.execute('SELECT * FROM vehicles ORDER BY vehicle_code ASC');
+      [rows] = await pool.execute('SELECT * FROM vehicles WHERE deleted_at IS NULL ORDER BY vehicle_code ASC');
     }
     sendSuccess(res, rows);
   } catch (err) {
@@ -118,7 +118,7 @@ router.get('/:id', verifyToken, async (req, res) => {
   try {
     const id = toInt(req.params.id);
     if (!id) return sendError(res, 'Geçersiz ID');
-    const [rows] = await pool.execute('SELECT * FROM vehicles WHERE id = ? LIMIT 1', [id]);
+    const [rows] = await pool.execute('SELECT * FROM vehicles WHERE id = ? AND deleted_at IS NULL LIMIT 1', [id]);
     if (rows.length === 0) return sendError(res, 'Araç bulunamadı', 404);
     sendSuccess(res, rows[0]);
   } catch (err) {
@@ -136,13 +136,13 @@ router.get('/:id/load', verifyToken, async (req, res) => {
 
     // Araç bilgisi (kapasite için)
     const [vrows] = await pool.execute(
-      'SELECT id, plate, capacity_kg, volume_m3 FROM vehicles WHERE id = ? LIMIT 1',
+      'SELECT id, plate, capacity_kg, volume_m3 FROM vehicles WHERE id = ? AND deleted_at IS NULL LIMIT 1',
       [id]
     );
     if (vrows.length === 0) return sendError(res, 'Araç bulunamadı', 404);
     const vehicle = vrows[0];
 
-    // Atamalar + sevkiyat detayları
+    // Atamalar + sevkiyat detayları (arşivde olmayan)
     const [assignments] = await pool.execute(
       `SELECT a.id, a.shipment_id, a.assigned_quantity, a.assigned_weight,
               a.loading_date, a.notes, a.created_at,
@@ -151,7 +151,7 @@ router.get('/:id/load', verifyToken, async (req, res) => {
               s.quantity AS shipment_total_quantity, s.gross_weight AS shipment_total_weight
        FROM vehicle_assignments a
        LEFT JOIN shipments s ON s.id = a.shipment_id
-       WHERE a.vehicle_id = ?
+       WHERE a.vehicle_id = ? AND a.deleted_at IS NULL AND (s.deleted_at IS NULL OR s.id IS NULL)
        ORDER BY a.loading_date DESC, a.created_at DESC`,
       [id]
     );
@@ -194,19 +194,26 @@ router.delete('/:id', verifyToken, async (req, res) => {
     const id = toInt(req.params.id);
     if (!id) return sendError(res, 'Geçersiz ID');
 
-    // RESTRICT: atamaları olan araç silinemez
+    // Kayıt arşivde değil mi?
+    const [vrows] = await pool.execute(
+      'SELECT id FROM vehicles WHERE id = ? AND deleted_at IS NULL LIMIT 1',
+      [id]
+    );
+    if (vrows.length === 0) return sendError(res, 'Kayıt bulunamadı', 404);
+
+    // RESTRICT: aktif atamaları olan araç silinemez
     const [refs] = await pool.execute(
-      'SELECT COUNT(*) AS c FROM vehicle_assignments WHERE vehicle_id = ?',
+      'SELECT COUNT(*) AS c FROM vehicle_assignments WHERE vehicle_id = ? AND deleted_at IS NULL',
       [id]
     );
     if (refs[0].c > 0) {
-      return sendError(res, `Bu araca bağlı ${refs[0].c} atama var. Önce atamaları kaldırın.`);
+      return sendError(res, `Bu araca bağlı ${refs[0].c} aktif atama var. Önce atamaları kaldırın.`);
     }
 
-    const [result] = await pool.execute('DELETE FROM vehicles WHERE id = ?', [id]);
-    if (result.affectedRows === 0) return sendError(res, 'Kayıt bulunamadı', 404);
+    // Soft-delete
+    await pool.execute('UPDATE vehicles SET deleted_at = NOW(), deleted_by = ? WHERE id = ?', [req.user.id, id]);
     await logAudit(req, 'delete', 'vehicles', id);
-    sendSuccess(res, { message: 'Araç silindi' });
+    sendSuccess(res, { message: 'Araç arşive taşındı' });
   } catch (err) {
     console.error('[vehicles/delete]', err);
     sendError(res, 'Silme sırasında hata: ' + err.message, 500);

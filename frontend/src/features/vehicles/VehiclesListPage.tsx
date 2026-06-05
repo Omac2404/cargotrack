@@ -125,7 +125,10 @@ export function VehiclesListPage() {
             { header: 'Telefon', key: 'driver_phone' },
             { header: 'Tescil Tarihi', key: 'registration_date', format: exportFormatters.date },
             { header: 'ADR Sertifikalı', key: 'adr_certified', format: exportFormatters.yesNo },
-            { header: 'Durum', key: 'status', format: (v) => VEHICLE_STATUS_LABELS[v as string]?.label || String(v ?? '') },
+            { header: t('common.status'), key: 'status', format: (v) => {
+              const k = VEHICLE_STATUS_LABELS[v as string]?.label
+              return k ? t(k) : String(v ?? '')
+            }},
             { header: 'Notlar', key: 'notes' },
           ]}
         />
@@ -189,7 +192,7 @@ export function VehiclesListPage() {
                       )}
                     </TableCell>
                     <TableCell className="text-xs">
-                      {equipment?.label || v.equipment_type}
+                      {equipment ? t(equipment.label) : v.equipment_type}
                       {v.adr_certified ? (
                         <Badge variant="warning" className="ml-1.5">ADR</Badge>
                       ) : null}
@@ -227,7 +230,7 @@ export function VehiclesListPage() {
                       {v.driver_phone && <div className="text-muted-foreground">{v.driver_phone}</div>}
                     </TableCell>
                     <TableCell>
-                      {status && <Badge variant={status.variant}>{status.label}</Badge>}
+                      {status && <Badge variant={status.variant}>{t(status.label)}</Badge>}
                     </TableCell>
                     <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-end gap-1">

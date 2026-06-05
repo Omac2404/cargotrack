@@ -52,6 +52,11 @@ export const PERMISSION_LABELS: Record<string, string> = {
   'audit.view':             'Audit log görür',
   'reports.view':           'Raporları görür',
   'statistics.view':        'İstatistikleri görür',
+
+  // Arşiv
+  'archive.view':           'Arşivlenen kayıtları görür',
+  'archive.restore':        'Arşivden geri yükler',
+  'archive.purge':          'Arşivden kalıcı siler',
 }
 
 export type PermissionKey = keyof typeof PERMISSION_LABELS | string

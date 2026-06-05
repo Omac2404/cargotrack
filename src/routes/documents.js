@@ -48,7 +48,7 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
 
     // Shipment var mı?
     const [rows] = await pool.execute(
-      'SELECT id, documents_data FROM shipments WHERE id = ? LIMIT 1',
+      'SELECT id, documents_data FROM shipments WHERE id = ? AND deleted_at IS NULL LIMIT 1',
       [shipmentId]
     );
     if (rows.length === 0) return sendError(res, 'Sevkiyat bulunamadı', 404);
@@ -137,7 +137,7 @@ function verifyTokenFlexible(req, res, next) {
 /** Yardımcı: shipment'in documents_data'sından belirli docKey+version dosyasını çek. */
 async function resolveDocFile(shipmentId, docKey, version) {
   const [rows] = await pool.execute(
-    'SELECT documents_data FROM shipments WHERE id = ? LIMIT 1',
+    'SELECT documents_data FROM shipments WHERE id = ? AND deleted_at IS NULL LIMIT 1',
     [shipmentId]
   );
   if (rows.length === 0) return { error: 'Sevkiyat bulunamadı', code: 404 };
@@ -222,7 +222,7 @@ router.get('/:shipmentId/:docKey/versions', verifyToken, async (req, res) => {
     if (!shipmentId || !docKey) return sendError(res, 'Eksik parametre');
 
     const [rows] = await pool.execute(
-      'SELECT documents_data FROM shipments WHERE id = ? LIMIT 1',
+      'SELECT documents_data FROM shipments WHERE id = ? AND deleted_at IS NULL LIMIT 1',
       [shipmentId]
     );
     if (rows.length === 0) return sendError(res, 'Sevkiyat bulunamadı', 404);
@@ -264,7 +264,7 @@ router.post('/:shipmentId/:docKey/restore', verifyToken, async (req, res) => {
     if (!shipmentId || !docKey || !version) return sendError(res, 'Eksik parametre');
 
     const [rows] = await pool.execute(
-      'SELECT documents_data FROM shipments WHERE id = ? LIMIT 1',
+      'SELECT documents_data FROM shipments WHERE id = ? AND deleted_at IS NULL LIMIT 1',
       [shipmentId]
     );
     if (rows.length === 0) return sendError(res, 'Sevkiyat bulunamadı', 404);
@@ -312,7 +312,7 @@ router.delete('/:shipmentId/:docKey', verifyToken, async (req, res) => {
     if (!shipmentId || !docKey) return sendError(res, 'Eksik parametre');
 
     const [rows] = await pool.execute(
-      'SELECT documents_data FROM shipments WHERE id = ? LIMIT 1',
+      'SELECT documents_data FROM shipments WHERE id = ? AND deleted_at IS NULL LIMIT 1',
       [shipmentId]
     );
     if (rows.length === 0) return sendError(res, 'Sevkiyat bulunamadı', 404);

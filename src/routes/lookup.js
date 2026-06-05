@@ -22,7 +22,8 @@ router.get('/vehicle-summary', verifyToken, async (req, res) => {
           THEN ROUND((COALESCE(SUM(va.assigned_weight),0) / v.capacity_kg) * 100, 1)
           ELSE 0 END AS load_percent
       FROM vehicles v
-      LEFT JOIN vehicle_assignments va ON va.vehicle_id = v.id
+      LEFT JOIN vehicle_assignments va ON va.vehicle_id = v.id AND va.deleted_at IS NULL
+      WHERE v.deleted_at IS NULL
       GROUP BY v.id, v.vehicle_code, v.plate, v.transport_type, v.status, v.capacity_kg, v.volume_m3, v.driver_name
       ORDER BY load_percent DESC, v.vehicle_code
     `);
@@ -48,7 +49,9 @@ router.get('/warehouse-summary', verifyToken, async (req, res) => {
       LEFT JOIN shipments s ON
         s.transport_type = 'storage'
         AND s.status != 'closed'
+        AND s.deleted_at IS NULL
         AND (s.warehouse = w.name OR s.storage_data LIKE CONCAT('%"warehouse_id":"', w.id, '"%'))
+      WHERE w.deleted_at IS NULL
       GROUP BY w.id, w.warehouse_code, w.name, w.type_code, w.status, w.city, w.country
       ORDER BY active_count DESC, w.warehouse_code
     `);
@@ -68,7 +71,8 @@ router.get('/sidebar-alerts', verifyToken, async (req, res) => {
     // Eksik belgesi olan sevkiyatlar
     const [docMissing] = await pool.execute(`
       SELECT COUNT(*) AS c FROM shipments
-      WHERE status != 'closed'
+      WHERE deleted_at IS NULL
+      AND status != 'closed'
       AND documents_data IS NOT NULL AND documents_data != ''
       AND documents_data LIKE '%"status":"missing"%'
     `);
@@ -76,7 +80,8 @@ router.get('/sidebar-alerts', verifyToken, async (req, res) => {
     // Gecikmiş ödemeler (faturalı, ödenmemiş, 30+ gün)
     const [overdue] = await pool.execute(`
       SELECT COUNT(*) AS c FROM shipments
-      WHERE invoice_generated = 1
+      WHERE deleted_at IS NULL
+      AND invoice_generated = 1
       AND (payment_received = 0 OR payment_received IS NULL)
       AND invoice_date IS NOT NULL
       AND invoice_date < DATE_SUB(NOW(), INTERVAL 30 DAY)
@@ -85,7 +90,8 @@ router.get('/sidebar-alerts', verifyToken, async (req, res) => {
     // Transit süresi yaklaşan storage sevkiyatları (basit: storage tipinde 30+ gün)
     const [transitWarn] = await pool.execute(`
       SELECT COUNT(*) AS c FROM shipments
-      WHERE transport_type = 'storage'
+      WHERE deleted_at IS NULL
+      AND transport_type = 'storage'
       AND status != 'closed'
       AND entry_date IS NOT NULL
       AND DATEDIFF(NOW(), entry_date) > 30

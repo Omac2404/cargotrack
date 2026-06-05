@@ -33,7 +33,7 @@ function parseJsonField(raw) {
 }
 
 async function loadShipment(id) {
-  const [rows] = await pool.execute('SELECT * FROM shipments WHERE id = ? LIMIT 1', [id]);
+  const [rows] = await pool.execute('SELECT * FROM shipments WHERE id = ? AND deleted_at IS NULL LIMIT 1', [id]);
   return rows[0] || null;
 }
 
