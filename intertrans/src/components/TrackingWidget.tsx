@@ -2,10 +2,16 @@
 
 import { useState } from "react";
 import { Check, Search } from "lucide-react";
-
-const STEPS = ["Teslim Alındı", "Gümrük", "Yolda", "Teslim Edildi"];
+import { useTranslation } from "react-i18next";
 
 export default function TrackingWidget({ dark = true }: { dark?: boolean }) {
+  const { t } = useTranslation();
+  const STEPS = [
+    t("tracking.steps.received"),
+    t("tracking.steps.customs"),
+    t("tracking.steps.in_transit"),
+    t("tracking.steps.delivered"),
+  ];
   const [value, setValue] = useState("");
   const [result, setResult] = useState<{ no: string; current: number } | null>(
     null,
@@ -36,7 +42,7 @@ export default function TrackingWidget({ dark = true }: { dark?: boolean }) {
           dark ? "text-white" : "text-navy"
         }`}
       >
-        Gönderi Takip
+        {t("tracking.widget_label")}
       </label>
       <div className="flex flex-col gap-2 sm:flex-row">
         <input
@@ -44,14 +50,14 @@ export default function TrackingWidget({ dark = true }: { dark?: boolean }) {
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && track()}
-          placeholder="Takip No / BL / CMR"
+          placeholder={t("tracking.widget_ph")}
           className={`h-13 flex-1 rounded-[10px] border px-4 py-3 text-base outline-none transition focus:border-blue-light ${baseInput}`}
         />
         <button
           onClick={track}
           className="inline-flex h-13 items-center justify-center gap-2 rounded-[10px] bg-gradient-to-br from-blue to-blue-light px-7 py-3 font-display font-bold text-white transition hover:shadow-[0_6px_24px_rgba(21,101,192,0.4)]"
         >
-          <Search size={18} /> Takip Et
+          <Search size={18} /> {t("buttons.track")}
         </button>
       </div>
 
@@ -66,7 +72,7 @@ export default function TrackingWidget({ dark = true }: { dark?: boolean }) {
               dark ? "text-white" : "text-navy"
             }`}
           >
-            Gönderi: <span className="text-orange-light">{result.no}</span>
+            {t("tracking.shipment")}: <span className="text-orange-light">{result.no}</span>
           </h4>
           <div className="flex">
             {STEPS.map((s, i) => {
@@ -122,7 +128,7 @@ export default function TrackingWidget({ dark = true }: { dark?: boolean }) {
           <p
             className={`mt-3 text-xs ${dark ? "text-white/40" : "text-slate-400"}`}
           >
-            * Demo gösterimi. Canlı takip yakında CargoTrack ile aktif olacak.
+            {t("tracking.demo_note")}
           </p>
         </div>
       )}

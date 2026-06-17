@@ -1,9 +1,13 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { MapPin, Phone, Mail, MessageCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { contact, services, navLinks } from "@/lib/data";
 
 export default function Footer() {
+  const { t } = useTranslation();
   return (
     <footer className="bg-navy-deep text-white/70">
       <div className="container-x grid gap-10 py-16 md:grid-cols-2 lg:grid-cols-4">
@@ -16,14 +20,13 @@ export default function Footer() {
             className="mb-5 h-16 w-auto"
           />
           <p className="text-sm leading-relaxed text-white/60">
-            Taşımacılık, gümrük ve lojistikte küresel çözüm ortağınız. Hava,
-            deniz ve kara yolunda uçtan uca entegre hizmet.
+            {t("footer.tagline")}
           </p>
         </div>
 
         <div>
           <h4 className="mb-4 font-display text-sm font-bold uppercase tracking-wider text-white">
-            Hızlı Erişim
+            {t("footer.quick_links")}
           </h4>
           <ul className="space-y-2 text-sm">
             {navLinks.map((l) => (
@@ -32,7 +35,7 @@ export default function Footer() {
                   href={l.href}
                   className="text-white/60 transition-colors hover:text-orange-light"
                 >
-                  {l.label}
+                  {t(`nav.${l.key}`)}
                 </Link>
               </li>
             ))}
@@ -41,7 +44,7 @@ export default function Footer() {
 
         <div>
           <h4 className="mb-4 font-display text-sm font-bold uppercase tracking-wider text-white">
-            Hizmetler
+            {t("footer.services")}
           </h4>
           <ul className="space-y-2 text-sm">
             {services.map((s) => (
@@ -50,7 +53,7 @@ export default function Footer() {
                   href={`/hizmetler/${s.slug}`}
                   className="text-white/60 transition-colors hover:text-orange-light"
                 >
-                  {s.title}
+                  {t(`services.items.${s.slug}.title`)}
                 </Link>
               </li>
             ))}
@@ -59,7 +62,7 @@ export default function Footer() {
 
         <div>
           <h4 className="mb-4 font-display text-sm font-bold uppercase tracking-wider text-white">
-            İletişim
+            {t("footer.contact")}
           </h4>
           <ul className="space-y-3 text-sm">
             <li className="flex gap-3">
@@ -99,16 +102,16 @@ export default function Footer() {
 
       <div className="border-t border-white/10">
         <div className="container-x flex flex-col items-center justify-between gap-4 py-6 text-sm text-white/40 md:flex-row">
-          <p>&copy; 2026 Inter Trans MMS. Tüm hakları saklıdır.</p>
+          <p>{t("footer.copyright")}</p>
           <div className="flex gap-6">
             <Link href="#" className="transition-colors hover:text-orange-light">
-              Gizlilik
+              {t("footer.privacy")}
             </Link>
             <Link href="#" className="transition-colors hover:text-orange-light">
-              Kullanım Koşulları
+              {t("footer.terms")}
             </Link>
             <Link href="#" className="transition-colors hover:text-orange-light">
-              KVKK
+              {t("footer.kvkk")}
             </Link>
           </div>
         </div>

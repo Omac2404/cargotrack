@@ -5,9 +5,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { navLinks } from "@/lib/data";
+import LanguageSwitcher from "./LanguageSwitcher";
 
 export default function Navbar() {
+  const { t } = useTranslation();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
@@ -35,7 +38,7 @@ export default function Navbar() {
       }`}
     >
       <nav className="container-x flex items-center justify-between">
-        <Link href="/" className="flex items-center" aria-label="Ana sayfa">
+        <Link href="/" className="flex items-center" aria-label={t("nav.home")}>
           <Image
             src="/logo.png"
             alt="Inter Trans MMS - Multi Modal Services"
@@ -52,37 +55,44 @@ export default function Navbar() {
             <Link
               key={l.href}
               href={l.href}
-              className={`rounded-md px-4 py-2 font-display text-sm font-semibold transition-colors ${
+              className={`rounded-md px-3.5 py-2 font-display text-sm font-semibold transition-colors ${
                 isActive(l.href)
                   ? "text-orange-light"
                   : "text-white/85 hover:text-white"
               }`}
             >
-              {l.label}
+              {t(`nav.${l.key}`)}
             </Link>
           ))}
           <Link
             href="/iletisim"
             className="ml-2 rounded-md bg-orange px-4 py-2 font-display text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-orange-light"
           >
-            Teklif Al
+            {t("nav.quote_cta")}
           </Link>
           <Link
             href="/portal"
             className="ml-1 rounded-md bg-blue px-4 py-2 font-display text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-blue-light"
           >
-            Müşteri Portalı
+            {t("nav.portal_cta")}
           </Link>
+          {/* Language switcher — küçük bayraklar */}
+          <div className="ml-3 border-l border-white/15 pl-3">
+            <LanguageSwitcher />
+          </div>
         </div>
 
-        {/* Mobile toggle */}
-        <button
-          className="text-white lg:hidden"
-          onClick={() => setOpen((v) => !v)}
-          aria-label="Menü"
-        >
-          {open ? <X size={28} /> : <Menu size={28} />}
-        </button>
+        {/* Mobile: switcher + toggle */}
+        <div className="flex items-center gap-3 lg:hidden">
+          <LanguageSwitcher variant="mobile" />
+          <button
+            className="text-white"
+            onClick={() => setOpen((v) => !v)}
+            aria-label={t("nav.menu_label")}
+          >
+            {open ? <X size={28} /> : <Menu size={28} />}
+          </button>
+        </div>
       </nav>
 
       {/* Mobile menu */}
@@ -97,7 +107,7 @@ export default function Navbar() {
                   isActive(l.href) ? "text-orange-light" : "text-white/90"
                 }`}
               >
-                {l.label}
+                {t(`nav.${l.key}`)}
               </Link>
             ))}
             <div className="mt-2 grid grid-cols-2 gap-2">
@@ -105,13 +115,13 @@ export default function Navbar() {
                 href="/iletisim"
                 className="rounded-md bg-orange px-4 py-3 text-center font-display text-sm font-semibold text-white"
               >
-                Teklif Al
+                {t("nav.quote_cta")}
               </Link>
               <Link
                 href="/portal"
                 className="rounded-md bg-blue px-4 py-3 text-center font-display text-sm font-semibold text-white"
               >
-                Müşteri Portalı
+                {t("nav.portal_cta")}
               </Link>
             </div>
           </div>

@@ -1,0 +1,326 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "services": "Services",
+    "about": "À propos",
+    "tracking": "Suivi d'expédition",
+    "contact": "Contact",
+    "quote_cta": "Obtenir un devis",
+    "portal_cta": "Portail Client",
+    "menu_label": "Menu"
+  },
+  "buttons": {
+    "all_services": "Tous les services",
+    "service_details": "Détails",
+    "details": "Détails",
+    "submit": "Envoyer",
+    "send": "Envoyer",
+    "login": "Connexion",
+    "register": "Créer un compte",
+    "forgot_password": "Mot de passe oublié",
+    "track": "Suivre",
+    "examine_services": "Découvrir nos services",
+    "quote_for_service": "Demander un devis pour ce service"
+  },
+  "home": {
+    "hero_badge": "Transport et Logistique Internationaux",
+    "hero_title_a": "Votre partenaire mondial en",
+    "hero_title_b": "transport, douane et logistique",
+    "hero_subtitle": "Transport international et national — aérien, maritime, routier — courtage en douane, entreposage, logistique et suivi d'expédition en temps réel.",
+    "floating": {
+      "air_title": "Fret aérien",
+      "air_text": "Livraison rapide vers toutes les destinations",
+      "sea_title": "Transport maritime",
+      "sea_text": "FCL, LCL et projets spéciaux",
+      "road_title": "Transport routier",
+      "road_text": "National & international"
+    },
+    "services_section_title": "Nos services",
+    "services_section_subtitle": "Des solutions intégrées de bout en bout en transport, douane et logistique.",
+    "why_section_title": "Pourquoi nous choisir ?",
+    "why_section_subtitle": "Avec plus de 30 ans d'expérience, nous vous accompagnons à chaque étape du commerce international."
+  },
+  "about": {
+    "meta_title": "À propos",
+    "meta_description": "Inter Trans MMS — Partenaire de confiance avec plus de 30 ans d'expérience en transport international, douane et logistique.",
+    "page_title": "À propos de nous",
+    "page_subtitle": "À chaque étape du commerce international, à vos côtés avec plus de 30 ans d'expérience.",
+    "story_title": "Votre partenaire de solutions mondial",
+    "story_p1": "Inter Trans MMS (Multi Modal Services) est un partenaire de solutions de bout en bout en transport international et national, courtage en douane et logistique. En réunissant fret aérien, maritime et routier sous un même toit, nous livrons votre fret en toute sécurité à destination.",
+    "story_p2": "Grâce à notre solide réseau de partenaires internationaux, notre équipe expérimentée et notre gestion de processus basée sur la technologie, nous assurons transparence et traçabilité à chaque expédition. Du fret de projet complexe aux expéditions groupées quotidiennes — nous sommes à vos côtés à toute échelle.",
+    "values_section_title": "Mission, vision et valeurs",
+    "values_section_subtitle": "Les principes fondamentaux qui guident notre façon de travailler.",
+    "values": {
+      "mission_title": "Notre mission",
+      "mission_text": "Gérer la chaîne d'approvisionnement de nos clients de la manière la plus efficace, transparente et fiable, en offrant un avantage concurrentiel dans le commerce mondial.",
+      "vision_title": "Notre vision",
+      "vision_text": "Devenir la marque logistique de référence de la région, en combinant technologie et expertise humaine dans le transport multimodal.",
+      "values_title": "Nos valeurs",
+      "values_text": "Confiance, transparence, livraison à l'heure et orientation client constituent le fondement de toutes nos opérations."
+    },
+    "why_section_title": "Pourquoi Inter Trans MMS ?",
+    "why_section_subtitle": "Les principaux avantages auxquels font confiance les entreprises qui nous choisissent."
+  },
+  "services": {
+    "meta_title": "Nos services",
+    "meta_description": "Fret aérien, transport maritime et routier, courtage en douane, logistique & entreposage et fret de projet — services Inter Trans MMS.",
+    "page_title": "Nos services",
+    "page_subtitle": "Des solutions intégrées de bout en bout en transport, douane et logistique.",
+    "section_title": "Solutions logistiques de bout en bout",
+    "section_subtitle": "Nous déterminons ensemble le mode de transport et le plan opérationnel les plus adaptés à vos besoins.",
+    "scope_title": "Notre périmètre",
+    "others_title": "Autres services",
+    "not_found": "Service introuvable",
+    "items": {
+      "hava-kargo": {
+        "title": "Fret aérien",
+        "excerpt": "Solutions de fret aérien rapides et sûres vers toutes les destinations. Options express.",
+        "description": "Pour vos expéditions sensibles au temps, nous fournissons un service de fret aérien rapide, sûr et traçable via notre réseau de compagnies aériennes mondial. Nous planifions la solution la plus adaptée avec des options standard, express et groupées.",
+        "features": [
+          "Fret aérien express et standard",
+          "Services de groupage",
+          "Livraison de porte à porte",
+          "Transport de marchandises dangereuses (DGR)"
+        ],
+        "highlights": [
+          { "title": "Rapidité", "text": "Solutions le jour même/lendemain pour expéditions urgentes." },
+          { "title": "Réseau", "text": "Connexions directes vers les principaux aéroports." },
+          { "title": "Suivi", "text": "Mises à jour de statut en temps réel basées sur le vol." }
+        ]
+      },
+      "deniz-tasimaciligi": {
+        "title": "Transport maritime",
+        "excerpt": "Transport en conteneur complet (FCL), groupage (LCL) et projets spéciaux.",
+        "description": "Nous offrons des tarifs de fret compétitifs et des connexions de lignes fiables pour vos cargaisons FCL, LCL et projets spéciaux. Avec une gestion d'opération de port à port de bout en bout, votre cargaison est en sécurité.",
+        "features": [
+          "FCL — Transport en conteneur complet",
+          "LCL — Groupage de cargaisons",
+          "Conteneurs reefer (chaîne du froid)",
+          "Opérations portuaires et terminales"
+        ],
+        "highlights": [
+          { "title": "FCL & LCL", "text": "Solutions de conteneurs flexibles pour tout volume." },
+          { "title": "Réseau de lignes", "text": "Partenariats solides avec les armateurs dans le monde." },
+          { "title": "Coût", "text": "Fret optimisé selon le volume." }
+        ]
+      },
+      "kara-yolu": {
+        "title": "Transport routier",
+        "excerpt": "National et international. Express, groupage et température contrôlée.",
+        "description": "Solutions complètes (FTL) et groupage (LTL) pour le transport routier national et international. Avec un transport à température contrôlée, ADR et standard, nous offrons un accès continu à l'Europe et aux pays voisins.",
+        "features": [
+          "FTL — Camion complet",
+          "LTL — Groupage",
+          "Transport à température contrôlée (frigorifique)",
+          "ADR — Transport de marchandises dangereuses"
+        ],
+        "highlights": [
+          { "title": "Ligne Europe", "text": "Transit rapide via un réseau de services réguliers." },
+          { "title": "Flexibilité", "text": "Options de chargement complet et partiel." },
+          { "title": "Chaîne du froid", "text": "Transport contrôlé pour cargaisons sensibles." }
+        ]
+      },
+      "lojistik-depolama": {
+        "title": "Logistique & Entreposage",
+        "excerpt": "Stockage sécurisé, préparation de commandes, cross-docking et entrepôt sous douane.",
+        "description": "Avec notre infrastructure d'entrepôt moderne, nous offrons stockage à court et long terme, gestion des stocks, préparation de commandes (pick & pack), cross-docking et services d'entrepôt sous douane. Gérez votre chaîne d'approvisionnement depuis un point unique.",
+        "features": [
+          "Stockage court/long terme",
+          "Cross-docking",
+          "Entrepôt sous douane",
+          "Gestion des stocks et préparation de commandes"
+        ],
+        "highlights": [
+          { "title": "Sous douane", "text": "Avantage fiscal avec stock sous douane." },
+          { "title": "Espace flexible", "text": "Stockage qui s'adapte à vos besoins." },
+          { "title": "Valeur ajoutée", "text": "Étiquetage, emballage, pick & pack." }
+        ]
+      },
+      "gumruk": {
+        "title": "Douane Import – Export",
+        "excerpt": "Gérez vos opérations en toute sécurité grâce à notre courtage en douane agréé.",
+        "description": "Avec nos courtiers en douane agréés, nous gérons vos opérations d'importation, d'exportation et de transit en pleine conformité avec la réglementation. Nous accélérons vos processus grâce à la préparation des déclarations, aux régimes douaniers et au conseil.",
+        "features": [
+          "Déclarations d'import & export",
+          "Opérations de transit",
+          "Régimes douaniers spéciaux",
+          "Conseil en douane"
+        ],
+        "highlights": [
+          { "title": "Conformité", "text": "Opérations en pleine conformité avec la réglementation en vigueur." },
+          { "title": "Rapidité", "text": "Solutions rapides pour les processus de déclaration et d'approbation." },
+          { "title": "Conseil", "text": "Choix du bon régime et planification des coûts." }
+        ]
+      },
+      "proje-tasimaciligi": {
+        "title": "Fret de projet",
+        "excerpt": "Solutions de transport pour cargaisons lourdes, hors gabarit et projets spéciaux.",
+        "description": "Solutions de transport basées sur l'ingénierie pour vos cargaisons lourdes, hors gabarit et projets spéciaux. Nous planifions de bout en bout les projets les plus complexes avec études d'itinéraire, processus de permis, équipements spéciaux et gestion d'assurance.",
+        "features": [
+          "Cargaisons lourdes & hors gabarit",
+          "Planification d'itinéraire & permis",
+          "Équipement spécial et chargement",
+          "Assurance & gestion des risques"
+        ],
+        "highlights": [
+          { "title": "Ingénierie", "text": "Étude de cargaison et faisabilité d'itinéraire." },
+          { "title": "Permis", "text": "Coordination des permis officiels et de l'escorte." },
+          { "title": "Risque", "text": "Plan d'assurance et de sécurité complet." }
+        ]
+      }
+    }
+  },
+  "why_us": {
+    "global_network_title": "Réseau mondial",
+    "global_network_text": "Service continu grâce à un réseau de partenaires intégré dans le monde entier.",
+    "expertise_title": "Expertise",
+    "expertise_text": "Connaissance approfondie du secteur en transport, douane et logistique.",
+    "tracking_title": "Traçabilité complète",
+    "tracking_text": "Suivi en temps réel et rapports transparents à chaque étape.",
+    "single_contact_title": "Point de contact unique",
+    "single_contact_text": "Un seul point de contact pour toute la chaîne d'approvisionnement.",
+    "custom_title": "Solutions sur mesure",
+    "custom_text": "Plans logistiques personnalisés selon vos besoins."
+  },
+  "stats": {
+    "experience": "Années d'expérience",
+    "countries": "Réseau de pays",
+    "shipments": "Expéditions annuelles",
+    "on_time": "Livraisons à l'heure"
+  },
+  "contact_page": {
+    "meta_title": "Contact",
+    "meta_description": "Contactez Inter Trans MMS. Demandez un devis par adresse, téléphone, e-mail ou WhatsApp.",
+    "page_title": "Contact",
+    "page_subtitle": "Contactez-nous pour vos questions ou demandes de devis.",
+    "panel_title": "Contactez-nous",
+    "panel_subtitle": "Contactez-nous via l'un des canaux ci-dessous ou remplissez le formulaire pour demander un devis.",
+    "address_label": "Adresse",
+    "phone_label": "Téléphone",
+    "email_label": "E-mail",
+    "whatsapp_label": "WhatsApp",
+    "hours_label": "Heures d'ouverture",
+    "hours_value": "En semaine 09h00 – 18h00",
+    "map_title": "Carte"
+  },
+  "contact_form": {
+    "title": "Devis & Contact",
+    "subtitle": "Remplissez le formulaire, notre équipe vous répondra dans les plus brefs délais.",
+    "name": "Nom complet",
+    "name_ph": "Nom complet",
+    "company": "Entreprise",
+    "company_ph": "Nom de l'entreprise",
+    "email": "E-mail",
+    "email_ph": "exemple@entreprise.com",
+    "phone": "Téléphone",
+    "phone_ph": "+90 5XX XXX XX XX",
+    "transport": "Type de transport",
+    "transport_select": "Sélectionner",
+    "weight": "Poids (kg)",
+    "weight_ph": "Ex : 1500",
+    "loading": "Lieu de chargement",
+    "loading_ph": "Ville / Pays",
+    "destination": "Destination",
+    "destination_ph": "Ville / Pays",
+    "details": "Détails",
+    "details_ph": "Type de cargaison, emballage, exigences spéciales...",
+    "success": "Votre demande a été reçue. (Démo) — Le backend du formulaire sera bientôt activé.",
+    "transport_types": {
+      "air": "Fret aérien",
+      "sea_fcl": "Maritime (FCL)",
+      "sea_lcl": "Maritime (LCL)",
+      "road": "Routier",
+      "multimodal": "Multimodal",
+      "customs": "Douane",
+      "storage": "Entreposage"
+    }
+  },
+  "tracking": {
+    "meta_title": "Suivi d'expédition",
+    "meta_description": "Interrogez l'état actuel de votre expédition en temps réel avec votre numéro de suivi, BL ou CMR.",
+    "page_title": "Suivi d'expédition",
+    "page_subtitle": "Vérifiez le statut de votre expédition avec numéro de suivi, BL ou CMR.",
+    "widget_label": "Suivi d'expédition",
+    "widget_ph": "N° de suivi / BL / CMR",
+    "shipment": "Expédition",
+    "demo_note": "* Affichage démo. Le suivi en direct sera activé bientôt avec CargoTrack.",
+    "steps": {
+      "received": "Reçu",
+      "customs": "Douane",
+      "in_transit": "En transit",
+      "delivered": "Livré"
+    },
+    "features_title": "",
+    "features": {
+      "live_title": "Statut en direct",
+      "live_text": "Voyez chaque étape de votre expédition de la prise en charge à la livraison.",
+      "notify_title": "Notifications",
+      "notify_text": "Alertes automatiques en cas de changements de statut critiques (bientôt).",
+      "documents_title": "Accès aux documents",
+      "documents_text": "Accédez aux documents tels que BL, CMR et factures via le portail (bientôt)."
+    },
+    "demo_banner": "Cette page est actuellement en mode démo. Le suivi d'expédition en direct sera bientôt activé via l'intégration CargoTrack."
+  },
+  "portal": {
+    "meta_title": "Portail Client",
+    "meta_description": "Portail client Inter Trans MMS — accédez à vos documents, suivi d'expédition et opérations depuis un point unique.",
+    "page_title": "Portail Client",
+    "page_subtitle": "Vos documents, suivi d'expédition et opérations en un seul endroit.",
+    "tabs": {
+      "login": "Connexion",
+      "register": "Créer un compte"
+    },
+    "login_intro": "Connectez-vous à votre compte pour accéder à vos documents, suivi d'expédition et toutes vos opérations.",
+    "login_user_ph": "Nom d'utilisateur ou E-mail",
+    "login_pass_ph": "Mot de passe",
+    "login_demo_msg": "L'infrastructure de connexion sera bientôt activée. (Démo)",
+    "register_intro": "Créez un compte client professionnel pour accéder à tous nos services.",
+    "register_demo_msg": "L'infrastructure d'inscription sera bientôt activée. (Démo)",
+    "tags": {
+      "document_dl": "Téléchargement de documents",
+      "live_tracking": "Suivi en direct",
+      "history": "Historique des expéditions"
+    },
+    "register_fields": {
+      "company": "Nom de l'entreprise *",
+      "company_ph": "Nom de l'entreprise",
+      "address": "Adresse physique",
+      "address_ph": "Rue, quartier, district",
+      "postal": "Code postal",
+      "postal_ph": "34000",
+      "city": "Ville",
+      "city_ph": "Izmir",
+      "country": "Pays",
+      "country_ph": "Türkiye",
+      "person": "Personne autorisée",
+      "person_ph": "Nom complet",
+      "phone": "Téléphone",
+      "phone_ph": "+90 5xx xxx xx xx",
+      "email": "E-mail",
+      "email_ph": "personne@entreprise.com",
+      "tax": "Numéro fiscal",
+      "tax_ph": "1234567890",
+      "mersis": "N° MERSIS",
+      "mersis_ph": "0123456789012345",
+      "eori": "N° EORI",
+      "eori_ph": "TR123456789",
+      "billing_email": "E-mail facturation",
+      "billing_email_ph": "facturation@entreprise.com"
+    }
+  },
+  "cta": {
+    "default_title": "Planifions ensemble la meilleure solution pour votre cargaison",
+    "default_text": "Notre équipe d'experts préparera un devis et un plan opérationnel sur mesure dans les plus brefs délais.",
+    "service_title": "Demandez un devis pour {{service}} dès maintenant"
+  },
+  "footer": {
+    "tagline": "Votre partenaire mondial en transport, douane et logistique. Service intégré de bout en bout par voie aérienne, maritime et routière.",
+    "quick_links": "Liens rapides",
+    "services": "Services",
+    "contact": "Contact",
+    "copyright": "© 2026 Inter Trans MMS. Tous droits réservés.",
+    "privacy": "Confidentialité",
+    "terms": "Conditions d'utilisation",
+    "kvkk": "Protection des données"
+  }
+}

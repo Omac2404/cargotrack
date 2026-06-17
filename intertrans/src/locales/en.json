@@ -1,0 +1,326 @@
+{
+  "nav": {
+    "home": "Home",
+    "services": "Services",
+    "about": "About",
+    "tracking": "Shipment Tracking",
+    "contact": "Contact",
+    "quote_cta": "Get a Quote",
+    "portal_cta": "Customer Portal",
+    "menu_label": "Menu"
+  },
+  "buttons": {
+    "all_services": "All services",
+    "service_details": "Details",
+    "details": "Details",
+    "submit": "Submit",
+    "send": "Send",
+    "login": "Log In",
+    "register": "Create Account",
+    "forgot_password": "Forgot Password",
+    "track": "Track",
+    "examine_services": "Explore Services",
+    "quote_for_service": "Get a quote for this service"
+  },
+  "home": {
+    "hero_badge": "International Transportation & Logistics",
+    "hero_title_a": "Your Global Partner in",
+    "hero_title_b": "Transport, Customs and Logistics",
+    "hero_subtitle": "International and domestic transportation — air, sea, road — customs brokerage, warehousing, logistics and real-time shipment tracking.",
+    "floating": {
+      "air_title": "Air Cargo",
+      "air_text": "Fast delivery to all destinations",
+      "sea_title": "Sea Freight",
+      "sea_text": "FCL, LCL and special projects",
+      "road_title": "Road Transport",
+      "road_text": "Domestic & international"
+    },
+    "services_section_title": "Our Services",
+    "services_section_subtitle": "End-to-end integrated solutions in transportation, customs and logistics.",
+    "why_section_title": "Why Choose Us?",
+    "why_section_subtitle": "With over 30 years of experience, we stand by you at every step of international trade."
+  },
+  "about": {
+    "meta_title": "About",
+    "meta_description": "Inter Trans MMS — A trusted partner with over 30 years of experience in international transportation, customs and logistics.",
+    "page_title": "About Us",
+    "page_subtitle": "At every step of international trade, by your side with over 30 years of experience.",
+    "story_title": "Your Global Solution Partner",
+    "story_p1": "Inter Trans MMS (Multi Modal Services) is an end-to-end solution partner in international and domestic transportation, customs brokerage and logistics. By bringing air, sea and road freight under one roof, we deliver your cargo safely to its destination.",
+    "story_p2": "With our strong international partner network, experienced team and technology-driven process management, we ensure transparency and traceability in every shipment. From complex project cargo to daily LCL shipments — we are with you at every scale.",
+    "values_section_title": "Mission, Vision & Values",
+    "values_section_subtitle": "The core principles that shape how we work.",
+    "values": {
+      "mission_title": "Our Mission",
+      "mission_text": "To manage our customers' supply chains in the most efficient, transparent and reliable way, providing competitive advantage in global trade.",
+      "vision_title": "Our Vision",
+      "vision_text": "To become the region's reference logistics brand, combining technology and human expertise in multimodal transportation.",
+      "values_title": "Our Values",
+      "values_text": "Trust, transparency, on-time delivery and customer focus form the foundation of all our operations."
+    },
+    "why_section_title": "Why Inter Trans MMS?",
+    "why_section_subtitle": "The key advantages trusted by companies that choose us."
+  },
+  "services": {
+    "meta_title": "Our Services",
+    "meta_description": "Air cargo, sea and road transportation, customs brokerage, logistics & warehousing and project cargo — Inter Trans MMS services.",
+    "page_title": "Our Services",
+    "page_subtitle": "End-to-end integrated solutions in transportation, customs and logistics.",
+    "section_title": "End-to-End Logistics Solutions",
+    "section_subtitle": "Together we determine the most suitable transport mode and operational plan for your needs.",
+    "scope_title": "Our Scope",
+    "others_title": "Other Services",
+    "not_found": "Service not found",
+    "items": {
+      "hava-kargo": {
+        "title": "Air Cargo",
+        "excerpt": "Fast and secure air cargo solutions to all destinations. Express options.",
+        "description": "For your time-sensitive shipments, we provide fast, secure and traceable air cargo service through our worldwide airline network. We plan the most suitable solution with standard, express and consolidated options.",
+        "features": [
+          "Express and standard air cargo",
+          "Consolidation services",
+          "Door-to-door delivery",
+          "Dangerous Goods (DGR) transport"
+        ],
+        "highlights": [
+          { "title": "Speed", "text": "Same/next day solutions for urgent shipments." },
+          { "title": "Network", "text": "Direct connections to major airports." },
+          { "title": "Tracking", "text": "Flight-based real-time status updates." }
+        ]
+      },
+      "deniz-tasimaciligi": {
+        "title": "Sea Freight",
+        "excerpt": "Full container (FCL), less-than-container (LCL) and special project transport.",
+        "description": "We offer competitive freight rates and reliable line connections for your FCL, LCL and special project cargo. With end-to-end port-to-port operation management, your cargo is secure.",
+        "features": [
+          "FCL — Full container shipping",
+          "LCL — Less-than-container consolidation",
+          "Reefer (cold chain) containers",
+          "Port and terminal operations"
+        ],
+        "highlights": [
+          { "title": "FCL & LCL", "text": "Flexible container solutions for every volume." },
+          { "title": "Line network", "text": "Strong carrier partnerships worldwide." },
+          { "title": "Cost", "text": "Freight optimized by volume." }
+        ]
+      },
+      "kara-yolu": {
+        "title": "Road Transport",
+        "excerpt": "Domestic and international. Express, LTL and temperature-controlled.",
+        "description": "Full truckload (FTL) and less-than-truckload (LTL) solutions for domestic and international road transport. With temperature-controlled, ADR-certified and standard transportation, we provide seamless access to Europe and neighboring countries.",
+        "features": [
+          "FTL — Full truckload",
+          "LTL — Less-than-truckload",
+          "Temperature-controlled (reefer) transport",
+          "ADR — Dangerous goods transport"
+        ],
+        "highlights": [
+          { "title": "Europe line", "text": "Fast transit via regular service network." },
+          { "title": "Flexibility", "text": "Full and partial load options." },
+          { "title": "Cold chain", "text": "Controlled transport for sensitive cargo." }
+        ]
+      },
+      "lojistik-depolama": {
+        "title": "Logistics & Warehousing",
+        "excerpt": "Secure storage, order fulfillment, cross-docking and bonded warehousing.",
+        "description": "With our modern warehouse infrastructure, we offer short- and long-term storage, inventory management, order fulfillment (pick & pack), cross-docking and bonded warehouse services. Manage your supply chain from a single point.",
+        "features": [
+          "Short/long-term storage",
+          "Cross-docking",
+          "Bonded warehouse",
+          "Inventory management and order fulfillment"
+        ],
+        "highlights": [
+          { "title": "Bonded WH", "text": "Tax advantage with bonded inventory." },
+          { "title": "Flexible space", "text": "Storage that scales to your needs." },
+          { "title": "Value-add", "text": "Labeling, packaging, pick & pack." }
+        ]
+      },
+      "gumruk": {
+        "title": "Customs Import – Export",
+        "excerpt": "Manage your operations safely with our licensed customs brokerage.",
+        "description": "With our licensed customs brokers, we handle your import, export and transit operations in full compliance with regulations. We accelerate your processes with declaration preparation, customs regimes and consultancy.",
+        "features": [
+          "Import & export declarations",
+          "Transit operations",
+          "Special customs regimes",
+          "Customs consultancy"
+        ],
+        "highlights": [
+          { "title": "Compliance", "text": "Operations in full compliance with current regulations." },
+          { "title": "Speed", "text": "Quick solutions for declaration and approval processes." },
+          { "title": "Consultancy", "text": "Right regime and cost planning." }
+        ]
+      },
+      "proje-tasimaciligi": {
+        "title": "Project Cargo",
+        "excerpt": "Heavy cargo, out-of-gauge and special project transport solutions.",
+        "description": "Engineering-based transport solutions for your heavy, out-of-gauge and special project cargo. We plan the most complex projects end-to-end with route surveys, permits, special equipment and insurance management.",
+        "features": [
+          "Heavy & out-of-gauge cargo",
+          "Route planning & permit processes",
+          "Special equipment and loading",
+          "Insurance & risk management"
+        ],
+        "highlights": [
+          { "title": "Engineering", "text": "Cargo survey and route feasibility." },
+          { "title": "Permits", "text": "Official permit and escort coordination." },
+          { "title": "Risk", "text": "Comprehensive insurance and safety plan." }
+        ]
+      }
+    }
+  },
+  "why_us": {
+    "global_network_title": "Global Network",
+    "global_network_text": "Seamless service through an integrated partner network worldwide.",
+    "expertise_title": "Expertise",
+    "expertise_text": "Deep industry knowledge in transportation, customs and logistics.",
+    "tracking_title": "Full Traceability",
+    "tracking_text": "Real-time tracking and transparent reporting at every step.",
+    "single_contact_title": "Single Point of Contact",
+    "single_contact_text": "One contact point for the entire supply chain.",
+    "custom_title": "Custom Solutions",
+    "custom_text": "Logistics plans tailored to your needs."
+  },
+  "stats": {
+    "experience": "Years of Experience",
+    "countries": "Country Network",
+    "shipments": "Annual Shipments",
+    "on_time": "On-Time Delivery"
+  },
+  "contact_page": {
+    "meta_title": "Contact",
+    "meta_description": "Contact Inter Trans MMS. Request a quote via address, phone, e-mail or WhatsApp.",
+    "page_title": "Contact",
+    "page_subtitle": "Reach us for your questions or quote requests.",
+    "panel_title": "Reach Us",
+    "panel_subtitle": "Contact us through any of the channels below or fill in the form to request a quote.",
+    "address_label": "Address",
+    "phone_label": "Phone",
+    "email_label": "E-mail",
+    "whatsapp_label": "WhatsApp",
+    "hours_label": "Business Hours",
+    "hours_value": "Weekdays 09:00 – 18:00",
+    "map_title": "Map"
+  },
+  "contact_form": {
+    "title": "Quote & Contact",
+    "subtitle": "Fill in the form and our team will get back to you as soon as possible.",
+    "name": "Full Name",
+    "name_ph": "Full Name",
+    "company": "Company",
+    "company_ph": "Company name",
+    "email": "E-mail",
+    "email_ph": "example@company.com",
+    "phone": "Phone",
+    "phone_ph": "+90 5XX XXX XX XX",
+    "transport": "Transport Type",
+    "transport_select": "Select",
+    "weight": "Weight (kg)",
+    "weight_ph": "e.g. 1500",
+    "loading": "Loading Place",
+    "loading_ph": "City / Country",
+    "destination": "Destination",
+    "destination_ph": "City / Country",
+    "details": "Details",
+    "details_ph": "Cargo type, packaging, special requirements...",
+    "success": "Your request has been received. (Demo) — The form backend will be activated soon.",
+    "transport_types": {
+      "air": "Air Cargo",
+      "sea_fcl": "Sea (FCL)",
+      "sea_lcl": "Sea (LCL)",
+      "road": "Road",
+      "multimodal": "Multimodal",
+      "customs": "Customs",
+      "storage": "Warehousing"
+    }
+  },
+  "tracking": {
+    "meta_title": "Shipment Tracking",
+    "meta_description": "Query the current status of your shipment in real time using your tracking number, BL or CMR.",
+    "page_title": "Shipment Tracking",
+    "page_subtitle": "Check your shipment status by tracking number, BL or CMR.",
+    "widget_label": "Shipment Tracking",
+    "widget_ph": "Tracking No / BL / CMR",
+    "shipment": "Shipment",
+    "demo_note": "* Demo display. Live tracking will be activated soon with CargoTrack.",
+    "steps": {
+      "received": "Received",
+      "customs": "Customs",
+      "in_transit": "In Transit",
+      "delivered": "Delivered"
+    },
+    "features_title": "",
+    "features": {
+      "live_title": "Live Status",
+      "live_text": "See every stage of your shipment from pickup to delivery.",
+      "notify_title": "Notifications",
+      "notify_text": "Automatic alerts on critical status changes (coming soon).",
+      "documents_title": "Document Access",
+      "documents_text": "Access documents like BL, CMR and invoices via the portal (coming soon)."
+    },
+    "demo_banner": "This page is currently in demo mode. Live shipment tracking will be activated soon via CargoTrack integration."
+  },
+  "portal": {
+    "meta_title": "Customer Portal",
+    "meta_description": "Inter Trans MMS customer portal — access your documents, shipment tracking and operations from a single point.",
+    "page_title": "Customer Portal",
+    "page_subtitle": "Your documents, shipment tracking and operations in one place.",
+    "tabs": {
+      "login": "Log In",
+      "register": "Create Account"
+    },
+    "login_intro": "Log in to your account to access your documents, shipment tracking and all your operations.",
+    "login_user_ph": "Username or E-mail",
+    "login_pass_ph": "Password",
+    "login_demo_msg": "Login infrastructure will be activated soon. (Demo)",
+    "register_intro": "Create a professional customer account to access all our services.",
+    "register_demo_msg": "Registration infrastructure will be activated soon. (Demo)",
+    "tags": {
+      "document_dl": "Document Download",
+      "live_tracking": "Live Tracking",
+      "history": "Shipment History"
+    },
+    "register_fields": {
+      "company": "Company Name *",
+      "company_ph": "Company / Firm name",
+      "address": "Physical Address",
+      "address_ph": "Street, neighborhood, district",
+      "postal": "Postal Code",
+      "postal_ph": "34000",
+      "city": "City",
+      "city_ph": "Izmir",
+      "country": "Country",
+      "country_ph": "Türkiye",
+      "person": "Authorized Person",
+      "person_ph": "Full Name",
+      "phone": "Phone",
+      "phone_ph": "+90 5xx xxx xx xx",
+      "email": "E-mail",
+      "email_ph": "person@company.com",
+      "tax": "Tax Number",
+      "tax_ph": "1234567890",
+      "mersis": "MERSIS No",
+      "mersis_ph": "0123456789012345",
+      "eori": "EORI No",
+      "eori_ph": "TR123456789",
+      "billing_email": "Billing E-mail",
+      "billing_email_ph": "billing@company.com"
+    }
+  },
+  "cta": {
+    "default_title": "Let's plan the best solution for your cargo together",
+    "default_text": "Our expert team will prepare a tailored quote and operational plan as soon as possible.",
+    "service_title": "Get a quote for {{service}} now"
+  },
+  "footer": {
+    "tagline": "Your global partner in transportation, customs and logistics. End-to-end integrated service across air, sea and road.",
+    "quick_links": "Quick Links",
+    "services": "Services",
+    "contact": "Contact",
+    "copyright": "© 2026 Inter Trans MMS. All rights reserved.",
+    "privacy": "Privacy",
+    "terms": "Terms of Use",
+    "kvkk": "Data Protection"
+  }
+}

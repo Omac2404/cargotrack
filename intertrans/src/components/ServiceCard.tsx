@@ -1,8 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import type { Service } from "@/lib/data";
+import { useTranslation } from "react-i18next";
+import type { ServiceMeta } from "@/lib/data";
 
-export default function ServiceCard({ service }: { service: Service }) {
+export default function ServiceCard({ service }: { service: ServiceMeta }) {
+  const { t } = useTranslation();
   const Icon = service.icon;
   return (
     <Link
@@ -19,14 +23,14 @@ export default function ServiceCard({ service }: { service: Service }) {
             <Icon size={20} />
           </span>
           <h3 className="font-display text-lg font-bold text-navy">
-            {service.title}
+            {t(`services.items.${service.slug}.title`)}
           </h3>
         </div>
         <p className="flex-1 text-sm leading-relaxed text-slate-500">
-          {service.excerpt}
+          {t(`services.items.${service.slug}.excerpt`)}
         </p>
         <span className="mt-4 inline-flex items-center gap-1.5 font-display text-sm font-semibold text-orange transition-transform group-hover:gap-2.5">
-          Detaylar <ArrowRight size={16} />
+          {t("buttons.details")} <ArrowRight size={16} />
         </span>
       </div>
     </Link>

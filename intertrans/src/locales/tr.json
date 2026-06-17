@@ -1,0 +1,326 @@
+{
+  "nav": {
+    "home": "Ana Sayfa",
+    "services": "Hizmetler",
+    "about": "Hakkımızda",
+    "tracking": "Gönderi Takip",
+    "contact": "İletişim",
+    "quote_cta": "Teklif Al",
+    "portal_cta": "Müşteri Portalı",
+    "menu_label": "Menü"
+  },
+  "buttons": {
+    "all_services": "Tüm hizmetler",
+    "service_details": "Detaylar",
+    "details": "Detaylar",
+    "submit": "Gönder",
+    "send": "Gönder",
+    "login": "Giriş Yap",
+    "register": "Hesap Oluştur",
+    "forgot_password": "Şifremi Unuttum",
+    "track": "Takip Et",
+    "examine_services": "Hizmetleri İncele",
+    "quote_for_service": "Bu hizmet için teklif al"
+  },
+  "home": {
+    "hero_badge": "Uluslararası Taşımacılık & Lojistik",
+    "hero_title_a": "Taşımacılık, Gümrük ve Lojistikte",
+    "hero_title_b": "Küresel Çözüm Ortağınız",
+    "hero_subtitle": "Uluslararası ve yurt içi taşımacılık — hava, deniz, kara yolu — gümrük müşavirliği, depolama, lojistik ve anlık gönderi takibi.",
+    "floating": {
+      "air_title": "Hava Kargo",
+      "air_text": "Tüm destinasyonlara hızlı teslimat",
+      "sea_title": "Deniz Taşımacılığı",
+      "sea_text": "FCL, LCL ve özel projeler",
+      "road_title": "Kara Yolu",
+      "road_text": "Yurt içi & uluslararası"
+    },
+    "services_section_title": "Hizmetlerimiz",
+    "services_section_subtitle": "Taşımacılık, gümrük ve lojistik alanında uçtan uca entegre çözümler sunuyoruz.",
+    "why_section_title": "Neden Bizi Tercih Etmelisiniz?",
+    "why_section_subtitle": "30 yılı aşkın tecrübemizle uluslararası ticaretin her adımında yanınızdayız."
+  },
+  "about": {
+    "meta_title": "Hakkımızda",
+    "meta_description": "Inter Trans MMS — 30 yılı aşkın tecrübesiyle uluslararası taşımacılık, gümrük ve lojistikte güvenilir çözüm ortağı.",
+    "page_title": "Hakkımızda",
+    "page_subtitle": "Uluslararası ticaretin her adımında, 30 yılı aşkın tecrübeyle yanınızdayız.",
+    "story_title": "Küresel Çözüm Ortağınız",
+    "story_p1": "Inter Trans MMS (Multi Modal Services), uluslararası ve yurt içi taşımacılık, gümrük müşavirliği ve lojistik alanında uçtan uca hizmet sunan bir çözüm ortağıdır. Hava, deniz ve kara yolu taşımacılığını tek çatı altında birleştirerek yükünüzü güvenle hedefine ulaştırıyoruz.",
+    "story_p2": "Güçlü uluslararası partner ağımız, deneyimli ekibimiz ve teknolojiye dayalı süreç yönetimimizle her gönderide şeffaflık ve izlenebilirlik sağlıyoruz. Karmaşık proje taşımalarından günlük parsiyel sevkiyatlara kadar her ölçekte yanınızdayız.",
+    "values_section_title": "Misyon, Vizyon & Değerler",
+    "values_section_subtitle": "İş yapış biçimimizi şekillendiren temel ilkeler.",
+    "values": {
+      "mission_title": "Misyonumuz",
+      "mission_text": "Müşterilerimizin tedarik zincirini en verimli, şeffaf ve güvenilir şekilde yöneterek küresel ticarette rekabet avantajı sağlamak.",
+      "vision_title": "Vizyonumuz",
+      "vision_text": "Çok modlu taşımacılıkta teknolojiyi ve insan uzmanlığını birleştiren, bölgenin referans lojistik markası olmak.",
+      "values_title": "Değerlerimiz",
+      "values_text": "Güven, şeffaflık, zamanında teslim ve müşteri odaklılık tüm operasyonlarımızın temelini oluşturur."
+    },
+    "why_section_title": "Neden Inter Trans MMS?",
+    "why_section_subtitle": "Bizi tercih eden firmaların güvendiği başlıca avantajlar."
+  },
+  "services": {
+    "meta_title": "Hizmetlerimiz",
+    "meta_description": "Hava kargo, deniz ve kara yolu taşımacılığı, gümrük müşavirliği, lojistik & depolama ve proje taşımacılığı — Inter Trans MMS hizmetleri.",
+    "page_title": "Hizmetlerimiz",
+    "page_subtitle": "Taşımacılık, gümrük ve lojistikte uçtan uca entegre çözümler.",
+    "section_title": "Uçtan Uca Lojistik Çözümleri",
+    "section_subtitle": "İhtiyacınıza en uygun taşıma modunu ve operasyon planını birlikte belirliyoruz.",
+    "scope_title": "Kapsamımız",
+    "others_title": "Diğer Hizmetler",
+    "not_found": "Hizmet bulunamadı",
+    "items": {
+      "hava-kargo": {
+        "title": "Hava Kargo",
+        "excerpt": "Tüm destinasyonlara hızlı ve güvenli hava kargo çözümleri. Ekspres seçenekler.",
+        "description": "Zamana duyarlı gönderileriniz için dünya genelindeki havayolu ağımızla hızlı, güvenli ve izlenebilir hava kargo hizmeti sunuyoruz. Standart, ekspres ve konsolide seçeneklerle ihtiyacınıza en uygun çözümü planlıyoruz.",
+        "features": [
+          "Ekspres ve standart hava kargo",
+          "Konsolidasyon hizmetleri",
+          "Kapıdan kapıya teslimat",
+          "Tehlikeli madde (DGR) taşımacılığı"
+        ],
+        "highlights": [
+          { "title": "Hız", "text": "Acil gönderiler için aynı/ertesi gün çözümler." },
+          { "title": "Ağ", "text": "Başlıca havalimanlarına doğrudan bağlantılar." },
+          { "title": "Takip", "text": "Uçuş bazlı anlık durum bilgilendirmesi." }
+        ]
+      },
+      "deniz-tasimaciligi": {
+        "title": "Deniz Taşımacılığı",
+        "excerpt": "Tam konteyner (FCL), parsiyel (LCL) ve özel proje taşımacılığı.",
+        "description": "Tam konteyner (FCL), parsiyel (LCL) ve özel proje yükleriniz için rekabetçi navlun oranları ve güvenilir hat bağlantıları sunuyoruz. Limanlar arası uçtan uca operasyon yönetimiyle yükünüz güvende.",
+        "features": [
+          "FCL — Tam konteyner taşımacılığı",
+          "LCL — Parsiyel yük konsolidasyonu",
+          "Reefer (soğuk zincir) konteyner",
+          "Liman ve terminal operasyonları"
+        ],
+        "highlights": [
+          { "title": "FCL & LCL", "text": "Her hacme uygun esnek konteyner çözümleri." },
+          { "title": "Hat ağı", "text": "Dünya genelinde güçlü armatör iş birlikleri." },
+          { "title": "Maliyet", "text": "Hacme göre optimize edilmiş navlun." }
+        ]
+      },
+      "kara-yolu": {
+        "title": "Kara Yolu Taşımacılığı",
+        "excerpt": "Yurt içi ve uluslararası. Ekspres, parsiyel ve sıcaklık kontrollü.",
+        "description": "Yurt içi ve uluslararası kara yolu taşımacılığında komple (FTL) ve parsiyel (LTL) çözümler. Sıcaklık kontrollü, ADR'li ve standart taşımalarla Avrupa ve komşu ülkelere kesintisiz erişim sağlıyoruz.",
+        "features": [
+          "FTL — Komple araç taşımacılığı",
+          "LTL — Parsiyel taşımacılık",
+          "Sıcaklık kontrollü (frigorifik) taşıma",
+          "ADR — Tehlikeli madde taşımacılığı"
+        ],
+        "highlights": [
+          { "title": "Avrupa hattı", "text": "Düzenli sefer ağıyla hızlı transit." },
+          { "title": "Esneklik", "text": "Komple ve parsiyel seçenekler." },
+          { "title": "Soğuk zincir", "text": "Hassas yükler için kontrollü taşıma." }
+        ]
+      },
+      "lojistik-depolama": {
+        "title": "Lojistik & Depolama",
+        "excerpt": "Güvenli depolama, sipariş hazırlama, cross-docking ve antrepo.",
+        "description": "Modern depo altyapımızla kısa ve uzun vadeli depolama, stok yönetimi, sipariş hazırlama (pick & pack), cross-docking ve gümrük altı antrepo hizmetleri sunuyoruz. Tedarik zincirinizi tek noktadan yönetin.",
+        "features": [
+          "Kısa/uzun vadeli depolama",
+          "Cross-docking",
+          "Antrepo (gümrük altı)",
+          "Stok yönetimi ve sipariş hazırlama"
+        ],
+        "highlights": [
+          { "title": "Antrepo", "text": "Gümrük altı stok ve vergi avantajı." },
+          { "title": "Esnek alan", "text": "İhtiyacınıza göre ölçeklenen depolama." },
+          { "title": "Katma değer", "text": "Etiketleme, paketleme, pick & pack." }
+        ]
+      },
+      "gumruk": {
+        "title": "Gümrük İthalat – İhracat",
+        "excerpt": "Yetkili gümrük müşavirliği ile işlemlerinizi güvenle yönetiyoruz.",
+        "description": "Yetkili gümrük müşavirlerimizle ithalat, ihracat ve transit işlemlerinizi mevzuata tam uyumla yürütüyoruz. Beyanname hazırlama, gümrük rejimleri ve danışmanlık ile süreçlerinizi hızlandırıyoruz.",
+        "features": [
+          "İthalat & ihracat beyannameleri",
+          "Transit işlemleri",
+          "Özel gümrük rejimleri",
+          "Gümrük danışmanlığı"
+        ],
+        "highlights": [
+          { "title": "Uyum", "text": "Güncel mevzuata tam uyumlu işlemler." },
+          { "title": "Hız", "text": "Beyanname ve onay süreçlerinde hızlı çözüm." },
+          { "title": "Danışmanlık", "text": "Doğru rejim ve maliyet planlaması." }
+        ]
+      },
+      "proje-tasimaciligi": {
+        "title": "Proje Taşımacılığı",
+        "excerpt": "Ağır yük, gabari dışı ve özel proje taşımacılığı çözümleri.",
+        "description": "Ağır, gabari dışı ve özel proje yükleriniz için mühendislik temelli taşıma çözümleri. Rota etüdü, izin süreçleri, özel ekipman ve sigorta yönetimiyle en karmaşık projeleri uçtan uca planlıyoruz.",
+        "features": [
+          "Ağır & gabari dışı yükler",
+          "Rota planlama & izin süreçleri",
+          "Özel ekipman ve yükleme",
+          "Sigorta & risk yönetimi"
+        ],
+        "highlights": [
+          { "title": "Mühendislik", "text": "Yük etüdü ve rota fizibilitesi." },
+          { "title": "İzinler", "text": "Resmi izin ve eskort koordinasyonu." },
+          { "title": "Risk", "text": "Kapsamlı sigorta ve güvenlik planı." }
+        ]
+      }
+    }
+  },
+  "why_us": {
+    "global_network_title": "Uluslararası Ağ",
+    "global_network_text": "Dünya genelinde entegre partner ağı ile kesintisiz hizmet.",
+    "expertise_title": "Uzmanlık",
+    "expertise_text": "Taşımacılık, gümrük ve lojistikte derin sektör bilgisi.",
+    "tracking_title": "Tam İzlenebilirlik",
+    "tracking_text": "Her adımda anlık takip ve şeffaf bilgilendirme.",
+    "single_contact_title": "Tek Muhatap",
+    "single_contact_text": "Tüm tedarik zinciri için tek bir iletişim noktası.",
+    "custom_title": "Özel Çözümler",
+    "custom_text": "İhtiyacınıza göre özelleştirilmiş lojistik planları."
+  },
+  "stats": {
+    "experience": "Yıl Tecrübe",
+    "countries": "Ülke Ağı",
+    "shipments": "Yıllık Gönderi",
+    "on_time": "Zamanında Teslim"
+  },
+  "contact_page": {
+    "meta_title": "İletişim",
+    "meta_description": "Inter Trans MMS ile iletişime geçin. Adres, telefon, e-posta ve WhatsApp üzerinden teklif talep edin.",
+    "page_title": "İletişim",
+    "page_subtitle": "Sorularınız veya teklif talepleriniz için bize ulaşın.",
+    "panel_title": "Bize Ulaşın",
+    "panel_subtitle": "Aşağıdaki kanallardan dilediğiniz biriyle bize ulaşabilir veya formu doldurarak teklif talep edebilirsiniz.",
+    "address_label": "Adres",
+    "phone_label": "Telefon",
+    "email_label": "E-posta",
+    "whatsapp_label": "WhatsApp",
+    "hours_label": "Çalışma Saatleri",
+    "hours_value": "Hafta içi 09:00 – 18:00",
+    "map_title": "Harita"
+  },
+  "contact_form": {
+    "title": "Teklif & İletişim",
+    "subtitle": "Formu doldurun, ekibimiz en kısa sürede dönüş yapsın.",
+    "name": "Ad Soyad",
+    "name_ph": "Ad Soyad",
+    "company": "Firma",
+    "company_ph": "Firma adı",
+    "email": "E-posta",
+    "email_ph": "ornek@firma.com",
+    "phone": "Telefon",
+    "phone_ph": "+90 5XX XXX XX XX",
+    "transport": "Taşıma Türü",
+    "transport_select": "Seçiniz",
+    "weight": "Ağırlık (kg)",
+    "weight_ph": "Örn: 1500",
+    "loading": "Yükleme Yeri",
+    "loading_ph": "Şehir / Ülke",
+    "destination": "Varış Yeri",
+    "destination_ph": "Şehir / Ülke",
+    "details": "Detaylar",
+    "details_ph": "Yük cinsi, ambalaj, özel gereksinimler...",
+    "success": "Talebiniz alındı. (Demo) — Form altyapısı yakında devreye girecek.",
+    "transport_types": {
+      "air": "Hava Kargo",
+      "sea_fcl": "Deniz (FCL)",
+      "sea_lcl": "Deniz (LCL)",
+      "road": "Kara Yolu",
+      "multimodal": "Çok Modlu",
+      "customs": "Gümrük",
+      "storage": "Depolama"
+    }
+  },
+  "tracking": {
+    "meta_title": "Gönderi Takip",
+    "meta_description": "Takip numaranız, BL veya CMR ile gönderinizin güncel durumunu anlık olarak sorgulayın.",
+    "page_title": "Gönderi Takip",
+    "page_subtitle": "Takip No, BL veya CMR numaranızla gönderinizi sorgulayın.",
+    "widget_label": "Gönderi Takip",
+    "widget_ph": "Takip No / BL / CMR",
+    "shipment": "Gönderi",
+    "demo_note": "* Demo gösterimi. Canlı takip yakında CargoTrack ile aktif olacak.",
+    "steps": {
+      "received": "Teslim Alındı",
+      "customs": "Gümrük",
+      "in_transit": "Yolda",
+      "delivered": "Teslim Edildi"
+    },
+    "features_title": "",
+    "features": {
+      "live_title": "Anlık Durum",
+      "live_text": "Gönderinizin teslim alımından teslimata kadar her aşamasını görün.",
+      "notify_title": "Bilgilendirme",
+      "notify_text": "Önemli durum değişikliklerinde otomatik bildirim (yakında).",
+      "documents_title": "Belge Erişimi",
+      "documents_text": "BL, CMR ve fatura gibi belgelerinize portal üzerinden ulaşın (yakında)."
+    },
+    "demo_banner": "Bu sayfa şu anda demo modundadır. Canlı gönderi takibi yakında CargoTrack entegrasyonu ile aktif olacaktır."
+  },
+  "portal": {
+    "meta_title": "Müşteri Portalı",
+    "meta_description": "Inter Trans MMS müşteri portalı — belgelerinize, gönderi takibinize ve işlemlerinize tek noktadan erişin.",
+    "page_title": "Müşteri Portalı",
+    "page_subtitle": "Belgeleriniz, gönderi takibiniz ve işlemleriniz tek noktada.",
+    "tabs": {
+      "login": "Giriş Yap",
+      "register": "Hesap Oluştur"
+    },
+    "login_intro": "Hesabınıza giriş yaparak belgelerinize, gönderi takibinize ve tüm işlemlerinize erişin.",
+    "login_user_ph": "Kullanıcı Adı veya E-posta",
+    "login_pass_ph": "Şifre",
+    "login_demo_msg": "Giriş altyapısı yakında devreye girecek. (Demo)",
+    "register_intro": "Profesyonel müşteri hesabı oluşturarak tüm hizmetlerimize erişim sağlayın.",
+    "register_demo_msg": "Kayıt altyapısı yakında devreye girecek. (Demo)",
+    "tags": {
+      "document_dl": "Belge İndirme",
+      "live_tracking": "Anlık Takip",
+      "history": "Gönderi Geçmişi"
+    },
+    "register_fields": {
+      "company": "Şirket Adı *",
+      "company_ph": "Şirket / Firma adı",
+      "address": "Fiziksel Adres",
+      "address_ph": "Sokak, mahalle, ilçe",
+      "postal": "Posta Kodu",
+      "postal_ph": "34000",
+      "city": "Şehir",
+      "city_ph": "İzmir",
+      "country": "Ülke",
+      "country_ph": "Türkiye",
+      "person": "Yetkili Kişi",
+      "person_ph": "Ad Soyad",
+      "phone": "Telefon",
+      "phone_ph": "+90 5xx xxx xx xx",
+      "email": "E-posta",
+      "email_ph": "yetkili@sirket.com",
+      "tax": "Vergi Numarası",
+      "tax_ph": "1234567890",
+      "mersis": "MERSİS No",
+      "mersis_ph": "0123456789012345",
+      "eori": "EORI No",
+      "eori_ph": "TR123456789",
+      "billing_email": "Fatura E-posta",
+      "billing_email_ph": "fatura@sirket.com"
+    }
+  },
+  "cta": {
+    "default_title": "Yükünüz için en uygun çözümü birlikte planlayalım",
+    "default_text": "Uzman ekibimiz ihtiyacınıza özel teklif ve operasyon planını en kısa sürede hazırlar.",
+    "service_title": "{{service}} için hemen teklif alın"
+  },
+  "footer": {
+    "tagline": "Taşımacılık, gümrük ve lojistikte küresel çözüm ortağınız. Hava, deniz ve kara yolunda uçtan uca entegre hizmet.",
+    "quick_links": "Hızlı Erişim",
+    "services": "Hizmetler",
+    "contact": "İletişim",
+    "copyright": "© 2026 Inter Trans MMS. Tüm hakları saklıdır.",
+    "privacy": "Gizlilik",
+    "terms": "Kullanım Koşulları",
+    "kvkk": "KVKK"
+  }
+}

@@ -1,4 +1,6 @@
-import type { Metadata } from "next";
+"use client";
+
+import { useTranslation } from "react-i18next";
 import PageHero from "@/components/PageHero";
 import SectionHeader from "@/components/SectionHeader";
 import ServiceCard from "@/components/ServiceCard";
@@ -6,24 +8,19 @@ import Reveal from "@/components/Reveal";
 import CtaBand from "@/components/CtaBand";
 import { services } from "@/lib/data";
 
-export const metadata: Metadata = {
-  title: "Hizmetlerimiz",
-  description:
-    "Hava kargo, deniz ve kara yolu taşımacılığı, gümrük müşavirliği, lojistik & depolama ve proje taşımacılığı — Inter Trans MMS hizmetleri.",
-};
-
 export default function HizmetlerPage() {
+  const { t } = useTranslation();
   return (
     <>
       <PageHero
-        title="Hizmetlerimiz"
-        subtitle="Taşımacılık, gümrük ve lojistikte uçtan uca entegre çözümler."
+        title={t("services.page_title")}
+        subtitle={t("services.page_subtitle")}
       />
       <section className="section bg-slate-50">
         <div className="container-x">
           <SectionHeader
-            title="Uçtan Uca Lojistik Çözümleri"
-            subtitle="İhtiyacınıza en uygun taşıma modunu ve operasyon planını birlikte belirliyoruz."
+            title={t("services.section_title")}
+            subtitle={t("services.section_subtitle")}
           />
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {services.map((s, i) => (

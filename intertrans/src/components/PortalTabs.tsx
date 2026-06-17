@@ -2,26 +2,30 @@
 
 import { useState } from "react";
 import { LogIn, UserPlus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
-const registerFields: { id: string; label: string; type?: string; full?: boolean; placeholder?: string }[] = [
-  { id: "company", label: "Şirket Adı *", full: true, placeholder: "Şirket / Firma adı" },
-  { id: "address", label: "Fiziksel Adres", full: true, placeholder: "Sokak, mahalle, ilçe" },
-  { id: "postal", label: "Posta Kodu", placeholder: "34000" },
-  { id: "city", label: "Şehir", placeholder: "İzmir" },
-  { id: "country", label: "Ülke", placeholder: "Türkiye" },
-  { id: "person", label: "Yetkili Kişi", placeholder: "Ad Soyad" },
-  { id: "phone", label: "Telefon", type: "tel", placeholder: "+90 5xx xxx xx xx" },
-  { id: "email", label: "E-posta", type: "email", placeholder: "yetkili@sirket.com" },
-  { id: "tax", label: "Vergi Numarası", placeholder: "1234567890" },
-  { id: "mersis", label: "MERSİS No", placeholder: "0123456789012345" },
-  { id: "eori", label: "EORI No", full: true, placeholder: "TR123456789" },
-  { id: "billingEmail", label: "Fatura E-posta", type: "email", full: true, placeholder: "fatura@sirket.com" },
+type RegisterFieldDef = { id: string; key: string; type?: string; full?: boolean };
+
+const registerFields: RegisterFieldDef[] = [
+  { id: "company",      key: "company",       full: true },
+  { id: "address",      key: "address",       full: true },
+  { id: "postal",       key: "postal" },
+  { id: "city",         key: "city" },
+  { id: "country",      key: "country" },
+  { id: "person",       key: "person" },
+  { id: "phone",        key: "phone",         type: "tel" },
+  { id: "email",        key: "email",         type: "email" },
+  { id: "tax",          key: "tax" },
+  { id: "mersis",       key: "mersis" },
+  { id: "eori",         key: "eori",          full: true },
+  { id: "billingEmail", key: "billing_email", type: "email", full: true },
 ];
 
 const field =
   "w-full rounded-[10px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-blue focus:bg-white focus:ring-2 focus:ring-blue/10";
 
 export default function PortalTabs() {
+  const { t } = useTranslation();
   const [tab, setTab] = useState<"login" | "register">("login");
   const [msg, setMsg] = useState<string | null>(null);
 
@@ -37,7 +41,7 @@ export default function PortalTabs() {
               : "text-slate-500"
           }`}
         >
-          <LogIn size={16} /> Giriş Yap
+          <LogIn size={16} /> {t("portal.tabs.login")}
         </button>
         <button
           onClick={() => setTab("register")}
@@ -47,7 +51,7 @@ export default function PortalTabs() {
               : "text-slate-500"
           }`}
         >
-          <UserPlus size={16} /> Hesap Oluştur
+          <UserPlus size={16} /> {t("portal.tabs.register")}
         </button>
       </div>
 
@@ -55,29 +59,28 @@ export default function PortalTabs() {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            setMsg("Giriş altyapısı yakında devreye girecek. (Demo)");
+            setMsg(t("portal.login_demo_msg"));
           }}
           className="flex flex-col gap-3"
         >
           <p className="mb-2 text-center text-sm text-slate-500">
-            Hesabınıza giriş yaparak belgelerinize, gönderi takibinize ve tüm
-            işlemlerinize erişin.
+            {t("portal.login_intro")}
           </p>
-          <input className={field} placeholder="Kullanıcı Adı veya E-posta" />
-          <input className={field} type="password" placeholder="Şifre" />
+          <input className={field} placeholder={t("portal.login_user_ph")} />
+          <input className={field} type="password" placeholder={t("portal.login_pass_ph")} />
           <button type="submit" className="btn-secondary w-full">
-            Giriş Yap
+            {t("buttons.login")}
           </button>
           <a href="#" className="text-center text-sm text-orange">
-            Şifremi Unuttum
+            {t("buttons.forgot_password")}
           </a>
           <div className="mt-3 flex flex-wrap justify-center gap-2 border-t border-slate-100 pt-4">
-            {["Belge İndirme", "Anlık Takip", "Gönderi Geçmişi"].map((s) => (
+            {(["document_dl", "live_tracking", "history"] as const).map((k) => (
               <span
-                key={s}
+                key={k}
                 className="rounded-full bg-slate-50 px-3 py-1 text-xs text-slate-600"
               >
-                {s}
+                {t(`portal.tags.${k}`)}
               </span>
             ))}
           </div>
@@ -86,29 +89,28 @@ export default function PortalTabs() {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            setMsg("Kayıt altyapısı yakında devreye girecek. (Demo)");
+            setMsg(t("portal.register_demo_msg"));
           }}
         >
           <p className="mb-5 text-center text-sm text-slate-500">
-            Profesyonel müşteri hesabı oluşturarak tüm hizmetlerimize erişim
-            sağlayın.
+            {t("portal.register_intro")}
           </p>
           <div className="grid gap-4 sm:grid-cols-2">
             {registerFields.map((f) => (
               <div key={f.id} className={f.full ? "sm:col-span-2" : ""}>
                 <label className="mb-1.5 block text-sm font-semibold text-slate-700">
-                  {f.label}
+                  {t(`portal.register_fields.${f.key}`)}
                 </label>
                 <input
                   className={field}
                   type={f.type ?? "text"}
-                  placeholder={f.placeholder}
+                  placeholder={t(`portal.register_fields.${f.key}_ph`)}
                 />
               </div>
             ))}
           </div>
           <button type="submit" className="btn-primary mt-6 w-full">
-            Hesap Oluştur
+            {t("buttons.register")}
           </button>
         </form>
       )}

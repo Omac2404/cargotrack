@@ -2,18 +2,20 @@
 
 import { useState } from "react";
 import { Send } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
-const transportTypes = [
-  "Hava Kargo",
-  "Deniz (FCL)",
-  "Deniz (LCL)",
-  "Kara Yolu",
-  "Çok Modlu",
-  "Gümrük",
-  "Depolama",
-];
+const TRANSPORT_KEYS = [
+  "air",
+  "sea_fcl",
+  "sea_lcl",
+  "road",
+  "multimodal",
+  "customs",
+  "storage",
+] as const;
 
 export default function ContactForm() {
+  const { t } = useTranslation();
   const [sent, setSent] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -31,68 +33,66 @@ export default function ContactForm() {
       onSubmit={handleSubmit}
       className="rounded-2xl border border-slate-200 bg-white p-7 shadow-[var(--shadow-card)]"
     >
-      <h3 className="mb-1 text-xl font-bold text-navy">Teklif & İletişim</h3>
-      <p className="mb-6 text-sm text-slate-500">
-        Formu doldurun, ekibimiz en kısa sürede dönüş yapsın.
-      </p>
+      <h3 className="mb-1 text-xl font-bold text-navy">{t("contact_form.title")}</h3>
+      <p className="mb-6 text-sm text-slate-500">{t("contact_form.subtitle")}</p>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label className={label}>Ad Soyad</label>
-          <input className={field} type="text" placeholder="Ad Soyad" />
+          <label className={label}>{t("contact_form.name")}</label>
+          <input className={field} type="text" placeholder={t("contact_form.name_ph")} />
         </div>
         <div>
-          <label className={label}>Firma</label>
-          <input className={field} type="text" placeholder="Firma adı" />
+          <label className={label}>{t("contact_form.company")}</label>
+          <input className={field} type="text" placeholder={t("contact_form.company_ph")} />
         </div>
         <div>
-          <label className={label}>E-posta</label>
-          <input className={field} type="email" placeholder="ornek@firma.com" />
+          <label className={label}>{t("contact_form.email")}</label>
+          <input className={field} type="email" placeholder={t("contact_form.email_ph")} />
         </div>
         <div>
-          <label className={label}>Telefon</label>
-          <input className={field} type="tel" placeholder="+90 5XX XXX XX XX" />
+          <label className={label}>{t("contact_form.phone")}</label>
+          <input className={field} type="tel" placeholder={t("contact_form.phone_ph")} />
         </div>
         <div>
-          <label className={label}>Taşıma Türü</label>
+          <label className={label}>{t("contact_form.transport")}</label>
           <select className={field} defaultValue="">
             <option value="" disabled>
-              Seçiniz
+              {t("contact_form.transport_select")}
             </option>
-            {transportTypes.map((t) => (
-              <option key={t}>{t}</option>
+            {TRANSPORT_KEYS.map((k) => (
+              <option key={k}>{t(`contact_form.transport_types.${k}`)}</option>
             ))}
           </select>
         </div>
         <div>
-          <label className={label}>Ağırlık (kg)</label>
-          <input className={field} type="text" placeholder="Örn: 1500" />
+          <label className={label}>{t("contact_form.weight")}</label>
+          <input className={field} type="text" placeholder={t("contact_form.weight_ph")} />
         </div>
         <div>
-          <label className={label}>Yükleme Yeri</label>
-          <input className={field} type="text" placeholder="Şehir / Ülke" />
+          <label className={label}>{t("contact_form.loading")}</label>
+          <input className={field} type="text" placeholder={t("contact_form.loading_ph")} />
         </div>
         <div>
-          <label className={label}>Varış Yeri</label>
-          <input className={field} type="text" placeholder="Şehir / Ülke" />
+          <label className={label}>{t("contact_form.destination")}</label>
+          <input className={field} type="text" placeholder={t("contact_form.destination_ph")} />
         </div>
         <div className="sm:col-span-2">
-          <label className={label}>Detaylar</label>
+          <label className={label}>{t("contact_form.details")}</label>
           <textarea
             className={`${field} min-h-28 resize-y`}
-            placeholder="Yük cinsi, ambalaj, özel gereksinimler..."
+            placeholder={t("contact_form.details_ph")}
           />
         </div>
       </div>
 
       {sent && (
         <p className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-center text-sm font-semibold text-emerald-700">
-          Talebiniz alındı. (Demo) — Form altyapısı yakında devreye girecek.
+          {t("contact_form.success")}
         </p>
       )}
 
       <button type="submit" className="btn-primary mt-6 w-full">
-        <Send size={18} /> Gönder
+        <Send size={18} /> {t("buttons.send")}
       </button>
     </form>
   );
