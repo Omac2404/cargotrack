@@ -1,0 +1,17 @@
+node_modules
+.next
+.git
+.gitignore
+.dockerignore
+Dockerfile
+README.md
+AGENTS.md
+CLAUDE.md
+.claude
+.specstory
+npm-debug.log
+.DS_Store
+Thumbs.db
+
+# Eski referans kodları — runtime'da gerek yok
+legacy/

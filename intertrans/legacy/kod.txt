@@ -1,0 +1,418 @@
+<?php
+/**
+ * Plugin Name: Inter Trans MMS - Kurumsal Sayfa
+ * Description: [intertrans_page] shortcode ile calisan tek sayfalik kurumsal site.
+ * Version: 2.0.0
+ * Author: Inter Trans MMS
+ */
+if (!defined('ABSPATH')) exit;
+add_action('wp_enqueue_scripts','itmms_enq');
+function itmms_enq(){global $post;if(is_a($post,'WP_Post')&&has_shortcode($post->post_content,'intertrans_page')){wp_enqueue_style('itmms-f','https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;700&display=swap',[],null);wp_add_inline_style('itmms-f',itmms_css());add_action('wp_footer','itmms_js',99);}}
+
+/* ══════ Admin Ayar Sayfası: CargoTrack API URL & Key ══════ */
+add_action('admin_menu','itmms_admin_menu');
+function itmms_admin_menu(){
+    add_options_page('Inter Trans MMS Ayarları','Inter Trans MMS','manage_options','itmms-settings','itmms_settings_page');
+}
+add_action('admin_init','itmms_register_settings');
+function itmms_register_settings(){
+    register_setting('itmms_settings','itmms_cargotrack_url');
+    register_setting('itmms_settings','itmms_cargotrack_api_key');
+}
+function itmms_settings_page(){
+    ?>
+    <div class="wrap">
+        <h1>Inter Trans MMS – Ayarlar</h1>
+        <form method="post" action="options.php">
+            <?php settings_fields('itmms_settings'); ?>
+            <table class="form-table">
+                <tr>
+                    <th>CargoTrack Site URL</th>
+                    <td>
+                        <input type="url" name="itmms_cargotrack_url" value="<?php echo esc_attr(get_option('itmms_cargotrack_url','')); ?>" class="regular-text" placeholder="https://cargotrack-site.com">
+                        <p class="description">CargoTrack eklentisinin kurulu olduğu sitenin URL'si. Sonuna / koymayın.</p>
+                    </td>
+                </tr>
+                <tr>
+                    <th>API Anahtarı</th>
+                    <td>
+                        <input type="text" name="itmms_cargotrack_api_key" value="<?php echo esc_attr(get_option('itmms_cargotrack_api_key','')); ?>" class="regular-text" placeholder="gizli-anahtar">
+                        <p class="description">CargoTrack tarafında tanımlanan API anahtarı. İki tarafta aynı olmalı.</p>
+                    </td>
+                </tr>
+            </table>
+            <?php submit_button('Kaydet'); ?>
+        </form>
+        <div class="card" style="padding:16px;max-width:600px;margin-top:20px;">
+            <h3>Kurulum Adımları</h3>
+            <ol>
+                <li>CargoTrack eklentisini güncelleyin (API endpoint desteği gerekli)</li>
+                <li>Yukarıya CargoTrack'in kurulu olduğu sitenin URL'sini girin</li>
+                <li>Her iki tarafta da aynı API anahtarını ayarlayın</li>
+                <li>Test: Sitenizden müşteri kayıt formunu doldurun, CargoTrack Rehber'de görünmeli</li>
+            </ol>
+        </div>
+    </div>
+    <?php
+}
+
+/* ══════ AJAX: Müşteri Kayıt → CargoTrack API'sine gönder ══════ */
+add_action('wp_ajax_itmms_register_customer','itmms_ajax_register_customer');
+add_action('wp_ajax_nopriv_itmms_register_customer','itmms_ajax_register_customer');
+function itmms_ajax_register_customer(){
+    $api_url = get_option('itmms_cargotrack_url','');
+    $api_key = get_option('itmms_cargotrack_api_key','');
+    if(empty($api_url)){wp_send_json_error(['message'=>'Sistem yapılandırması eksik. Lütfen yönetici ile iletişime geçin.']);return;}
+    $company = sanitize_text_field($_POST['company_name'] ?? '');
+    if(empty($company)){wp_send_json_error(['message'=>'Şirket adı zorunludur.']);return;}
+    $fields = ['company_name','physical_address','postal_code','city','country','contact_person','contact_email','contact_phone','tax_number','mersis_number','eori_number','billing_address','billing_email'];
+    $body = ['action'=>'ctapi_register_customer','api_key'=>$api_key];
+    foreach($fields as $f){
+        $body[$f] = sanitize_text_field($_POST[$f] ?? '');
+    }
+    $endpoint = rtrim($api_url,'/').'/wp-admin/admin-ajax.php';
+    $response = wp_remote_post($endpoint,[
+        'timeout'   => 15,
+        'body'      => $body,
+        'sslverify' => false,
+    ]);
+    if(is_wp_error($response)){
+        wp_send_json_error(['message'=>'Bağlantı hatası: '.$response->get_error_message()]);return;
+    }
+    $code = wp_remote_retrieve_response_code($response);
+    $raw_body = wp_remote_retrieve_body($response);
+    $data = json_decode($raw_body,true);
+    if($data && isset($data['success']) && $data['success']){
+        wp_send_json_success($data['data'] ?? ['message'=>'Kayıt başarılı!']);
+    } else {
+        $msg = isset($data['data']['message']) ? $data['data']['message'] : 'Kayıt sırasında bir hata oluştu.';
+        wp_send_json_error(['message'=>$msg]);
+    }
+}
+
+add_shortcode('intertrans_page','itmms_html');
+function itmms_html(){ob_start();?>
+<div id="itmms-root">
+<nav class="itmms-navbar" id="itmmsNavbar"><div class="itmms-container itmms-nav-inner">
+<a href="#itmms-hero" class="itmms-logo"><img src="https://webretawork2.com.tr/toprak/wp-content/uploads/2026/04/Gemini_Generated_Image_or0xm2or0xm2or0x-removebg-preview.png" alt="Inter Trans MMS" class="itmms-logo-img"></a>
+<div class="itmms-nav-links"><a href="#itmms-hizmetler" class="itmms-nav-btn">Hizmetler</a><a href="#itmms-neden-biz" class="itmms-nav-btn">Neden Biz</a><a href="#itmms-iletisim" class="itmms-nav-btn">İletişim</a><button class="itmms-nav-btn itmms-nav-accent" data-modal="itmmsModalTeklif">Teklif Al</button><button class="itmms-nav-btn itmms-nav-portal" data-modal="itmmsModalPortal">Müşteri Portalı</button></div>
+<div class="itmms-hamburger" id="itmmsHamburger"><span></span><span></span><span></span></div>
+</div></nav>
+
+<div class="itmms-mobile-menu" id="itmmsMobileMenu"><button class="itmms-close-btn" id="itmmsMobileClose">&times;</button><a href="#itmms-hizmetler" class="itmms-mobile-link">Hizmetler</a><a href="#itmms-neden-biz" class="itmms-mobile-link">Neden Biz</a><a href="#itmms-iletisim" class="itmms-mobile-link">İletişim</a><button class="itmms-mobile-link itmms-nav-btn" data-modal="itmmsModalPortal">Müşteri Portalı</button><button class="itmms-mobile-link itmms-nav-btn" data-modal="itmmsModalTeklif">Teklif Al</button></div>
+
+<!-- MODAL: Portal -->
+<div class="itmms-modal-overlay" id="itmmsModalPortal"><div class="itmms-modal itmms-modal-wide"><button class="itmms-modal-close">&times;</button>
+<div class="itmms-modal-tabs"><button class="itmms-tab active" data-tab="login">Giriş Yap</button><button class="itmms-tab" data-tab="register">Hesap Oluştur</button></div>
+<div class="itmms-tab-content active" data-tab-content="login"><p class="itmms-modal-desc">Hesabınıza giriş yaparak belgelerinize, gönderi takibinize ve tüm işlemlerinize erişin.</p><div class="itmms-modal-form"><input type="text" placeholder="Kullanıcı Adı veya E-posta"><input type="password" placeholder="Şifre"><button class="itmms-btn itmms-btn-secondary" style="width:100%;justify-content:center">Giriş Yap</button><a href="#" class="itmms-forgot">Şifremi Unuttum</a></div><div class="itmms-modal-features"><span>Belge İndirme</span><span>Anlık Takip</span><span>Gönderi Geçmişi</span></div></div>
+<div class="itmms-tab-content" data-tab-content="register"><p class="itmms-modal-desc">Profesyonel müşteri hesabı oluşturarak tüm hizmetlerimize erişim sağlayın.</p>
+<div class="itmms-modal-form itmms-quote-grid" id="itmmsRegisterForm">
+<div class="itmms-form-group itmms-full"><label>Şirket Adı *</label><input type="text" id="reg_company_name" placeholder="Şirket / Firma adı"></div>
+<div class="itmms-form-group itmms-full"><label>Fiziksel Adres</label><textarea id="reg_physical_address" placeholder="Sokak, mahalle, ilçe" rows="2"></textarea></div>
+<div class="itmms-form-group"><label>Posta Kodu</label><input type="text" id="reg_postal_code" placeholder="34000"></div>
+<div class="itmms-form-group"><label>Şehir</label><input type="text" id="reg_city" placeholder="İstanbul"></div>
+<div class="itmms-form-group"><label>Ülke</label><input type="text" id="reg_country" placeholder="Türkiye"></div>
+<div class="itmms-form-group"><label>Yetkili Kişi</label><input type="text" id="reg_contact_person" placeholder="Ad Soyad"></div>
+<div class="itmms-form-group"><label>Telefon</label><input type="tel" id="reg_contact_phone" placeholder="+90 5xx xxx xx xx"></div>
+<div class="itmms-form-group"><label>E-posta</label><input type="email" id="reg_contact_email" placeholder="yetkili@sirket.com"></div>
+<div class="itmms-form-group"><label>Vergi Numarası</label><input type="text" id="reg_tax_number" placeholder="1234567890"></div>
+<div class="itmms-form-group"><label>MERSİS No</label><input type="text" id="reg_mersis_number" placeholder="0123456789012345"></div>
+<div class="itmms-form-group itmms-full"><label>EORI No</label><input type="text" id="reg_eori_number" placeholder="TR123456789"></div>
+<div class="itmms-form-group itmms-full"><label>Faturalama Adresi</label><textarea id="reg_billing_address" placeholder="Fatura adresi (fiziksel adres ile farklıysa)" rows="2"></textarea></div>
+<div class="itmms-form-group itmms-full"><label>Fatura E-posta</label><input type="email" id="reg_billing_email" placeholder="fatura@sirket.com"></div>
+</div>
+<div id="itmmsRegisterMsg" style="display:none;padding:12px 16px;border-radius:10px;font-size:.88rem;font-weight:600;margin-top:12px;text-align:center"></div>
+<div style="margin-top:16px"><button class="itmms-btn itmms-btn-primary" style="width:100%;justify-content:center" id="itmmsRegisterBtn">Hesap Oluştur</button></div>
+</div>
+</div></div>
+
+<!-- MODAL: Teklif -->
+<div class="itmms-modal-overlay" id="itmmsModalTeklif"><div class="itmms-modal itmms-modal-wide"><button class="itmms-modal-close">&times;</button>
+<h3 class="itmms-modal-title">Teklif &amp; Online Rezervasyon</h3><p class="itmms-modal-desc">Kayıtlı profesyonel müşterilerimize özel hızlı fiyat teklifi ve online rezervasyon.</p>
+<div class="itmms-modal-form itmms-quote-grid">
+<div class="itmms-form-group"><label>Ad Soyad</label><input type="text" placeholder="Ad Soyad"></div>
+<div class="itmms-form-group"><label>Firma</label><input type="text" placeholder="Firma Adı"></div>
+<div class="itmms-form-group"><label>E-posta</label><input type="email" placeholder="ornek@firma.com"></div>
+<div class="itmms-form-group"><label>Telefon</label><input type="tel" placeholder="+90 5XX XXX XX XX"></div>
+<div class="itmms-form-group"><label>Taşıma Türü</label><select><option value="">Seçiniz</option><option>Hava Kargo</option><option>Deniz (FCL)</option><option>Deniz (LCL)</option><option>Kara Yolu</option><option>Çok Modlu</option><option>Gümrük</option><option>Depolama</option></select></div>
+<div class="itmms-form-group"><label>Yükleme Yeri</label><input type="text" placeholder="Şehir / Ülke"></div>
+<div class="itmms-form-group"><label>Varış Yeri</label><input type="text" placeholder="Şehir / Ülke"></div>
+<div class="itmms-form-group"><label>Ağırlık (kg)</label><input type="text" placeholder="Örn: 1500"></div>
+<div class="itmms-form-group itmms-full"><label>Detaylar</label><textarea placeholder="Yük cinsi, ambalaj, özel gereksinimler..."></textarea></div>
+</div>
+<p class="itmms-form-note">* Ekibimiz en kısa sürede dönüş sağlayacaktır.</p>
+<div style="text-align:center;margin-top:8px"><button class="itmms-btn itmms-btn-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Teklif Talebi Gönder</button></div>
+</div></div>
+
+<!-- HERO + TRACKING -->
+<section class="itmms-hero" id="itmms-hero"><div class="itmms-hero-glow"></div><div class="itmms-hero-glow-2"></div><div class="itmms-container"><div class="itmms-hero-inner">
+<div class="itmms-hero-content">
+<div class="itmms-hero-badge"><div class="itmms-dot"></div><span>Uluslararası Taşımacılık &amp; Lojistik</span></div>
+<h1>Taşımacılık, Gümrük ve Lojistikte <em>Küresel Çözüm Ortağınız</em></h1>
+<p>Uluslararası ve yurt içi taşımacılık — Hava, deniz, kara yolu — Gümrük müşavirliği — Depolama — Lojistik — Anlık gönderi takibi</p>
+<div class="itmms-hero-track"><label>Gönderi Takip</label><div class="itmms-tracking-input-wrap"><input type="text" id="itmmsTrackingInput" placeholder="Takip No / BL / CMR"><button id="itmmsTrackBtn">Takip Et</button></div>
+<div class="itmms-tracking-result" id="itmmsTrackingResult"><h4>Gönderi: <span id="itmmsTrackingNum"></span></h4><div class="itmms-tracking-steps" id="itmmsTrackingSteps"><div class="itmms-tracking-step done"><div class="itmms-step-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div><span>Teslim Alındı</span></div><div class="itmms-tracking-step done"><div class="itmms-step-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div><span>Gümrük</span></div><div class="itmms-tracking-step done"><div class="itmms-step-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div><span>Yolda</span></div><div class="itmms-tracking-step"><div class="itmms-step-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div><span>Teslim Edildi</span></div></div></div></div>
+</div>
+<div class="itmms-hero-visual"><div class="itmms-hero-card-stack">
+<div class="itmms-hero-float"><div class="itmms-hero-float-icon" style="background:rgba(21,101,192,.2)"><svg viewBox="0 0 24 24" fill="none" stroke="#1E88E5" stroke-width="2"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.4-.1.9.3 1.1l5.4 3.2-2.8 2.8-2 .7c-.3.1-.5.4-.4.7l.2.6c.1.3.4.5.7.4l2-.7 2.8-2.8 3.2 5.4c.2.4.7.5 1.1.3l.5-.3c.4-.2.6-.6.5-1.1z"/></svg></div><div class="itmms-hero-float-text"><h4>Hava Kargo</h4><p>Tüm destinasyonlara hızlı teslimat</p></div></div>
+<div class="itmms-hero-float" style="animation-delay:2s"><div class="itmms-hero-float-icon" style="background:rgba(0,121,107,.2)"><svg viewBox="0 0 24 24" fill="none" stroke="#00897B" stroke-width="2"><path d="M2 20h20"/><path d="M5 20V8l5-4 5 4v12"/><path d="M15 20V8l5 4v8"/><path d="M9 12h2"/><path d="M9 16h2"/></svg></div><div class="itmms-hero-float-text"><h4>Deniz Taşımacılığı</h4><p>FCL, LCL ve özel projeler</p></div></div>
+<div class="itmms-hero-float" style="animation-delay:4s"><div class="itmms-hero-float-icon" style="background:rgba(230,81,0,.2)"><svg viewBox="0 0 24 24" fill="none" stroke="#FF6D00" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div><div class="itmms-hero-float-text"><h4>Kara Yolu</h4><p>Yurt içi &amp; uluslararası</p></div></div>
+</div></div>
+</div></div></section>
+
+<!-- SERVICES -->
+<section class="itmms-services itmms-section" id="itmms-hizmetler"><div class="itmms-container">
+<div class="itmms-accent-line itmms-reveal"></div><h2 class="itmms-section-title itmms-reveal">Hizmetlerimiz</h2><p class="itmms-section-subtitle itmms-reveal">Taşımacılık, gümrük ve lojistik alanında uçtan uca entegre çözümler sunuyoruz.</p>
+<div class="itmms-services-grid">
+<div class="itmms-service-card itmms-reveal"><div class="itmms-service-img" style="background-image:url('https://images.pexels.com/photos/46148/aircraft-jet-landing-cloud-46148.jpeg?auto=compress&cs=tinysrgb&w=600')"></div><div class="itmms-service-body"><h3>Hava Kargo</h3><p>Tüm destinasyonlara hızlı ve güvenli hava kargo çözümleri. Ekspres seçenekler.</p></div></div>
+<div class="itmms-service-card itmms-reveal"><div class="itmms-service-img" style="background-image:url('https://images.pexels.com/photos/753331/pexels-photo-753331.jpeg?auto=compress&cs=tinysrgb&w=600')"></div><div class="itmms-service-body"><h3>Deniz Taşımacılığı</h3><p>Tam konteyner (FCL), parsiyel (LCL) ve özel proje taşımacılığı.</p></div></div>
+<div class="itmms-service-card itmms-reveal"><div class="itmms-service-img" style="background-image:url('https://images.pexels.com/photos/1267325/pexels-photo-1267325.jpeg?auto=compress&cs=tinysrgb&w=600')"></div><div class="itmms-service-body"><h3>Kara Yolu</h3><p>Yurt içi ve uluslararası. Ekspres, parsiyel ve sıcaklık kontrollü.</p></div></div>
+<div class="itmms-service-card itmms-reveal"><div class="itmms-service-img" style="background-image:url('https://images.pexels.com/photos/4481259/pexels-photo-4481259.jpeg?auto=compress&cs=tinysrgb&w=600')"></div><div class="itmms-service-body"><h3>Lojistik &amp; Depolama</h3><p>Güvenli depolama, sipariş hazırlama, cross-docking ve antrepo.</p><ul class="itmms-service-features"><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Kısa/uzun vadeli depolama</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Cross-docking</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Antrepo (gümrük altı)</li></ul></div></div>
+<div class="itmms-service-card itmms-reveal"><div class="itmms-service-img" style="background-image:url('https://images.pexels.com/photos/4481326/pexels-photo-4481326.jpeg?auto=compress&cs=tinysrgb&w=600')"></div><div class="itmms-service-body"><h3>Gümrük İthalat – İhracat</h3><p>Yetkili gümrük müşavirliği ile işlemlerinizi güvenle yönetiyoruz.</p><ul class="itmms-service-features"><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Beyannameler</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Transit işlemleri</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Özel gümrük rejimleri</li></ul></div></div>
+<div class="itmms-service-card itmms-reveal"><div class="itmms-service-img" style="background-image:url('https://images.pexels.com/photos/681335/pexels-photo-681335.jpeg?auto=compress&cs=tinysrgb&w=600')"></div><div class="itmms-service-body"><h3>Proje Taşımacılığı</h3><p>Ağır yük, gabari dışı ve özel proje taşımacılığı çözümleri.</p><ul class="itmms-service-features"><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Ağır &amp; gabari dışı yükler</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Rota planlama &amp; izin süreçleri</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Sigorta &amp; risk yönetimi</li></ul></div></div>
+</div></div></section>
+
+<!-- WHY US -->
+<section class="itmms-why-us itmms-section" id="itmms-neden-biz"><div class="itmms-container">
+<div class="itmms-accent-line itmms-reveal"></div><h2 class="itmms-section-title itmms-reveal" style="color:#fff">Neden Bizi Tercih Etmelisiniz?</h2><p class="itmms-section-subtitle itmms-reveal" style="color:rgba(255,255,255,.6)">30 yılı aşkın tecrübemizle uluslararası ticaretin her adımında yanınızdayız.</p>
+<div class="itmms-why-grid">
+<div class="itmms-why-card itmms-reveal"><div class="itmms-why-icon itmms-wi-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg></div><h4>Uluslararası Ağ</h4><p>Dünya genelinde entegre partner ağı ile kesintisiz hizmet.</p></div>
+<div class="itmms-why-card itmms-reveal"><div class="itmms-why-icon itmms-wi-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><h4>Uzmanlık</h4><p>Taşımacılık, gümrük ve lojistikte derin sektör bilgisi.</p></div>
+<div class="itmms-why-card itmms-reveal"><div class="itmms-why-icon itmms-wi-3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg></div><h4>Tam İzlenebilirlik</h4><p>Her adımda anlık takip ve şeffaf bilgilendirme.</p></div>
+<div class="itmms-why-card itmms-reveal"><div class="itmms-why-icon itmms-wi-4"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div><h4>Tek Muhatap</h4><p>Tüm tedarik zinciri için tek bir iletişim noktası.</p></div>
+<div class="itmms-why-card itmms-reveal"><div class="itmms-why-icon itmms-wi-5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div><h4>Özel Çözümler</h4><p>İhtiyacınıza göre özelleştirilmiş lojistik planları.</p></div>
+</div></div></section>
+
+<!-- CONTACT -->
+<section class="itmms-contact itmms-section" id="itmms-iletisim"><div class="itmms-container">
+<div class="itmms-accent-line itmms-reveal"></div><h2 class="itmms-section-title itmms-reveal" style="color:#fff">İletişim</h2><p class="itmms-section-subtitle itmms-reveal" style="color:rgba(255,255,255,.6)">Sorularınız veya teklif talepleriniz için bize ulaşın.</p>
+<div class="itmms-contact-grid">
+<div class="itmms-contact-form itmms-reveal"><input type="text" placeholder="Ad Soyad"><input type="email" placeholder="E-posta"><input type="tel" placeholder="Telefon"><textarea placeholder="Mesajınız"></textarea><button class="itmms-btn itmms-btn-primary" style="align-self:flex-start;padding:10px 24px;font-size:.88rem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Mesaj Gönder</button></div>
+<div class="itmms-contact-info itmms-reveal">
+<div class="itmms-contact-item"><div class="itmms-ci-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div><div><h4>Adres</h4><p>Alsancak Mah. 1453 Sok. No:12/A<br>Konak, İzmir – Türkiye</p></div></div>
+<div class="itmms-contact-item"><div class="itmms-ci-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.23.91.56 1.88.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.93.14 1.9.47 2.81.7A2 2 0 0122 16.92z"/></svg></div><div><h4>Telefon</h4><p><a href="tel:+902324251000">+90 (232) 425 10 00</a></p></div></div>
+<div class="itmms-contact-item"><div class="itmms-ci-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22 6 12 13 2 6"/></svg></div><div><h4>E-posta</h4><p><a href="mailto:info@intertransmms.com">info@intertransmms.com</a></p></div></div>
+<div class="itmms-contact-item"><div class="itmms-ci-icon" style="background:rgba(37,211,102,.15)"><svg viewBox="0 0 24 24" fill="none" stroke="#25D366" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg></div><div><h4>WhatsApp</h4><p><a href="https://wa.me/902324251000">+90 (232) 425 10 00</a></p></div></div>
+</div></div></div></section>
+
+<footer class="itmms-footer"><div class="itmms-container"><p>&copy; 2026 Inter Trans MMS. Tüm hakları saklıdır.</p><div class="itmms-footer-links"><a href="#">Gizlilik</a><a href="#">Kullanım Koşulları</a><a href="#">KVKK</a></div></div></footer>
+</div>
+<?php return ob_get_clean();}
+
+function itmms_css(){return '
+body.page #itmms-root,body #itmms-root{margin-top:0!important;padding-top:0!important}
+#itmms-root{margin-left:calc(-50vw + 50%)!important;margin-right:calc(-50vw + 50%)!important;width:100vw!important;max-width:100vw!important;position:relative}
+.entry-content:has(#itmms-root),.post-content:has(#itmms-root),.page-content:has(#itmms-root),.site-content:has(#itmms-root),.content-area:has(#itmms-root),article:has(#itmms-root),.ast-container:has(#itmms-root),.fl-post-content:has(#itmms-root),.elementor-widget-container:has(#itmms-root),.wp-block-post-content:has(#itmms-root){padding:0!important;margin:0!important;max-width:100%!important;width:100%!important;overflow:visible!important}
+#itmms-root,#itmms-root *,#itmms-root *::before,#itmms-root *::after{box-sizing:border-box;margin:0;padding:0}
+#itmms-root{--navy:#0B2545;--navy-deep:#061A33;--blue:#1565C0;--blue-light:#1E88E5;--blue-pale:#E3F2FD;--orange:#E65100;--orange-light:#FF6D00;--red:#D32F2F;--white:#fff;--gray-50:#F8FAFC;--gray-100:#F1F5F9;--gray-200:#E2E8F0;--gray-300:#CBD5E1;--gray-400:#94A3B8;--gray-500:#64748B;--gray-600:#475569;--gray-700:#334155;--radius:12px;--radius-lg:20px;--shadow-md:0 4px 20px rgba(11,37,69,.1);--shadow-lg:0 12px 40px rgba(11,37,69,.15);--transition:all .3s cubic-bezier(.4,0,.2,1);font-family:"DM Sans",sans-serif;color:var(--gray-700);line-height:1.7;overflow-x:hidden}
+#itmms-root h1,#itmms-root h2,#itmms-root h3,#itmms-root h4{font-family:"Plus Jakarta Sans",sans-serif;color:var(--navy);line-height:1.25}
+#itmms-root a{text-decoration:none;color:inherit}#itmms-root ul{list-style:none}
+#itmms-root .itmms-container{width:100%;max-width:1200px;margin:0 auto;padding:0 24px}
+#itmms-root .itmms-section{padding:100px 0}
+#itmms-root .itmms-section-title{font-size:clamp(1.75rem,4vw,2.5rem);font-weight:800;text-align:center;margin-bottom:16px;letter-spacing:-.02em}
+#itmms-root .itmms-section-subtitle{text-align:center;color:var(--gray-500);font-size:1.05rem;max-width:640px;margin:0 auto 56px}
+#itmms-root .itmms-accent-line{width:56px;height:4px;background:linear-gradient(90deg,var(--orange),var(--orange-light));border-radius:4px;margin:0 auto 20px}
+#itmms-root .itmms-navbar{position:fixed;top:0;left:0;right:0;z-index:100000;padding:14px 0;transition:var(--transition);background:transparent}
+body.admin-bar #itmms-root .itmms-navbar{top:32px}@media(max-width:782px){body.admin-bar #itmms-root .itmms-navbar{top:46px}}
+#itmms-root .itmms-navbar.scrolled{background:rgba(11,37,69,.97);backdrop-filter:blur(16px);padding:8px 0;box-shadow:0 2px 20px rgba(0,0,0,.15)}
+#itmms-root .itmms-nav-inner{display:flex;align-items:center;justify-content:center;gap:0}
+#itmms-root .itmms-logo{margin-right:auto}
+#itmms-root .itmms-logo-img{height:100px;width:auto}
+#itmms-root .itmms-nav-links{display:flex;align-items:center;gap:8px}
+#itmms-root .itmms-nav-links a,#itmms-root .itmms-nav-links button{padding:8px 16px;border-radius:7px;font-size:.8rem;font-weight:600;font-family:"Plus Jakarta Sans",sans-serif;transition:var(--transition);display:inline-flex;align-items:center;justify-content:center;height:36px;line-height:1;border:none;cursor:pointer;box-sizing:border-box;text-decoration:none;white-space:nowrap}
+#itmms-root .itmms-nav-links a.itmms-nav-btn{background:#fff;color:var(--orange)!important}
+#itmms-root .itmms-nav-links a.itmms-nav-btn:hover{background:var(--orange-light);color:#fff!important}
+#itmms-root .itmms-nav-links a:hover,#itmms-root .itmms-nav-links button:hover{background:var(--orange-light);transform:translateY(-1px)}
+#itmms-root .itmms-nav-btn{background:var(--orange);color:#fff!important;padding:8px 16px;border-radius:7px;font-weight:600;font-size:.8rem;font-family:"Plus Jakarta Sans",sans-serif;border:none;cursor:pointer;transition:var(--transition);display:inline-flex;align-items:center;justify-content:center;height:36px;line-height:1;box-sizing:border-box}
+#itmms-root .itmms-nav-btn:hover{background:var(--orange-light);transform:translateY(-1px)}
+#itmms-root .itmms-hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:8px}
+#itmms-root .itmms-hamburger span{width:24px;height:2px;background:#fff;border-radius:2px}
+#itmms-root .itmms-mobile-menu{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(11,37,69,.98);backdrop-filter:blur(20px);z-index:100001;flex-direction:column;justify-content:center;align-items:center;gap:24px;opacity:0;pointer-events:none;transition:opacity .3s}
+#itmms-root .itmms-mobile-menu.open{display:flex;opacity:1;pointer-events:all}
+#itmms-root .itmms-mobile-menu a,#itmms-root .itmms-mobile-menu button.itmms-mobile-link{color:#fff;font-size:1.2rem;font-weight:600;font-family:"Plus Jakarta Sans",sans-serif;background:none;border:none;cursor:pointer}
+#itmms-root .itmms-mobile-menu button.itmms-nav-btn{margin-top:8px}
+#itmms-root .itmms-close-btn{position:absolute;top:20px;right:24px;background:none;border:none;color:#fff;font-size:2rem;cursor:pointer}
+#itmms-root .itmms-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);z-index:200000;justify-content:center;align-items:center;padding:24px}
+#itmms-root .itmms-modal-overlay.open{display:flex}
+#itmms-root .itmms-modal{background:#fff;border-radius:var(--radius-lg);padding:40px 36px 36px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;position:relative;animation:itmmsModalIn .3s ease}
+#itmms-root .itmms-modal-wide{max-width:720px}
+@keyframes itmmsModalIn{from{opacity:0;transform:translateY(20px)scale(.97)}to{opacity:1;transform:none}}
+#itmms-root .itmms-modal-close{position:absolute;top:12px;right:12px;background:none;border:none;font-size:1.4rem;color:var(--gray-400);cursor:pointer;width:32px;height:32px;border-radius:0;display:flex;align-items:center;justify-content:center;transition:var(--transition);z-index:10;line-height:1;box-shadow:none}
+#itmms-root .itmms-modal-close:hover{background:none;color:var(--gray-700)}
+#itmms-root .itmms-modal-title{font-size:1.3rem;font-weight:800;margin-bottom:8px;text-align:center}
+#itmms-root .itmms-modal-desc{color:var(--gray-500);font-size:.9rem;text-align:center;margin-bottom:24px}
+#itmms-root .itmms-modal-tabs{display:flex;gap:4px;margin-bottom:24px;margin-top:4px;background:var(--gray-100);border-radius:10px;padding:4px}
+#itmms-root .itmms-tab{flex:1;padding:10px;border:none;background:transparent;border-radius:8px;font-weight:600;font-size:.9rem;font-family:"Plus Jakarta Sans",sans-serif;cursor:pointer;color:var(--gray-500);transition:var(--transition)}
+#itmms-root .itmms-tab.active{background:#fff;color:var(--navy);box-shadow:0 1px 4px rgba(0,0,0,.1)}
+#itmms-root .itmms-tab-content{display:none}#itmms-root .itmms-tab-content.active{display:block}
+#itmms-root .itmms-modal-form{display:flex;flex-direction:column;gap:12px}
+#itmms-root .itmms-modal-form input,#itmms-root .itmms-modal-form select,#itmms-root .itmms-modal-form textarea{padding:13px 16px;border-radius:10px;border:1.5px solid var(--gray-200);background:var(--gray-50);font-size:.95rem;font-family:"DM Sans",sans-serif;outline:none;transition:var(--transition);color:var(--gray-700);width:100%}
+#itmms-root .itmms-modal-form textarea{resize:vertical;min-height:80px}
+#itmms-root .itmms-modal-form input:focus,#itmms-root .itmms-modal-form select:focus,#itmms-root .itmms-modal-form textarea:focus{border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(21,101,192,.08)}
+#itmms-root .itmms-forgot{text-align:center;display:block;color:var(--orange);font-size:.85rem;margin-top:4px}
+#itmms-root .itmms-modal-features{display:flex;flex-wrap:nowrap;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid var(--gray-100);justify-content:center}
+#itmms-root .itmms-modal-features span{font-size:.78rem;color:var(--gray-600);background:var(--gray-50);padding:5px 12px;border-radius:20px;white-space:nowrap}
+#itmms-root .itmms-quote-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+#itmms-root .itmms-full{grid-column:1/-1}
+#itmms-root .itmms-form-group label{display:block;font-size:.82rem;font-weight:600;color:var(--gray-700);margin-bottom:4px}
+#itmms-root .itmms-form-note{text-align:center;color:var(--gray-400);font-size:.8rem;margin-top:12px}
+#itmms-root .itmms-btn{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border-radius:10px;font-weight:600;font-size:.95rem;font-family:"Plus Jakarta Sans",sans-serif;cursor:pointer;border:none;transition:var(--transition)}
+#itmms-root .itmms-btn-primary{background:linear-gradient(135deg,var(--orange),var(--orange-light));color:#fff;box-shadow:0 4px 20px rgba(230,81,0,.35)}
+#itmms-root .itmms-btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(230,81,0,.45)}
+#itmms-root .itmms-btn-secondary{background:var(--blue);color:#fff}
+#itmms-root .itmms-btn-secondary:hover{background:var(--blue-light);transform:translateY(-2px)}
+#itmms-root .itmms-btn svg{width:18px;height:18px}
+#itmms-root .itmms-hero{min-height:100vh;background:linear-gradient(165deg,rgba(6,26,51,.82),rgba(11,37,69,.75) 40%,rgba(13,59,110,.72)),url("https://webretawork2.com.tr/toprak/wp-content/uploads/2026/04/industrial-port-container-yard-scaled.jpg") center/cover no-repeat;position:relative;display:flex;align-items:center;overflow:hidden;margin-top:0!important}
+#itmms-root .itmms-hero::before{content:"";position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.03\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
+#itmms-root .itmms-hero-glow{position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(21,101,192,.25),transparent 70%);top:-100px;right:-100px;pointer-events:none}
+#itmms-root .itmms-hero-glow-2{position:absolute;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(230,81,0,.15),transparent 70%);bottom:-50px;left:-50px;pointer-events:none}
+#itmms-root .itmms-hero-inner{position:relative;z-index:2;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+#itmms-root .itmms-hero-content{padding:40px 0}
+#itmms-root .itmms-hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:40px;padding:8px 18px;margin-bottom:28px;backdrop-filter:blur(8px)}
+#itmms-root .itmms-hero-badge span{color:var(--orange-light);font-size:.8rem;font-weight:600;text-transform:uppercase;letter-spacing:1px}
+#itmms-root .itmms-dot{width:6px;height:6px;border-radius:50%;background:var(--orange);animation:itmmsPulse 2s infinite}
+@keyframes itmmsPulse{0%,100%{opacity:1}50%{opacity:.4}}
+#itmms-root .itmms-hero h1{font-size:clamp(2rem,4.5vw,3.2rem);color:#fff;font-weight:800;line-height:1.15;margin-bottom:20px;letter-spacing:-.03em}
+#itmms-root .itmms-hero h1 em{font-style:normal;color:var(--orange-light)}
+#itmms-root .itmms-hero p{color:rgba(255,255,255,.7);font-size:1.05rem;line-height:1.8;margin-bottom:28px;max-width:520px}
+#itmms-root .itmms-hero-track{margin-top:16px;max-width:560px;background:rgba(255,255,255,.06);backdrop-filter:blur(16px);border:1.5px solid rgba(255,255,255,.15);border-radius:16px;padding:28px 32px;box-shadow:0 8px 40px rgba(0,0,0,.3),0 0 60px rgba(21,101,192,.08),inset 0 1px 0 rgba(255,255,255,.08);position:relative}
+#itmms-root .itmms-hero-track::before{content:"";position:absolute;inset:-3px;border-radius:19px;background:rgba(255,255,255,.04);animation:itmmsPulseTrack 3s ease-in-out infinite;pointer-events:none;z-index:-1}
+@keyframes itmmsPulseTrack{0%,100%{opacity:.3;transform:scale(1)}50%{opacity:.08;transform:scale(1.015)}}
+#itmms-root .itmms-hero-track label{display:block;color:#fff;font-size:.9rem;font-weight:700;margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px}
+#itmms-root .itmms-tracking-input-wrap{display:flex;gap:0;align-items:stretch}
+#itmms-root .itmms-tracking-input-wrap input{flex:1;padding:0 18px;height:52px;border-radius:10px 0 0 10px;border:1.5px solid rgba(255,255,255,.2);border-right:none;background:rgba(255,255,255,.08);color:#fff;font-size:1rem;font-family:"DM Sans",sans-serif;outline:none;transition:var(--transition)}
+#itmms-root .itmms-tracking-input-wrap input::placeholder{color:rgba(255,255,255,.4)}
+#itmms-root .itmms-tracking-input-wrap input:focus{border-color:var(--blue-light);background:rgba(255,255,255,.14);box-shadow:0 0 0 3px rgba(21,101,192,.2)}
+#itmms-root .itmms-tracking-input-wrap button{padding:0 32px;height:52px;border-radius:0 10px 10px 0;background:linear-gradient(135deg,var(--blue),var(--blue-light));color:#fff;font-weight:700;font-size:1rem;font-family:"Plus Jakarta Sans",sans-serif;border:none;cursor:pointer;transition:var(--transition);white-space:nowrap}
+#itmms-root .itmms-tracking-input-wrap button:hover{background:linear-gradient(135deg,var(--blue-light),#42A5F5);box-shadow:0 6px 24px rgba(21,101,192,.4)}
+#itmms-root .itmms-tracking-result{margin-top:16px;padding:16px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;display:none}
+#itmms-root .itmms-tracking-result.active{display:block}
+#itmms-root .itmms-tracking-result h4{color:#fff;font-size:.95rem;margin-bottom:10px}
+#itmms-root .itmms-tracking-steps{display:flex;padding:8px 0}
+#itmms-root .itmms-tracking-step{flex:1;text-align:center;position:relative}
+#itmms-root .itmms-tracking-step::before{content:"";position:absolute;top:14px;left:0;right:0;height:3px;background:rgba(255,255,255,.1)}
+#itmms-root .itmms-tracking-step:first-child::before{left:50%}
+#itmms-root .itmms-tracking-step:last-child::before{right:50%}
+#itmms-root .itmms-step-dot{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;margin:0 auto 6px;position:relative;z-index:2}
+#itmms-root .itmms-tracking-step.done .itmms-step-dot{background:var(--blue);border-color:var(--blue-light)}
+#itmms-root .itmms-tracking-step.done .itmms-step-dot svg{color:#fff}
+#itmms-root .itmms-step-dot svg{width:12px;height:12px;color:rgba(255,255,255,.3)}
+#itmms-root .itmms-tracking-step span{font-size:.7rem;color:rgba(255,255,255,.5)}
+#itmms-root .itmms-tracking-step.done span{color:rgba(255,255,255,.8)}
+#itmms-root .itmms-hero-visual{position:relative;display:flex;justify-content:center;align-items:center}
+#itmms-root .itmms-hero-card-stack{position:relative;width:100%;max-width:460px;aspect-ratio:1/1}
+#itmms-root .itmms-hero-float{position:absolute;background:rgba(255,255,255,.1);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:20px 24px;display:flex;align-items:center;gap:14px;animation:itmmsFloat 6s ease-in-out infinite}
+#itmms-root .itmms-hero-float:nth-child(1){top:8%;left:0}
+#itmms-root .itmms-hero-float:nth-child(2){top:38%;right:0}
+#itmms-root .itmms-hero-float:nth-child(3){bottom:8%;left:10%}
+@keyframes itmmsFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+#itmms-root .itmms-hero-float-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+#itmms-root .itmms-hero-float-icon svg{width:24px;height:24px}
+#itmms-root .itmms-hero-float-text h4{color:#fff;font-size:.9rem;font-weight:700;margin-bottom:2px}
+#itmms-root .itmms-hero-float-text p{color:rgba(255,255,255,.6);font-size:.78rem;margin:0}
+#itmms-root .itmms-services{background:var(--gray-50)}
+#itmms-root .itmms-services-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+#itmms-root .itmms-service-card{background:#fff;border-radius:var(--radius-lg);border:1px solid var(--gray-200);transition:var(--transition);position:relative;overflow:hidden;display:flex;flex-direction:column;padding:0}
+#itmms-root .itmms-service-card:hover{transform:translateY(-6px);box-shadow:var(--shadow-lg);border-color:transparent}
+#itmms-root .itmms-service-img{width:100%;height:180px;background-size:cover;background-position:center;flex-shrink:0}
+#itmms-root .itmms-service-body{padding:24px 28px 28px}
+#itmms-root .itmms-service-card h3{font-size:1.15rem;font-weight:700;margin-bottom:8px}
+#itmms-root .itmms-service-card p{color:var(--gray-500);font-size:.9rem;line-height:1.7;margin-bottom:12px}
+#itmms-root .itmms-service-features{display:flex;flex-direction:column;gap:5px}
+#itmms-root .itmms-service-features li{display:flex;align-items:center;gap:8px;font-size:.83rem;color:var(--gray-600)}
+#itmms-root .itmms-service-features li svg{width:15px;height:15px;color:var(--blue);flex-shrink:0}
+/* Nav accent buttons */
+#itmms-root .itmms-nav-accent{background:var(--orange)!important;color:#fff!important;border:none!important;margin-left:8px}
+#itmms-root .itmms-nav-accent:hover{background:var(--orange-light)!important;color:#fff!important}
+#itmms-root .itmms-nav-portal{background:var(--blue)!important;color:#fff!important;border:none!important;margin-left:4px}
+#itmms-root .itmms-nav-portal:hover{background:var(--blue-light)!important;color:#fff!important}
+#itmms-root .itmms-why-us{background:linear-gradient(165deg,rgba(6,26,51,.92),rgba(11,37,69,.88)),url("https://images.pexels.com/photos/1117210/pexels-photo-1117210.jpeg?auto=compress&cs=tinysrgb&w=1200") center/cover no-repeat}
+#itmms-root .itmms-why-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:18px}
+#itmms-root .itmms-why-card{text-align:center;padding:28px 16px;border-radius:16px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);transition:var(--transition);backdrop-filter:blur(8px)}
+#itmms-root .itmms-why-card:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,.3);background:rgba(255,255,255,.15)}
+#itmms-root .itmms-why-icon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;transition:var(--transition)}
+#itmms-root .itmms-why-card:hover .itmms-why-icon{transform:scale(1.08)}
+#itmms-root .itmms-why-icon svg{width:24px;height:24px;color:#fff}
+#itmms-root .itmms-wi-1{background:linear-gradient(135deg,var(--blue),var(--blue-light))}
+#itmms-root .itmms-wi-2{background:linear-gradient(135deg,var(--orange),var(--orange-light))}
+#itmms-root .itmms-wi-3{background:linear-gradient(135deg,#1565C0,#42A5F5)}
+#itmms-root .itmms-wi-4{background:linear-gradient(135deg,#00897B,#26A69A)}
+#itmms-root .itmms-wi-5{background:linear-gradient(135deg,#7B1FA2,#AB47BC)}
+#itmms-root .itmms-why-card h4{font-size:.92rem;font-weight:700;margin-bottom:6px;color:#fff}
+#itmms-root .itmms-why-card p{font-size:.8rem;color:rgba(255,255,255,.65);line-height:1.5}
+#itmms-root .itmms-contact{background:linear-gradient(165deg,var(--navy-deep),var(--navy));overflow:hidden}
+#itmms-root .itmms-contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start}
+#itmms-root .itmms-contact-form{display:flex;flex-direction:column;gap:14px}
+#itmms-root .itmms-contact-form input,#itmms-root .itmms-contact-form textarea{padding:14px 18px;border-radius:10px;border:1.5px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:#fff;font-size:.95rem;font-family:"DM Sans",sans-serif;outline:none;transition:var(--transition)}
+#itmms-root .itmms-contact-form textarea{resize:vertical;min-height:120px}
+#itmms-root .itmms-contact-form input::placeholder,#itmms-root .itmms-contact-form textarea::placeholder{color:rgba(255,255,255,.35)}
+#itmms-root .itmms-contact-form input:focus,#itmms-root .itmms-contact-form textarea:focus{border-color:var(--blue-light);background:rgba(255,255,255,.1)}
+#itmms-root .itmms-contact-info{display:flex;flex-direction:column;gap:28px}
+#itmms-root .itmms-contact-item{display:flex;align-items:flex-start;gap:16px}
+#itmms-root .itmms-ci-icon{width:48px;height:48px;border-radius:12px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+#itmms-root .itmms-ci-icon svg{width:22px;height:22px;color:var(--orange-light)}
+#itmms-root .itmms-contact-item h4{color:#fff;font-size:.95rem;font-weight:600;margin-bottom:4px}
+#itmms-root .itmms-contact-item p{color:rgba(255,255,255,.6);font-size:.9rem}
+#itmms-root .itmms-contact-item a{color:var(--orange-light);transition:var(--transition)}
+#itmms-root .itmms-contact-item a:hover{color:#fff}
+#itmms-root .itmms-footer{background:var(--navy-deep);padding:32px 0;border-top:1px solid rgba(255,255,255,.06)}
+#itmms-root .itmms-footer .itmms-container{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+#itmms-root .itmms-footer p{color:rgba(255,255,255,.4);font-size:.82rem}
+#itmms-root .itmms-footer-links{display:flex;gap:24px}
+#itmms-root .itmms-footer-links a{color:rgba(255,255,255,.4);font-size:.82rem;transition:var(--transition)}
+#itmms-root .itmms-footer-links a:hover{color:var(--orange-light)}
+#itmms-root .itmms-reveal{opacity:0;transform:translateY(36px);transition:opacity .7s cubic-bezier(.4,0,.2,1),transform .7s cubic-bezier(.4,0,.2,1)}
+#itmms-root .itmms-reveal.visible{opacity:1;transform:translateY(0)}
+@media(max-width:1024px){#itmms-root .itmms-hero-inner{grid-template-columns:1fr;text-align:center}#itmms-root .itmms-hero p{margin-left:auto;margin-right:auto}#itmms-root .itmms-hero-track{margin-left:auto;margin-right:auto}#itmms-root .itmms-hero-visual{display:none}#itmms-root .itmms-contact-grid{grid-template-columns:1fr}#itmms-root .itmms-why-grid{grid-template-columns:repeat(3,1fr)}#itmms-root .itmms-services-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:768px){#itmms-root .itmms-nav-links{display:none}#itmms-root .itmms-hamburger{display:flex}#itmms-root .itmms-section{padding:72px 0}#itmms-root .itmms-services-grid{grid-template-columns:1fr}#itmms-root .itmms-why-grid{grid-template-columns:1fr 1fr}#itmms-root .itmms-tracking-input-wrap{flex-direction:column}#itmms-root .itmms-tracking-input-wrap input{border-radius:10px;border-right:1.5px solid rgba(255,255,255,.2);height:48px}#itmms-root .itmms-tracking-input-wrap button{border-radius:10px;height:48px}#itmms-root .itmms-quote-grid{grid-template-columns:1fr}#itmms-root .itmms-full{grid-column:1}}
+@media(max-width:480px){#itmms-root .itmms-why-grid{grid-template-columns:1fr}#itmms-root .itmms-footer .itmms-container{flex-direction:column;text-align:center}}
+';}
+
+function itmms_js(){?>
+<script>
+(function(){
+var root=document.getElementById('itmms-root');if(!root)return;
+var el=root.parentElement;while(el&&el!==document.body){el.style.padding='0';el.style.margin='0';el.style.maxWidth='none';el.style.width='100%';el.style.overflow='visible';el=el.parentElement}
+var nav=document.getElementById('itmmsNavbar');if(nav)window.addEventListener('scroll',function(){nav.classList.toggle('scrolled',window.scrollY>60)});
+var ham=document.getElementById('itmmsHamburger'),mob=document.getElementById('itmmsMobileMenu'),cls=document.getElementById('itmmsMobileClose');
+if(ham&&mob){ham.addEventListener('click',function(){mob.classList.add('open')});if(cls)cls.addEventListener('click',function(){mob.classList.remove('open')});mob.querySelectorAll('.itmms-mobile-link').forEach(function(a){a.addEventListener('click',function(){mob.classList.remove('open')})})}
+root.querySelectorAll('[data-modal]').forEach(function(btn){btn.addEventListener('click',function(e){e.preventDefault();if(mob)mob.classList.remove('open');var m=document.getElementById(this.getAttribute('data-modal'));if(m)m.classList.add('open')})});
+root.querySelectorAll('.itmms-modal-overlay').forEach(function(ov){ov.querySelector('.itmms-modal-close').addEventListener('click',function(){ov.classList.remove('open')});ov.addEventListener('click',function(e){if(e.target===ov)ov.classList.remove('open')})});
+root.querySelectorAll('.itmms-tab').forEach(function(tab){tab.addEventListener('click',function(){var p=this.closest('.itmms-modal');p.querySelectorAll('.itmms-tab').forEach(function(t){t.classList.remove('active')});p.querySelectorAll('.itmms-tab-content').forEach(function(c){c.classList.remove('active')});this.classList.add('active');p.querySelector('[data-tab-content="'+this.getAttribute('data-tab')+'"]').classList.add('active')})});
+var obs=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target)}})},{threshold:.12});root.querySelectorAll('.itmms-reveal').forEach(function(el){obs.observe(el)});
+var tbtn=document.getElementById('itmmsTrackBtn'),tinp=document.getElementById('itmmsTrackingInput');
+function doTrack(){var v=tinp.value.trim();if(!v){tinp.focus();return}document.getElementById('itmmsTrackingNum').textContent=v;document.getElementById('itmmsTrackingResult').classList.add('active');var steps=document.querySelectorAll('#itmmsTrackingSteps .itmms-tracking-step');var n=Math.floor(Math.random()*3)+1;steps.forEach(function(s,i){s.classList.toggle('done',i<n)})}
+if(tbtn)tbtn.addEventListener('click',doTrack);if(tinp)tinp.addEventListener('keydown',function(e){if(e.key==='Enter')doTrack()});
+root.querySelectorAll('a[href^="#itmms"]').forEach(function(a){a.addEventListener('click',function(e){var t=document.querySelector(this.getAttribute('href'));if(t){e.preventDefault();t.scrollIntoView({behavior:'smooth',block:'start'})}})});
+
+/* ══════ Müşteri Kayıt Formu ══════ */
+var regBtn=document.getElementById('itmmsRegisterBtn');
+if(regBtn){regBtn.addEventListener('click',function(){
+  var msg=document.getElementById('itmmsRegisterMsg');
+  var fields=['company_name','physical_address','postal_code','city','country','contact_person','contact_phone','contact_email','tax_number','mersis_number','eori_number','billing_address','billing_email'];
+  var company=document.getElementById('reg_company_name');
+  if(!company||!company.value.trim()){
+    if(msg){msg.style.display='block';msg.style.background='#fef2f2';msg.style.color='#dc2626';msg.style.border='1px solid #fecaca';msg.textContent='Şirket adı zorunludur.';}
+    if(company)company.focus();return;
+  }
+  regBtn.disabled=true;regBtn.textContent='Kaydediliyor...';
+  if(msg)msg.style.display='none';
+  var fd=new FormData();
+  fd.append('action','itmms_register_customer');
+  fields.forEach(function(f){var el=document.getElementById('reg_'+f);if(el)fd.append(f,el.value);});
+  var ajaxUrl='<?php echo admin_url("admin-ajax.php"); ?>';
+  fetch(ajaxUrl,{method:'POST',body:fd}).then(function(r){return r.json()}).then(function(d){
+    if(d.success){
+      if(msg){msg.style.display='block';msg.style.background='#f0fdf4';msg.style.color='#16a34a';msg.style.border='1px solid #86efac';msg.textContent=d.data.message;}
+      fields.forEach(function(f){var el=document.getElementById('reg_'+f);if(el)el.value='';});
+    }else{
+      if(msg){msg.style.display='block';msg.style.background='#fef2f2';msg.style.color='#dc2626';msg.style.border='1px solid #fecaca';msg.textContent=d.data.message||'Bir hata oluştu.';}
+    }
+  }).catch(function(){
+    if(msg){msg.style.display='block';msg.style.background='#fef2f2';msg.style.color='#dc2626';msg.style.border='1px solid #fecaca';msg.textContent='Bağlantı hatası. Lütfen tekrar deneyin.';}
+  }).finally(function(){regBtn.disabled=false;regBtn.textContent='Hesap Oluştur';});
+});}
+
+})();
+</script>
+<?php }
