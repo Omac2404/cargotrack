@@ -38,8 +38,12 @@ logs/
 # Eski PHP plugin
 cargotrack.php
 
-# Intertrans (ayrı bir EasyPanel servisi olarak deploy edilir — bu image'a girmemeli)
-intertrans/
+# Intertrans build aşamasında gerekli olan dosyalar — sadece runtime'da gereksizleri dışla
+intertrans/node_modules/
+intertrans/.next/
+intertrans/out/
+intertrans/.claude/
+intertrans/legacy/
 
 # Excel / referans dosyaları (incele klasörü)
 incele/

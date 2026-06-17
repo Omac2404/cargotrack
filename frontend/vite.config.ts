@@ -3,6 +3,8 @@ import react from '@vitejs/plugin-react'
 import path from 'path'
 
 export default defineConfig({
+  // Cargotrack SPA /panel altında servet edilir → tüm asset URL'leri /panel/ prefix'iyle
+  base: '/panel/',
   plugins: [react()],
   resolve: {
     alias: {

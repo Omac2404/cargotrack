@@ -149,7 +149,7 @@ export function Sidebar() {
         {/* Logo + mobile close button */}
         <div className="h-14 flex items-center gap-2 px-3 border-b">
           <img
-            src="/intertrans-logo.png"
+            src={`${import.meta.env.BASE_URL}intertrans-logo.png`}
             alt="Intertrans MMS"
             className="h-9 w-auto object-contain object-left flex-1 min-w-0"
           />

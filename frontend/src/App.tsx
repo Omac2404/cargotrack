@@ -101,7 +101,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ErrorBoundary>
-        <BrowserRouter>
+        <BrowserRouter basename="/panel">
           <AppRoutes />
         </BrowserRouter>
       </ErrorBoundary>

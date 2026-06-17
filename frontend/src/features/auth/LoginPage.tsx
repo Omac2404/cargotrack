@@ -55,7 +55,7 @@ export function LoginPage() {
         <div className="relative z-10 flex flex-col justify-between p-12 text-white w-full">
           <div className="flex items-center">
             <div className="bg-white/95 rounded-lg p-3 inline-flex">
-              <img src="/intertrans-logo.png" alt="Intertrans MMS" className="h-12 w-auto object-contain" />
+              <img src={`${import.meta.env.BASE_URL}intertrans-logo.png`} alt="Intertrans MMS" className="h-12 w-auto object-contain" />
             </div>
           </div>
 
@@ -88,7 +88,7 @@ export function LoginPage() {
       <div className="flex-1 flex items-center justify-center p-6 lg:p-12 bg-muted/30">
         <div className="w-full max-w-sm space-y-6">
           <div className="lg:hidden flex items-center justify-center mb-8">
-            <img src="/intertrans-logo.png" alt="Intertrans MMS" className="h-10 w-auto object-contain" />
+            <img src={`${import.meta.env.BASE_URL}intertrans-logo.png`} alt="Intertrans MMS" className="h-10 w-auto object-contain" />
           </div>
 
           <div className="space-y-1.5">

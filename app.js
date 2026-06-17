@@ -83,8 +83,13 @@ app.get('/api/health', (req, res) => {
 });
 
 // ---------- Statik dosyalar ----------
-// public/ → herkese açık (HTML, CSS, JS, görseller)
-app.use(express.static(path.join(__dirname, 'public')));
+// Cargotrack SPA (Vite build, base='/panel/') → /panel/* altında servet edilir
+// public/ → assets/, index.html (panel için)
+app.use('/panel', express.static(path.join(__dirname, 'public')));
+
+// Intertrans static export (Next.js out/) → / altında servet edilir
+// public_intertrans/ → index.html, hakkimizda/, hizmetler/, ...
+app.use(express.static(path.join(__dirname, 'public_intertrans'), { extensions: ['html'] }));
 
 // uploads/ → KORUMA: doğrudan servis edilmez, yalnızca /api/documents/:id üzerinden
 // (web-accessible olmaması güvenlik için kritik)
@@ -118,10 +123,22 @@ for (const r of routeRegistry) {
   }
 }
 
-// ---------- SPA fallback ----------
-// /api/* dışındaki tüm istekleri index.html'e yönlendir (frontend router için)
-app.get(/^(?!\/api).*/, (req, res, next) => {
+// ---------- SPA + Static fallback ----------
+// /panel/* (api dışı) → cargotrack React SPA (BrowserRouter handles client routing)
+app.get(/^\/panel(\/.*)?$/, (req, res, next) => {
   const indexPath = path.join(__dirname, 'public', 'index.html');
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    next();
+  }
+});
+
+// / (root) ve diğer non-/api yollar → intertrans static site
+// Next.js export dosyalarını express.static zaten yukarıda servet ediyor (extensions: html).
+// Direkt eşleşmeyen yollar için intertrans index.html'i fallback olarak gönder (404 yerine homepage).
+app.get(/^(?!\/api|\/panel).*/, (req, res, next) => {
+  const indexPath = path.join(__dirname, 'public_intertrans', 'index.html');
   if (fs.existsSync(indexPath)) {
     res.sendFile(indexPath);
   } else {
