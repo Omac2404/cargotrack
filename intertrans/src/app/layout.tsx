@@ -32,6 +32,11 @@ export const metadata: Metadata = {
     "kara yolu taşımacılığı",
     "multi modal services",
   ],
+  icons: {
+    icon: [
+      { url: "/logo2.png", type: "image/png" },
+    ],
+  },
 };
 
 export default function RootLayout({

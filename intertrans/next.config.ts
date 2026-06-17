@@ -6,6 +6,11 @@ const nextConfig: NextConfig = {
   output: "export",
   // /hakkimizda → /hakkimizda/index.html ile servet edilir, link uyumu için trailingSlash
   trailingSlash: true,
+  // Static export'ta runtime image optimization API yok → next/image kaynakları olduğu gibi servet edilir.
+  // Bu olmadan <Image> bileşeni /_next/image?url=... formatında URL üretir ve 404 verir.
+  images: {
+    unoptimized: true,
+  },
 };
 
 export default nextConfig;

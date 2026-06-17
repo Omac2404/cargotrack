@@ -21,6 +21,8 @@ logs/
 public/assets/
 public/index.html
 public/vite.svg
+public/intertrans-logo.png
+public/logo2.png
 # Vite cache
 frontend/node_modules/
 frontend/.vite/

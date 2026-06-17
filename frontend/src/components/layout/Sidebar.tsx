@@ -147,17 +147,20 @@ export function Sidebar() {
         )}
       >
         {/* Logo + mobile close button */}
-        <div className="h-14 flex items-center gap-2 px-3 border-b">
+        <div className="h-14 flex items-center gap-2.5 px-3 border-b">
           <img
-            src={`${import.meta.env.BASE_URL}intertrans-logo.png`}
+            src={`${import.meta.env.BASE_URL}logo2.png`}
             alt="Intertrans MMS"
-            className="h-9 w-auto object-contain object-left flex-1 min-w-0"
+            className="h-9 w-9 object-contain shrink-0"
           />
+          <div className="text-sm font-bold tracking-tight leading-tight">
+            Inter Trans <span className="font-light">MMS</span>
+          </div>
           {/* Mobile only close */}
           <button
             type="button"
             onClick={() => setMobileOpen(false)}
-            className="md:hidden p-1 hover:bg-accent rounded shrink-0"
+            className="ml-auto md:hidden p-1 hover:bg-accent rounded shrink-0"
             aria-label="Sidebar kapat"
           >
             <X className="w-4 h-4" />
