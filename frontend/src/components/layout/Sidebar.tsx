@@ -147,18 +147,17 @@ export function Sidebar() {
         )}
       >
         {/* Logo + mobile close button */}
-        <div className="h-14 flex items-center gap-2 px-4 border-b">
-          <div className="w-7 h-7 rounded-md bg-primary flex items-center justify-center text-primary-foreground shrink-0">
-            <Truck className="w-4 h-4" />
-          </div>
-          <div className="font-bold text-base tracking-tight">
-            Cargo<span className="font-light">Track</span>
-          </div>
+        <div className="h-14 flex items-center gap-2 px-3 border-b">
+          <img
+            src="/intertrans-logo.png"
+            alt="Intertrans MMS"
+            className="h-9 w-auto object-contain object-left flex-1 min-w-0"
+          />
           {/* Mobile only close */}
           <button
             type="button"
             onClick={() => setMobileOpen(false)}
-            className="ml-auto md:hidden p-1 hover:bg-accent rounded"
+            className="md:hidden p-1 hover:bg-accent rounded shrink-0"
             aria-label="Sidebar kapat"
           >
             <X className="w-4 h-4" />
