@@ -38,24 +38,24 @@ export default function Navbar() {
       }`}
     >
       <nav className="container-x flex items-center justify-between">
-        <Link href="/" className="flex items-center" aria-label={t("nav.home")}>
+        <Link href="/" className="flex items-center shrink-0" aria-label={t("nav.home")}>
           <Image
             src="/logo.png"
             alt="Inter Trans MMS - Multi Modal Services"
             width={200}
             height={103}
             priority
-            className="h-14 w-auto md:h-[68px]"
+            className="h-11 w-auto md:h-12 xl:h-14"
           />
         </Link>
 
-        {/* Desktop links */}
-        <div className="hidden items-center gap-1 lg:flex">
+        {/* Desktop links — xl'den itibaren tek sıra (lg'de yer dar oluyor → mobile menü açılır) */}
+        <div className="hidden items-center gap-0.5 xl:flex">
           {navLinks.map((l) => (
             <Link
               key={l.href}
               href={l.href}
-              className={`rounded-md px-3.5 py-2 font-display text-sm font-semibold transition-colors ${
+              className={`whitespace-nowrap rounded-md px-3 py-2 font-display text-sm font-semibold transition-colors ${
                 isActive(l.href)
                   ? "text-orange-light"
                   : "text-white/85 hover:text-white"
@@ -66,24 +66,24 @@ export default function Navbar() {
           ))}
           <Link
             href="/iletisim"
-            className="ml-2 rounded-md bg-orange px-4 py-2 font-display text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-orange-light"
+            className="ml-2 whitespace-nowrap rounded-md bg-orange px-3.5 py-2 font-display text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-orange-light"
           >
             {t("nav.quote_cta")}
           </Link>
           <Link
             href="/portal"
-            className="ml-1 rounded-md bg-blue px-4 py-2 font-display text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-blue-light"
+            className="ml-1 whitespace-nowrap rounded-md bg-blue px-3.5 py-2 font-display text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-blue-light"
           >
             {t("nav.portal_cta")}
           </Link>
           {/* Language switcher — küçük bayraklar */}
-          <div className="ml-3 border-l border-white/15 pl-3">
+          <div className="ml-3 border-l border-white/15 pl-3 shrink-0">
             <LanguageSwitcher />
           </div>
         </div>
 
-        {/* Mobile: switcher + toggle */}
-        <div className="flex items-center gap-3 lg:hidden">
+        {/* Mobile + Tablet: switcher + toggle (lg ve aşağıda) */}
+        <div className="flex items-center gap-3 xl:hidden">
           <LanguageSwitcher variant="mobile" />
           <button
             className="text-white"
@@ -95,9 +95,9 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* Mobile menu */}
+      {/* Mobile + tablet menu (xl altında) */}
       {open && (
-        <div className="border-t border-white/10 bg-navy/98 backdrop-blur-md lg:hidden">
+        <div className="border-t border-white/10 bg-navy/98 backdrop-blur-md xl:hidden">
           <div className="container-x flex flex-col gap-1 py-4">
             {navLinks.map((l) => (
               <Link
