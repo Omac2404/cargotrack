@@ -13,6 +13,7 @@ import {
   Table, TableHeader, TableBody, TableHead, TableRow, TableCell,
 } from '@/components/ui/table'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { modeSlug } from '@/features/shipments/modeConfig'
 import { usePartner, usePartnerShipments, PARTNER_TYPE_LABELS } from './hooks'
 import { PartnerFormDialog } from './PartnerFormDialog'
 import { ExportButton } from '@/components/shared/ExportButton'
@@ -35,10 +36,6 @@ const MODE_LABELS: Record<string, string> = {
   air: 'Havayolu', storage: 'Depolama', import: 'İthalat', export: 'İhracat',
 }
 
-const MODE_SLUG: Record<string, string> = {
-  road: 'karayolu', maritime: 'denizyolu', sea: 'denizyolu',
-  air: 'havayolu', storage: 'depolama', import: 'ithalat', export: 'ihracat',
-}
 
 export function PartnerDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -231,7 +228,7 @@ export function PartnerDetailPage() {
                 </TableHeader>
                 <TableBody>
                   {shipments.map((s) => {
-                    const slug = MODE_SLUG[s.transport_type] || 'karayolu'
+                    const slug = modeSlug(s.transport_type)
                     const status = STATUS_LABELS[s.status]
                     const sale = Number(s.sale_price) || 0
                     const purchase = Number(s.purchase_price) || 0

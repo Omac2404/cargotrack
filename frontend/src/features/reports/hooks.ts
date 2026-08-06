@@ -56,6 +56,7 @@ export function useCustomerRanking(year: number, limit = 20) {
 export interface AgingItem {
   id: number
   shipment_no: string
+  transport_type: string
   client: string
   invoice_no: string
   invoice_date: string

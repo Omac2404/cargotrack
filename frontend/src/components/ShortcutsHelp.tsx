@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { Keyboard } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
@@ -158,6 +159,10 @@ export function ShortcutsHelpDialog({ open, onOpenChange }: Props) {
 export function GlobalShortcutsProvider() {
   const [helpOpen, setHelpOpen] = useState(false)
   const [gPressed, setGPressed] = useState(false)
+  // SPA basename '/panel' olduğu için window.location.href KULLANMA —
+  // '/partners' gibi mutlak yollar kullanıcıyı panelden atıp tanıtım sitesine götürür.
+  const navigate = useNavigate()
+  const location = useLocation()
 
   // "g sonra X" navigasyon kombosu için state
   useKeyboardShortcuts([
@@ -168,12 +173,12 @@ export function GlobalShortcutsProvider() {
     {
       combo: 'mod+n',
       handler: () => {
-        const path = window.location.pathname
+        const path = location.pathname
         if (path.startsWith('/shipments/') && !path.includes('/new') && !path.includes('/edit')) {
-          // /shipments/karayolu → /shipments/karayolu/new
-          window.location.href = `${path}/new`
+          // /shipments/road → /shipments/road/new
+          navigate(`${path}/new`)
         } else if (path === '/vehicles') {
-          window.location.href = '/vehicles/new'
+          navigate('/vehicles/new')
         } else {
           // Genel: "Yeni" butonunu ara ve tıkla
           const btn = Array.from(document.querySelectorAll('button')).find((b) =>
@@ -232,12 +237,12 @@ export function GlobalShortcutsProvider() {
         window.setTimeout(() => setGPressed(false), 1500)
       },
     },
-    { combo: 'h', handler: () => { if (gPressed) { window.location.href = '/'; setGPressed(false) } } },
-    { combo: 's', handler: () => { if (gPressed) { window.location.href = '/shipments/karayolu'; setGPressed(false) } } },
-    { combo: 'p', handler: () => { if (gPressed) { window.location.href = '/partners'; setGPressed(false) } } },
-    { combo: 'a', handler: () => { if (gPressed) { window.location.href = '/assignments'; setGPressed(false) } } },
-    { combo: 'v', handler: () => { if (gPressed) { window.location.href = '/vehicles'; setGPressed(false) } } },
-    { combo: 'd', handler: () => { if (gPressed) { window.location.href = '/documents'; setGPressed(false) } } },
+    { combo: 'h', handler: () => { if (gPressed) { navigate('/'); setGPressed(false) } } },
+    { combo: 's', handler: () => { if (gPressed) { navigate('/shipments/road'); setGPressed(false) } } },
+    { combo: 'p', handler: () => { if (gPressed) { navigate('/partners'); setGPressed(false) } } },
+    { combo: 'a', handler: () => { if (gPressed) { navigate('/assignments'); setGPressed(false) } } },
+    { combo: 'v', handler: () => { if (gPressed) { navigate('/vehicles'); setGPressed(false) } } },
+    { combo: 'd', handler: () => { if (gPressed) { navigate('/documents'); setGPressed(false) } } },
   ])
 
   return <ShortcutsHelpDialog open={helpOpen} onOpenChange={setHelpOpen} />

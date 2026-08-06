@@ -23,6 +23,7 @@ import {
 import { Combobox } from '@/components/shared/Combobox'
 import { cn } from '@/lib/utils'
 import { getModeConfig } from './modeConfig'
+import { labelForField } from './fieldLabels'
 import { shipmentSchema, type ShipmentFormValues } from './schema'
 import { useShipment, useSaveShipment } from './hooks'
 import { usePartners } from '@/features/partners/hooks'
@@ -81,6 +82,45 @@ const STORAGE_PRICING = [
   { value: 'hafta', label: 'shipment.storage_pricing.weekly' },
   { value: 'ay', label: 'shipment.storage_pricing.monthly' },
 ]
+
+/**
+ * Alan → sekme eşlemesi. Kaydet'e basıldığında doğrulama hatası olan alan
+ * başka bir sekmedeyse kullanıcı o sekmeye götürülür; aksi halde buton
+ * hiçbir tepki vermiyormuş gibi görünüyordu.
+ */
+const FIELD_TAB: Record<string, string> = {
+  created_date: 'general', responsible_user: 'general', client_reference: 'general',
+  status: 'general', currency_code: 'general', transport_type: 'general',
+  incoterm: 'general', incoterm_location: 'general', mode_data: 'general',
+
+  client_billing: 'parties', sender: 'parties', receiver: 'parties', agent: 'parties',
+  client_contact: 'parties', client_phone: 'parties', client_email: 'parties',
+  client_delivery_address: 'parties', departure_country: 'parties',
+  arrival_country: 'parties', parties_data: 'parties',
+
+  goods_description: 'cargo', hs_code: 'cargo', goods_value: 'cargo',
+  gross_weight: 'cargo', net_weight: 'cargo', volume_cbm: 'cargo', dimensions: 'cargo',
+  quantity: 'cargo', package_count: 'cargo', package_type: 'cargo',
+  dangerous_goods: 'cargo', adr_code: 'cargo', temperature_controlled: 'cargo',
+  temperature_min: 'cargo', temperature_max: 'cargo', insurance: 'cargo', crates_data: 'cargo',
+
+  purchase_price: 'financial', sale_price: 'financial', financial_data: 'financial',
+  freight_cost: 'financial', customs_cost: 'financial', transport_handling: 'financial',
+  insurance_cost: 'financial', other_costs: 'financial',
+
+  warehouse: 'storage', entry_date: 'storage', exit_date: 'storage',
+  daily_rate: 'storage', handling_fee: 'storage', other_storage_fees: 'storage',
+  storage_data: 'storage', depo_stock_log: 'storage', depo_musteri: 'storage',
+  depo_kap_sayisi: 'storage', depo_ucret_tipi: 'storage', depo_gun_ucret: 'storage',
+  depo_hafta_ucret: 'storage', depo_ay_ucret: 'storage',
+  ellecleme_filmleme: 'storage', ellecleme_paletleme: 'storage',
+  ellecleme_etiketleme: 'storage', ellecleme_depo_giris: 'storage',
+  ellecleme_depo_cikis: 'storage',
+
+  invoice_no: 'invoice', invoice_date: 'invoice', invoice_amount: 'invoice',
+  payment_type: 'invoice', payment_received: 'invoice', payment_notes: 'invoice',
+  invoice_generated: 'invoice',
+}
 
 // Mode'a göre zorunlu belge listesi getTransportMode().docList'ten gelir.
 // Genel temel (eski geriye uyumluluk) — i18n keys
@@ -161,19 +201,30 @@ export function ShipmentFormPage() {
     [warehouses]
   )
 
+  // Kayıt verisi forma yalnızca GÜVENLİ olduğunda yazılır.
+  // `existing` belge yükleme/durum değişikliği gibi işlemlerden sonra da tazelenir;
+  // koşulsuz reset() o an diğer sekmelerde yazılmış ama kaydedilmemiş her şeyi siliyordu.
+  const loadedIdRef = useRef<string | null>(null)
   useEffect(() => {
-    if (existing) {
-      const values: Partial<ShipmentFormValues> = {}
-      for (const k of Object.keys(existing) as Array<keyof typeof existing>) {
-        const v = existing[k]
-        if (k === 'dangerous_goods' || k === 'temperature_controlled' || k === 'insurance' || k === 'payment_received') {
-          ;(values as Record<string, unknown>)[k] = Number(v) === 1
-        } else if (v !== null) {
-          ;(values as Record<string, unknown>)[k] = v
-        }
+    if (!existing) return
+    const isFirstLoadForThisRecord = loadedIdRef.current !== String(existing.id)
+    // Kullanıcının kaydedilmemiş değişikliği varsa üzerine yazma
+    if (!isFirstLoadForThisRecord && form.formState.isDirty) return
+
+    const values: Partial<ShipmentFormValues> = {}
+    for (const k of Object.keys(existing) as Array<keyof typeof existing>) {
+      const v = existing[k]
+      if (k === 'dangerous_goods' || k === 'temperature_controlled' || k === 'insurance' || k === 'payment_received') {
+        ;(values as Record<string, unknown>)[k] = Number(v) === 1
+      } else if (v !== null) {
+        ;(values as Record<string, unknown>)[k] = v
       }
-      reset(values as ShipmentFormValues)
     }
+    reset(values as ShipmentFormValues)
+    loadedIdRef.current = String(existing.id)
+    // form.formState.isDirty kasıtlı olarak bağımlılıkta değil: dirty olunca
+    // effect'in yeniden çalışıp reset tetiklemesini istemiyoruz.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [existing, reset])
 
   // Belge durumu (varsa) — Belgeler tab'ında özetleme için
@@ -217,6 +268,8 @@ export function ShipmentFormPage() {
 
   // Quick-add partner dialog state
   const [quickAddType, setQuickAddType] = useState<PartnerType | null>(null)
+  // Aktif sekme — doğrulama hatasında hatalı alanın sekmesine atlamak için kontrollü
+  const [activeTab, setActiveTab] = useState('general')
 
   // Müşteri seçilince boş alanları partner kaydından doldur (sadece boşsa)
   const clientBilling = watch('client_billing')
@@ -267,10 +320,17 @@ export function ShipmentFormPage() {
   }, [assignments, watch])
 
   const onSubmit: SubmitHandler<ShipmentFormValues> = (values) => {
-    const payload: Record<string, unknown> = { ...values, transport_type: config.key }
+    const payload: Record<string, unknown> = { ...values }
+    // Mevcut kayıtta mod DEĞİŞTİRİLMEZ — URL slug'ı yanlış çözümlenirse
+    // (eski Türkçe linkler) kaydın modu bozulurdu. Yeni kayıtta sayfanın modu kullanılır.
+    if (isEdit) {
+      payload.id = id
+      if (existing?.transport_type) payload.transport_type = existing.transport_type
+    } else {
+      payload.transport_type = config.key
+    }
     // __none__ payment_type'ı boşalt
     if (payload.payment_type === '__none__') payload.payment_type = ''
-    if (isEdit) payload.id = id
     saveMut.mutate(payload, {
       onSuccess: (data) => {
         toast.success(isEdit ? 'Güncellendi' : `Oluşturuldu: ${data.shipment_no || ''}`)
@@ -285,6 +345,19 @@ export function ShipmentFormPage() {
     })
   }
 
+  /** Doğrulama başarısız — sessizce yutma, kullanıcıyı hatalı alana götür. */
+  const onInvalid = (errs: FieldErrors<ShipmentFormValues>) => {
+    const firstField = Object.keys(errs)[0]
+    if (!firstField) return
+    const targetTab = FIELD_TAB[firstField]
+    if (targetTab) setActiveTab(targetTab)
+    const msg = (errs as Record<string, { message?: string }>)[firstField]?.message
+    toast.error(
+      `${labelForField(firstField)}: ${msg || 'geçersiz değer'}`,
+      { description: 'Kayıt yapılmadı — işaretli alanı düzeltip tekrar deneyin.' }
+    )
+  }
+
   if (isEdit && loadingExisting) {
     return (
       <div className="p-12 text-center text-muted-foreground">
@@ -296,8 +369,8 @@ export function ShipmentFormPage() {
   const hasErrors = Object.keys(errors).length > 0
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} style={{ margin: 0, padding: 0 }}>
-      <Tabs defaultValue="general" className="w-full" style={{ margin: 0 }}>
+    <form onSubmit={handleSubmit(onSubmit, onInvalid)} style={{ margin: 0, padding: 0 }}>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full" style={{ margin: 0 }}>
         {/* FIXED header — sidebar offset (md: w-56=14rem, mobile: 0), topbar height (h-14=3.5rem) */}
         <div
           className="z-20 bg-background/95 backdrop-blur border-b fixed top-14 right-0 left-0 md:left-56"

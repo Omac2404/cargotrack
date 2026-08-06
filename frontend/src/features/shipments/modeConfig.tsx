@@ -72,11 +72,41 @@ export const MODE_CONFIGS: Record<string, ModeConfig> = {
   },
 }
 
+/**
+ * Eski / alternatif slug'lar → kanonik mod anahtarı.
+ *
+ * Uygulamanın bazı yerleri (bildirim linkleri, raporlar, yer imleri) Türkçe slug
+ * üretiyordu. Bunlar çözümlenmezse getModeConfig sessizce 'road'a düşer ve
+ * kayıt sırasında sevkiyatın modu bozulur — bu yüzden alias'lar korunuyor.
+ */
+const SLUG_ALIASES: Record<string, string> = {
+  sea: 'maritime',
+  karayolu: 'road',
+  denizyolu: 'maritime',
+  havayolu: 'air',
+  depolama: 'storage',
+  ithalat: 'import',
+  ihracat: 'export',
+}
+
+/** URL slug'ını (veya transport_type değerini) kanonik mod anahtarına çevirir. */
+export function resolveModeKey(slug: string | undefined): TransportType | null {
+  if (!slug) return null
+  const key = SLUG_ALIASES[slug] || slug
+  return MODE_CONFIGS[key] ? (key as TransportType) : null
+}
+
 export function getModeConfig(slug: string | undefined): ModeConfig {
-  if (!slug) return MODE_CONFIGS.road
-  // 'sea' alias için
-  if (slug === 'sea') return MODE_CONFIGS.maritime
-  return MODE_CONFIGS[slug] || MODE_CONFIGS.road
+  const key = resolveModeKey(slug)
+  return key ? MODE_CONFIGS[key] : MODE_CONFIGS.road
+}
+
+/**
+ * transport_type → URL slug. Link üreten her yer bunu kullanmalı;
+ * elle yazılan slug'lar (örn. 'denizyolu') mod bozulmasına yol açıyordu.
+ */
+export function modeSlug(transportType: string | undefined | null): string {
+  return resolveModeKey(transportType || undefined) || 'road'
 }
 
 // label i18n key — UI'de t(STATUS_LABELS[s].label) ile çevrilir

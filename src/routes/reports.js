@@ -144,7 +144,7 @@ router.get('/aging', async (req, res) => {
 
     const [rows] = await pool.execute(
       `SELECT
-         s.id, s.shipment_no, s.client_billing, s.invoice_no, s.invoice_date,
+         s.id, s.shipment_no, s.transport_type, s.client_billing, s.invoice_no, s.invoice_date,
          s.invoice_amount, s.currency_code,
          DATEDIFF(CURDATE(), s.invoice_date) AS days_overdue
        FROM shipments s
@@ -167,6 +167,7 @@ router.get('/aging', async (req, res) => {
       const item = {
         id: r.id,
         shipment_no: r.shipment_no,
+        transport_type: r.transport_type,
         client: r.client_billing,
         invoice_no: r.invoice_no,
         invoice_date: r.invoice_date,

@@ -1,6 +1,6 @@
 const express = require('express');
 const { pool } = require('../config/database');
-const { verifyToken, hasRole, requirePermission } = require('../middleware/auth');
+const { verifyToken, hasRole, requirePermission, can } = require('../middleware/auth');
 const { logAudit, getAuditLog } = require('../helpers/audit');
 const { computeDiff } = require('../helpers/diff');
 const { notify } = require('../helpers/notifications');
@@ -19,6 +19,16 @@ const PREFIX_MAP = {
   road: 'ROU', storage: 'STO', maritime: 'SEA',
   air: 'AIR', import: 'IMP', export: 'EXP'
 };
+
+// transport_type → frontend URL slug (React Router: /shipments/:mode/:id/edit)
+// Frontend modeConfig.tsx ile birebir aynı olmalı.
+const MODE_SLUG = {
+  road: 'road', maritime: 'maritime', sea: 'maritime', air: 'air',
+  storage: 'storage', import: 'import', export: 'export'
+};
+function shipmentLink(transportType, id) {
+  return `/shipments/${MODE_SLUG[transportType] || 'road'}/${id}/edit`;
+}
 
 function normalizeTransportType(t) {
   if (t === 'sea') return 'maritime';
@@ -146,15 +156,53 @@ function buildDataRecord(input) {
   return out;
 }
 
-async function generateShipmentNo(conn, type) {
+/**
+ * Sevkiyat numarası üret — `{PREFIX}-{YYYYMMDD}-{SEQ}`.
+ *
+ * Sıra numarası o gün + o mod için DB'deki EN BÜYÜK numaradan türetilir.
+ * Arşivlenmiş (soft-delete) kayıtlar da sayılır: shipment_no UNIQUE olduğu için
+ * silinmiş bir numaranın tekrar üretilmesi "Duplicate entry" hatasına yol açardı.
+ *
+ * @param {number} [offset] - Çakışma sonrası tekrar denemede sırayı ileri kaydırır.
+ */
+async function generateShipmentNo(conn, type, offset = 0) {
   const prefix = PREFIX_MAP[type] || 'ROU';
   const today = new Date();
   const ymd = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
   const [rows] = await conn.execute(
-    'SELECT COUNT(*) AS c FROM shipments WHERE DATE(created_at) = CURDATE() AND deleted_at IS NULL'
+    `SELECT COALESCE(MAX(CAST(SUBSTRING_INDEX(shipment_no, '-', -1) AS UNSIGNED)), 0) AS mx
+     FROM shipments WHERE shipment_no LIKE ?`,
+    [`${prefix}-${ymd}-%`]
   );
-  const seq = String((rows[0].c || 0) + 1).padStart(3, '0');
+  const seq = String((parseInt(rows[0].mx, 10) || 0) + 1 + offset).padStart(3, '0');
   return `${prefix}-${ymd}-${seq}`;
+}
+
+/**
+ * INSERT'i çakışmaya karşı korumalı çalıştırır.
+ * İki kullanıcı aynı anda kaydettiğinde aynı numarayı üretebilir; ER_DUP_ENTRY
+ * gelirse sıra bir ileri kaydırılıp tekrar denenir.
+ */
+async function insertShipmentWithRetry(conn, record, type) {
+  const MAX_ATTEMPTS = 5;
+  let lastErr;
+  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+    record.shipment_no = await generateShipmentNo(conn, type, attempt);
+    const cols = Object.keys(record);
+    const placeholders = cols.map(() => '?').join(', ');
+    const colList = cols.map(c => `\`${c}\``).join(', ');
+    try {
+      const [result] = await conn.execute(
+        `INSERT INTO shipments (${colList}) VALUES (${placeholders})`,
+        cols.map(c => record[c])
+      );
+      return result;
+    } catch (err) {
+      if (err && err.code === 'ER_DUP_ENTRY') { lastErr = err; continue; }
+      throw err;
+    }
+  }
+  throw lastErr || new Error('Sevkiyat numarası üretilemedi');
 }
 
 // ============ GET /api/shipments?transport_type=road ============
@@ -215,13 +263,19 @@ router.post('/', verifyToken, async (req, res) => {
     const input = req.body || {};
     const shipmentId = toInt(input.id);
 
-    // transport_type erken normalize
-    const rawType = sanitizeText(input.transport_type || 'road');
-    const normalizedType = normalizeTransportType(rawType);
+    // transport_type erken normalize ('sea' → 'maritime')
+    const typeProvided = input.transport_type !== undefined && input.transport_type !== null && input.transport_type !== '';
+    const normalizedType = normalizeTransportType(sanitizeText(input.transport_type || 'road'));
 
     // Veri kaydını oluştur
     const record = buildDataRecord(input);
-    record.transport_type = normalizedType;
+    // transport_type'ı SADECE istekte geldiyse yaz. Kısmi update'lerde
+    // (örn. belge durumu güncellemesi) modun sessizce 'road'a dönmesini engeller.
+    if (typeProvided) {
+      record.transport_type = normalizedType;
+    } else {
+      delete record.transport_type;
+    }
 
     if (shipmentId) {
       // UPDATE — önce eski satırın TAMAMINI çek (diff için)
@@ -235,8 +289,12 @@ router.post('/', verifyToken, async (req, res) => {
       }
       const oldRow = existingRows[0];
 
-      // Yetki: kendi kaydı veya admin+
-      if (oldRow.created_by !== req.user.id && !hasRole(req.user, 'admin')) {
+      // Yetki: kendi kaydı için update.own, başkasının kaydı için update.all
+      const isOwner = oldRow.created_by === req.user.id;
+      const allowed = isOwner
+        ? (can(req.user, 'shipments.update.own') || can(req.user, 'shipments.update.all'))
+        : can(req.user, 'shipments.update.all');
+      if (!allowed) {
         await conn.rollback();
         return sendError(res, 'Bu kaydı düzenleme yetkiniz yok', 403);
       }
@@ -244,10 +302,20 @@ router.post('/', verifyToken, async (req, res) => {
       // shipment_no UPDATE'te yeniden üretmiyoruz, gelen değeri veya mevcudu koruyoruz
       if (!record.shipment_no) delete record.shipment_no;
 
+      // Güncellenecek kolon yoksa boş SET listesiyle geçersiz SQL üretme
+      const cols = Object.keys(record);
+      if (cols.length === 0) {
+        await conn.rollback();
+        return sendSuccess(res, {
+          id: shipmentId,
+          shipment_no: oldRow.shipment_no || null,
+          message: 'Değişiklik yok',
+        });
+      }
+
       // Diff hesapla (UPDATE'ten ÖNCE — oldRow elimizde, record da hazır)
       const diff = computeDiff(oldRow, record, COL_DEFS);
 
-      const cols = Object.keys(record);
       const setClause = cols.map(c => `\`${c}\` = ?`).join(', ');
       const values = cols.map(c => record[c]);
       values.push(shipmentId);
@@ -261,20 +329,16 @@ router.post('/', verifyToken, async (req, res) => {
       }
       sendSuccess(res, { id: shipmentId, shipment_no: record.shipment_no || null, message: 'Kayıt güncellendi' });
     } else {
-      // INSERT
-      record.shipment_no = await generateShipmentNo(conn, normalizedType);
+      if (!can(req.user, 'shipments.create')) {
+        await conn.rollback();
+        return sendError(res, 'Sevkiyat oluşturma yetkiniz yok', 403);
+      }
+      // INSERT — yeni kayıtta mod her zaman yazılmalı (gelmediyse 'road')
+      record.transport_type = normalizedType;
       record.created_by = req.user.id;
       if (!record.created_date) record.created_date = new Date().toISOString().slice(0, 10);
 
-      const cols = Object.keys(record);
-      const placeholders = cols.map(() => '?').join(', ');
-      const colList = cols.map(c => `\`${c}\``).join(', ');
-      const values = cols.map(c => record[c]);
-
-      const [result] = await conn.execute(
-        `INSERT INTO shipments (${colList}) VALUES (${placeholders})`,
-        values
-      );
+      const result = await insertShipmentWithRetry(conn, record, normalizedType);
 
       await conn.commit();
       await logAudit(req, 'create', 'shipments', result.insertId, record.shipment_no);
@@ -312,7 +376,7 @@ router.post('/bulk-action', verifyToken, requirePermission('shipments.bulk_actio
 
     // Ownership kontrolü: user sadece kendi sahip olduklarıyla işlem yapabilir
     const placeholders = ids.map(() => '?').join(',');
-    let ownerSql = `SELECT id, shipment_no, created_by FROM shipments WHERE id IN (${placeholders}) AND deleted_at IS NULL`;
+    let ownerSql = `SELECT id, shipment_no, transport_type, created_by FROM shipments WHERE id IN (${placeholders}) AND deleted_at IS NULL`;
     const [rows] = await conn.execute(ownerSql, ids);
     if (rows.length === 0) {
       await conn.rollback();
@@ -357,7 +421,7 @@ router.post('/bulk-action', verifyToken, requirePermission('shipments.bulk_actio
             type: 'shipment_status',
             title: `Sevkiyat statüsü değişti: ${r.shipment_no || `#${r.id}`}`,
             body: `Yeni statü: ${STATUS_TR[body.status] || body.status}. ${req.user.username} tarafından (toplu işlem).`,
-            link: `/shipments/karayolu/${r.id}/edit`,
+            link: shipmentLink(r.transport_type, r.id),
             entityType: 'shipments',
             entityId: r.id,
           });
@@ -443,8 +507,12 @@ router.delete('/:id', verifyToken, async (req, res) => {
 
     const shipment = rows[0];
 
-    // Yetki: user sadece kendi kaydını silebilir; admin+ herkesi
-    if (shipment.created_by !== req.user.id && !hasRole(req.user, 'admin')) {
+    // Yetki: kendi kaydı için delete.own, başkasınınki için delete.all
+    const isOwner = shipment.created_by === req.user.id;
+    const allowedToDelete = isOwner
+      ? (can(req.user, 'shipments.delete.own') || can(req.user, 'shipments.delete.all'))
+      : can(req.user, 'shipments.delete.all');
+    if (!allowedToDelete) {
       return sendError(res, 'Bu kaydı silme yetkiniz yok', 403);
     }
 

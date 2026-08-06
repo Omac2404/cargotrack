@@ -1,10 +1,19 @@
 import { z } from 'zod'
 
 const optString = z.string().optional().or(z.literal('')).transform((v) => v || '')
-const numericString = z.union([z.string(), z.number()]).optional().transform((v) => {
-  if (v === undefined || v === '' || v === null) return undefined
+/**
+ * Sayısal alan dönüşümü — üç durumu AYIRIR:
+ *   undefined → alan hiç dokunulmadı, istekte gönderilmez (DB'deki değer korunur)
+ *   null      → kullanıcı alanı boşalttı, backend kolonu sıfırlar
+ *   number    → normal değer
+ * Daha önce boş değer de undefined'a dönüyordu; bu yüzden bir kez girilen
+ * ağırlık/kap sayısı silinemiyordu (istek gövdesinden düştüğü için eski değer kalıyordu).
+ */
+const numericString = z.union([z.string(), z.number()]).nullish().transform((v) => {
+  if (v === undefined) return undefined
+  if (v === null || v === '') return null
   const n = typeof v === 'string' ? parseFloat(v) : v
-  return isFinite(n) ? n : undefined
+  return isFinite(n) ? n : null
 })
 
 export const shipmentSchema = z.object({
@@ -105,10 +114,9 @@ export const shipmentSchema = z.object({
     if (v === undefined || v === null || v === '') return ''
     return typeof v === 'string' ? v : JSON.stringify(v)
   }),
-  documents_data: z.union([z.string(), z.record(z.string(), z.unknown())]).optional().transform((v) => {
-    if (v === undefined || v === null || v === '') return ''
-    return typeof v === 'string' ? v : JSON.stringify(v)
-  }),
+  // documents_data BİLEREK YOK: belge yükleme/durum güncellemesi kendi endpoint'i
+  // üzerinden yürüyor. Formda tutulursa, form açıkken yüklenen belgeler
+  // Kaydet'e basıldığında eski (bayat) değerle geri ezilir.
   crates_data: z.union([z.string(), z.array(z.record(z.string(), z.unknown()))]).optional().transform((v) => {
     if (v === undefined || v === null || v === '') return ''
     return typeof v === 'string' ? v : JSON.stringify(v)

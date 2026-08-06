@@ -9,6 +9,7 @@ import {
   Table, TableHeader, TableBody, TableHead, TableRow, TableCell,
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
+import { modeSlug } from '@/features/shipments/modeConfig'
 import { useAging } from './hooks'
 import { ReportLoading, ReportError } from './ReportsPage'
 import { ExportButton } from '@/components/shared/ExportButton'
@@ -146,7 +147,7 @@ export function AgingReport() {
                     </TableCell>
                     <TableCell>
                       <Button asChild variant="ghost" size="icon" className="h-7 w-7">
-                        <Link to={`/shipments/karayolu/${it.id}/edit`}>
+                        <Link to={`/shipments/${modeSlug(it.transport_type)}/${it.id}/edit`}>
                           <ExternalLink className="w-3.5 h-3.5" />
                         </Link>
                       </Button>
