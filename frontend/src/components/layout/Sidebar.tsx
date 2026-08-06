@@ -2,7 +2,7 @@ import { NavLink, useLocation } from 'react-router-dom'
 import {
   Truck, Ship, Plane, Warehouse, Package, Users, BarChart3,
   Settings, Building2, FileText, ArrowRightLeft, ChevronDown, Truck as TruckIcon,
-  History, Boxes, X, Archive,
+  History, Boxes, X, Archive, BookOpen,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/stores/auth'
@@ -65,6 +65,7 @@ function buildNav(t: (k: string) => string): NavGroup[] {
         { label: t('nav.audit'), to: '/audit', icon: <History className="w-4 h-4" /> },
         { label: t('nav.archive'), to: '/archive', icon: <Archive className="w-4 h-4" /> },
         { label: t('nav.settings'), to: '/settings', icon: <Settings className="w-4 h-4" /> },
+        { label: t('nav.guide'), to: '/guide', icon: <BookOpen className="w-4 h-4" /> },
       ],
     },
   ]

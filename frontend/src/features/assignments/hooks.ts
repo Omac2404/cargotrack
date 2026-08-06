@@ -54,6 +54,8 @@ export interface LoadPoolItem {
   remaining_weight: number
   is_unassigned: boolean
   is_fully_assigned: boolean
+  /** Kap adedi girilmemiş — atama yapılabilmesi için önce Yük sekmesi doldurulmalı */
+  needs_cargo_info: boolean
 }
 
 export type LoadPoolStatus = 'unassigned' | 'partial' | 'all'

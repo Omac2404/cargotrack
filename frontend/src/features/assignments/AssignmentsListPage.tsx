@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
 import {
-  Plus, Trash2, Loader2, ArrowRightLeft, Inbox, AlertCircle, Calendar,
+  Plus, Trash2, Pencil, Loader2, ArrowRightLeft, Inbox, AlertCircle, Calendar,
   Truck, Ship, Plane, ListChecks, Package,
 } from 'lucide-react'
 
@@ -181,14 +181,26 @@ export function AssignmentsListPage() {
                     {a.notes || '—'}
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
-                      onClick={() => setDeleteTarget(a)}
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
+                    <div className="flex items-center justify-end gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7"
+                        title={t('common.edit')}
+                        onClick={() => setEditTarget(a)}
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        title={t('common.delete')}
+                        onClick={() => setDeleteTarget(a)}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

@@ -77,7 +77,8 @@
     "users": "Kullanıcılar",
     "audit": "Audit Log",
     "archive": "Arşiv",
-    "settings": "Ayarlar"
+    "settings": "Ayarlar",
+    "guide": "Nasıl Kullanılır"
   },
   "topbar": {
     "search_placeholder": "Hızlı gezinme veya komut..."

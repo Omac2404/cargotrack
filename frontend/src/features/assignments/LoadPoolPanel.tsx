@@ -15,6 +15,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select'
 import { cn, formatNumber } from '@/lib/utils'
+import { modeSlug } from '@/features/shipments/modeConfig'
 import { useLoadPool, type LoadPoolItem, type LoadPoolStatus } from './hooks'
 import { AssignmentFormDialog } from './AssignmentFormDialog'
 
@@ -29,9 +30,6 @@ const TRANSPORT_LABEL: Record<string, string> = {
   road: 'Karayolu', maritime: 'Denizyolu', sea: 'Denizyolu', air: 'Havayolu',
 }
 
-const TRANSPORT_SLUG: Record<string, string> = {
-  road: 'karayolu', maritime: 'denizyolu', sea: 'denizyolu', air: 'havayolu',
-}
 
 const STATUS_FILTERS: Array<{ value: LoadPoolStatus; label: string; description: string }> = [
   { value: 'partial', label: 'Atama Bekleyenler', description: 'Hiç atanmamış + kısmen atanmış' },
@@ -163,8 +161,7 @@ export function LoadPoolPanel() {
             </TableHeader>
             <TableBody>
               {items.map((item) => {
-                const slug = item.transport_type ? TRANSPORT_SLUG[item.transport_type] : null
-                const editLink = slug ? `/shipments/${slug}/${item.id}/edit` : null
+                const editLink = `/shipments/${modeSlug(item.transport_type)}/${item.id}/edit`
                 return (
                   <TableRow key={item.id}>
                     <TableCell>
@@ -212,7 +209,11 @@ export function LoadPoolPanel() {
                       <div className="text-[10px] text-muted-foreground">kg</div>
                     </TableCell>
                     <TableCell>
-                      {item.is_unassigned ? (
+                      {item.needs_cargo_info ? (
+                        <Badge variant="warning" title="Yük sekmesinde Kap Adedi girilmemiş">
+                          Kap adedi eksik
+                        </Badge>
+                      ) : item.is_unassigned ? (
                         <Badge variant="destructive">Hiç atanmamış</Badge>
                       ) : item.is_fully_assigned ? (
                         <Badge variant="success">Tamamen atanmış</Badge>
@@ -229,16 +230,26 @@ export function LoadPoolPanel() {
                             </Link>
                           </Button>
                         )}
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-7"
-                          onClick={() => setPresetFor(item)}
-                          disabled={item.is_fully_assigned}
-                        >
-                          <Plus className="w-3.5 h-3.5" />
-                          Atama Yap
-                        </Button>
+                        {item.needs_cargo_info ? (
+                          // Atama miktarı kap adedine göre kontrol ediliyor; önce Yük sekmesi doldurulmalı
+                          <Button asChild size="sm" variant="outline" className="h-7">
+                            <Link to={`${editLink}#cargo`}>
+                              <AlertCircle className="w-3.5 h-3.5" />
+                              Kap Adedi Gir
+                            </Link>
+                          </Button>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7"
+                            onClick={() => setPresetFor(item)}
+                            disabled={item.is_fully_assigned}
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                            Atama Yap
+                          </Button>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
@@ -253,7 +264,15 @@ export function LoadPoolPanel() {
       <Card className="p-3 text-xs text-muted-foreground flex items-start gap-2">
         <Package className="w-3.5 h-3.5 mt-0.5 shrink-0" />
         <span>
-          "Atama Yap" tıklayınca açılan formda araç + miktar seçersin; kalan kap/ağırlık otomatik dolacak ama düzenleyebilirsin.
+          <Link to="/guide" className="text-primary hover:underline font-medium">
+            Adım adım anlatım için: Nasıl Kullanılır → Araç Atama
+          </Link>
+          <br />
+          <strong>Bir araca birden fazla yük:</strong> Aynı TIR'ı birden çok sevkiyatta seçmen yeterli —
+          her satırda "Atama Yap" deyip aynı aracı seç, kapasite göstergesi dolarak ilerler.
+          <strong> Bir yükü birden fazla araca bölmek:</strong> Aynı sevkiyat için birkaç kez atama yap,
+          her seferinde farklı araç ve kısmi kap/ağırlık gir; "Kalan" sütunu sıfırlanana kadar devam et.
+          Kalan kap/ağırlık forma otomatik gelir, düzenleyebilirsin.
           Kapalı sevkiyatlar ve depolama işlemleri burada listelenmez.
         </span>
       </Card>

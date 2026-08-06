@@ -77,7 +77,8 @@
     "users": "Users",
     "audit": "Audit Log",
     "archive": "Archive",
-    "settings": "Settings"
+    "settings": "Settings",
+    "guide": "How To Use"
   },
   "topbar": {
     "search_placeholder": "Quick navigation or command..."

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Truck, Ship, Plane, Package, Building2, Warehouse, ArrowRightLeft, FileText,
-  Users, BarChart3, User, LogOut, Plus, Settings,
+  Users, BarChart3, User, LogOut, Plus, Settings, BookOpen,
 } from 'lucide-react'
 import {
   CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList,
@@ -45,6 +45,7 @@ export function CommandPalette({ open, onOpenChange }: Props) {
     { icon: <Truck />, label: 'Araçlar', shortcut: 'g v', action: () => go('/vehicles') },
     { icon: <ArrowRightLeft />, label: 'Atamalar', action: () => go('/assignments') },
     { icon: <FileText />, label: 'Belgeler', action: () => go('/documents') },
+    { icon: <BookOpen />, label: 'Nasıl Kullanılır — Kullanım Kılavuzu', action: () => go('/guide') },
   ]
 
   const create: CmdItem[] = [

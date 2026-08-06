@@ -77,7 +77,8 @@
     "users": "Utilisateurs",
     "audit": "Journal d'audit",
     "archive": "Archives",
-    "settings": "Paramètres"
+    "settings": "Paramètres",
+    "guide": "Mode d'emploi"
   },
   "topbar": {
     "search_placeholder": "Navigation rapide ou commande..."

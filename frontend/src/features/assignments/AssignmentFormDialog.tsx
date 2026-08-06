@@ -43,22 +43,28 @@ interface Props {
   defaultShipmentId?: number
   defaultQuantity?: number
   defaultWeight?: number
+  /** Araç sayfasından "Bu araca yük ekle" ile açıldığında aracı hazır seçer */
+  defaultVehicleId?: number
 }
 
 export function AssignmentFormDialog({
-  open, onOpenChange, assignment, defaultShipmentId, defaultQuantity, defaultWeight,
+  open, onOpenChange, assignment, defaultShipmentId, defaultQuantity, defaultWeight, defaultVehicleId,
 }: Props) {
   const isEdit = !!assignment
   const saveMut = useSaveAssignment()
 
   const { data: allVehicles = [] } = useVehicles()
-  // Storage hariç tüm sevkiyatlar atama alır
+  // Storage hariç tüm sevkiyatlar atama alır (ithalat/ihracat dahil — bunlar
+  // yük havuzunda listeleniyordu ama burada seçilemiyordu)
   const { data: roadShipments = [] } = useShipments('road')
   const { data: maritimeShipments = [] } = useShipments('maritime')
   const { data: airShipments = [] } = useShipments('air')
-  const allShipments = useMemo(() => [...roadShipments, ...maritimeShipments, ...airShipments], [
-    roadShipments, maritimeShipments, airShipments,
-  ])
+  const { data: importShipments = [] } = useShipments('import')
+  const { data: exportShipments = [] } = useShipments('export')
+  const allShipments = useMemo(
+    () => [...roadShipments, ...maritimeShipments, ...airShipments, ...importShipments, ...exportShipments],
+    [roadShipments, maritimeShipments, airShipments, importShipments, exportShipments]
+  )
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -84,7 +90,7 @@ export function AssignmentFormDialog({
         })
       } else {
         reset({
-          vehicle_id: 0,
+          vehicle_id: defaultVehicleId ?? 0,
           shipment_id: defaultShipmentId ?? 0,
           assigned_quantity: defaultQuantity && defaultQuantity > 0 ? defaultQuantity : 1,
           assigned_weight: defaultWeight ?? 0,
@@ -93,7 +99,7 @@ export function AssignmentFormDialog({
         })
       }
     }
-  }, [open, assignment, defaultShipmentId, defaultQuantity, defaultWeight, reset])
+  }, [open, assignment, defaultShipmentId, defaultQuantity, defaultWeight, defaultVehicleId, reset])
 
   const vehicleId = watch('vehicle_id')
   const shipmentId = watch('shipment_id')
@@ -101,9 +107,12 @@ export function AssignmentFormDialog({
   const selectedVehicle = useMemo(() => allVehicles.find((v) => v.id === vehicleId), [allVehicles, vehicleId])
   const selectedShipment = useMemo(() => allShipments.find((s) => s.id === shipmentId), [allShipments, shipmentId])
 
-  // Mod uyumu kontrolü
-  const modeIncompatible = selectedVehicle && selectedShipment &&
-    normalize(selectedVehicle.transport_type) !== normalize(selectedShipment.transport_type as string)
+  // Mod uyumu kontrolü — ithalat/ihracat gümrük operasyonlarının kendi araç modu
+  // olmadığı için her araca atanabilir (backend de böyle davranıyor)
+  const shipmentMode = normalize(selectedShipment?.transport_type as string)
+  const isCustomsOp = shipmentMode === 'import' || shipmentMode === 'export'
+  const modeIncompatible = !!selectedVehicle && !!selectedShipment && !isCustomsOp &&
+    normalize(selectedVehicle.transport_type) !== shipmentMode
 
   // Bu sevkiyata yapılmış diğer atamaların toplamı (mevcut atama hariç)
   const { data: shipmentAssignments = [] } = useAssignments(shipmentId ? { shipment_id: shipmentId } : undefined)
@@ -227,7 +236,7 @@ export function AssignmentFormDialog({
             <div className="p-3 rounded-md bg-destructive/10 border border-destructive/30 text-xs flex items-start gap-2">
               <AlertCircle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
               <div className="text-destructive">
-                <strong>Mod uyumsuzluğu:</strong> {SHIPMENT_MODE_LABEL[selectedShipment!.transport_type as string]} sevkiyatı sadece {SHIPMENT_MODE_LABEL[normalize(selectedShipment!.transport_type as string)]} aracına atanabilir. Bu seçim backend tarafından reddedilecek.
+                <strong>Mod uyumsuzluğu:</strong> {SHIPMENT_MODE_LABEL[selectedShipment!.transport_type as string]} sevkiyatı sadece {SHIPMENT_MODE_LABEL[shipmentMode]} aracına atanabilir — seçili araç {VEHICLE_MODE_LABEL[selectedVehicle!.transport_type]}. Kaydetmeye çalışırsan reddedilir.
               </div>
             </div>
           )}

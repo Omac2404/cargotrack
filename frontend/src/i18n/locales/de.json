@@ -77,7 +77,8 @@
     "users": "Benutzer",
     "audit": "Prüfprotokoll",
     "archive": "Archiv",
-    "settings": "Einstellungen"
+    "settings": "Einstellungen",
+    "guide": "Anleitung"
   },
   "topbar": {
     "search_placeholder": "Schnellnavigation oder Befehl..."

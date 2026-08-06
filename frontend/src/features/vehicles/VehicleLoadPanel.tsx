@@ -1,5 +1,6 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Package, Loader2, AlertCircle, Inbox, ExternalLink, Calendar } from 'lucide-react'
+import { Package, Loader2, AlertCircle, Inbox, ExternalLink, Calendar, Plus } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -7,12 +8,9 @@ import {
   Table, TableHeader, TableBody, TableHead, TableRow, TableCell,
 } from '@/components/ui/table'
 import { cn, formatNumber, formatDate } from '@/lib/utils'
+import { modeSlug } from '@/features/shipments/modeConfig'
+import { AssignmentFormDialog } from '@/features/assignments/AssignmentFormDialog'
 import { useVehicleLoad } from './hooks'
-
-const MODE_SLUG: Record<string, string> = {
-  road: 'karayolu', maritime: 'denizyolu', sea: 'denizyolu', air: 'havayolu',
-  storage: 'depolama', import: 'ithalat', export: 'ihracat',
-}
 
 const STATUS_LABELS: Record<string, { label: string; variant: 'default' | 'secondary' | 'warning' | 'success' }> = {
   draft: { label: 'Taslak', variant: 'secondary' },
@@ -27,6 +25,7 @@ interface Props {
 
 export function VehicleLoadPanel({ vehicleId }: Props) {
   const { data, isLoading, error } = useVehicleLoad(vehicleId)
+  const [addOpen, setAddOpen] = useState(false)
 
   if (isLoading) {
     return (
@@ -104,18 +103,37 @@ export function VehicleLoadPanel({ vehicleId }: Props) {
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Yüklenen Sevkiyatlar ({assignments.length})
           </h3>
+          {/* Aynı araca birden fazla sevkiyat yüklenebilir — buradan tek tıkla ekle */}
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 ml-auto"
+            onClick={() => setAddOpen(true)}
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Bu Araca Yük Ekle
+          </Button>
         </div>
 
         {assignments.length === 0 ? (
           <div className="p-12 text-center text-muted-foreground">
             <Inbox className="w-10 h-10 mx-auto mb-2 opacity-50" />
             <div className="text-sm">Bu araca henüz yük atanmamış.</div>
-            <Button asChild variant="outline" size="sm" className="mt-3">
-              <Link to="/assignments">
-                <ExternalLink className="w-3.5 h-3.5" />
-                Atamalar sayfasına git
-              </Link>
-            </Button>
+            <div className="text-xs mt-1">
+              Aynı araca birden fazla sevkiyat yükleyebilirsin — her sevkiyat için bir atama ekle.
+            </div>
+            <div className="flex items-center justify-center gap-2 mt-3">
+              <Button size="sm" onClick={() => setAddOpen(true)}>
+                <Plus className="w-3.5 h-3.5" />
+                Bu Araca Yük Ekle
+              </Button>
+              <Button asChild variant="outline" size="sm">
+                <Link to="/assignments">
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  Yük havuzunu aç
+                </Link>
+              </Button>
+            </div>
           </div>
         ) : (
           <Table>
@@ -134,8 +152,9 @@ export function VehicleLoadPanel({ vehicleId }: Props) {
             <TableBody>
               {assignments.map((a) => {
                 const status = a.shipment_status ? STATUS_LABELS[a.shipment_status] : null
-                const slug = a.shipment_transport ? MODE_SLUG[a.shipment_transport] : null
-                const editLink = slug && a.shipment_id ? `/shipments/${slug}/${a.shipment_id}/edit` : null
+                const editLink = a.shipment_id
+                  ? `/shipments/${modeSlug(a.shipment_transport)}/${a.shipment_id}/edit`
+                  : null
                 return (
                   <TableRow key={a.id}>
                     <TableCell className="font-mono text-xs font-medium">{a.shipment_no || '—'}</TableCell>
@@ -178,6 +197,13 @@ export function VehicleLoadPanel({ vehicleId }: Props) {
           </Table>
         )}
       </Card>
+
+      {/* Araç önceden seçili gelir; kullanıcı yalnızca sevkiyat + miktar girer */}
+      <AssignmentFormDialog
+        open={addOpen}
+        onOpenChange={setAddOpen}
+        defaultVehicleId={vehicleId}
+      />
     </div>
   )
 }

@@ -31,6 +31,7 @@ const StorageOrdersPage = lazy(() => import('@/features/storage-orders/StorageOr
 const AuditLogPage = lazy(() => import('@/features/audit/AuditLogPage').then((m) => ({ default: m.AuditLogPage })))
 const ReportsPage = lazy(() => import('@/features/reports/ReportsPage').then((m) => ({ default: m.ReportsPage })))
 const ArchivePage = lazy(() => import('@/features/archive/ArchivePage').then((m) => ({ default: m.ArchivePage })))
+const UserGuidePage = lazy(() => import('@/features/guide/UserGuidePage').then((m) => ({ default: m.UserGuidePage })))
 
 function PageLoader() {
   return (
@@ -82,6 +83,7 @@ function AppRoutes() {
           <Route path="/audit" element={<Suspense fallback={<PageLoader />}><AuditLogPage /></Suspense>} />
           <Route path="/reports" element={<Suspense fallback={<PageLoader />}><ReportsPage /></Suspense>} />
           <Route path="/archive" element={<Suspense fallback={<PageLoader />}><ArchivePage /></Suspense>} />
+          <Route path="/guide" element={<Suspense fallback={<PageLoader />}><UserGuidePage /></Suspense>} />
           <Route path="/settings" element={<ComingSoon title="Ayarlar" phase="Sonraki sürüm" />} />
         </Route>
 
