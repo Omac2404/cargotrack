@@ -1,6 +1,6 @@
 const express = require('express');
 const { pool } = require('../config/database');
-const { verifyToken } = require('../middleware/auth');
+const { verifyToken, requirePermission, can } = require('../middleware/auth');
 const { logAudit } = require('../helpers/audit');
 const {
   sanitizeText, toInt, toFloat, toNullableDate, toBool01,
@@ -21,7 +21,7 @@ const EQUIPMENT_BY_MODE = {
 const PREFIX_MAP = { road: 'V', sea: 'VS', air: 'VA' };
 
 // ============ GET /api/vehicles?transport_type=road ============
-router.get('/', verifyToken, async (req, res) => {
+router.get('/', verifyToken, requirePermission('vehicles.read'), async (req, res) => {
   try {
     const transportType = sanitizeText(req.query.transport_type || '');
     let rows;
@@ -47,6 +47,14 @@ router.post('/', verifyToken, async (req, res) => {
     await conn.beginTransaction();
     const body = req.body || {};
     const id = toInt(body.vehicle_id);
+
+    // İzin: yeni araç → vehicles.create, mevcut araç → vehicles.update
+    const needed = id ? 'vehicles.update' : 'vehicles.create';
+    if (!can(req.user, needed)) {
+      await conn.rollback();
+      return sendError(res, `Bu işlem için yetkiniz yok (${needed})`, 403);
+    }
+
     const plate = sanitizeText(body.plate);
     if (!plate) {
       await conn.rollback();
@@ -114,7 +122,7 @@ router.post('/', verifyToken, async (req, res) => {
 
 // ============ GET /api/vehicles/:id ============
 // Tek araç (form'da düzenleme için)
-router.get('/:id', verifyToken, async (req, res) => {
+router.get('/:id', verifyToken, requirePermission('vehicles.read'), async (req, res) => {
   try {
     const id = toInt(req.params.id);
     if (!id) return sendError(res, 'Geçersiz ID');
@@ -129,7 +137,7 @@ router.get('/:id', verifyToken, async (req, res) => {
 
 // ============ GET /api/vehicles/:id/load ============
 // Bu araca yapılan tüm atamalar + sevkiyat detayları + kapasite kullanım özeti
-router.get('/:id/load', verifyToken, async (req, res) => {
+router.get('/:id/load', verifyToken, requirePermission('vehicles.read'), async (req, res) => {
   try {
     const id = toInt(req.params.id);
     if (!id) return sendError(res, 'Geçersiz ID');
@@ -189,7 +197,7 @@ router.get('/:id/load', verifyToken, async (req, res) => {
 });
 
 // ============ DELETE /api/vehicles/:id ============
-router.delete('/:id', verifyToken, async (req, res) => {
+router.delete('/:id', verifyToken, requirePermission('vehicles.delete'), async (req, res) => {
   try {
     const id = toInt(req.params.id);
     if (!id) return sendError(res, 'Geçersiz ID');

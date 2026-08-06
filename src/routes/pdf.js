@@ -3,7 +3,7 @@ const PDFDocument = require('pdfkit');
 const bwipjs = require('bwip-js');
 const jwt = require('jsonwebtoken');
 const { pool } = require('../config/database');
-const { verifyToken } = require('../middleware/auth');
+const { verifyToken, hasRole } = require('../middleware/auth');
 const { logAudit } = require('../helpers/audit');
 const { toInt, sendError } = require('../helpers/utils');
 
@@ -32,9 +32,20 @@ function parseJsonField(raw) {
   try { return JSON.parse(raw) || {}; } catch { return {}; }
 }
 
-async function loadShipment(id) {
+/**
+ * Sevkiyatı PDF üretimi için getirir.
+ *
+ * Sahiplik kontrolü zorunlu: PDF endpoint'leri token'ı query string'den de kabul
+ * ettiği için (yeni sekmede açma), kontrolsüz bırakılırsa herhangi bir oturum
+ * sahibi sadece ID deneyerek başkasının dosya kapağını/proformasını çekebilir.
+ * Yetkisiz erişimde null döner — varlık bilgisi de sızmaz.
+ */
+async function loadShipment(id, user) {
   const [rows] = await pool.execute('SELECT * FROM shipments WHERE id = ? AND deleted_at IS NULL LIMIT 1', [id]);
-  return rows[0] || null;
+  const ship = rows[0] || null;
+  if (!ship) return null;
+  if (!hasRole(user, 'admin') && ship.created_by !== user.id) return null;
+  return ship;
 }
 
 function setupPdfHeaders(res, filename) {
@@ -74,7 +85,7 @@ const COLORS = {
 router.get('/file-cover/:shipmentId', verifyTokenFlexible, async (req, res) => {
   try {
     const id = toInt(req.params.shipmentId);
-    const ship = await loadShipment(id);
+    const ship = await loadShipment(id, req.user);
     if (!ship) return sendError(res, 'Sevkiyat bulunamadı', 404);
 
     const modeData = parseJsonField(ship.mode_data);
@@ -277,7 +288,7 @@ router.get('/file-cover/:shipmentId', verifyTokenFlexible, async (req, res) => {
 router.get('/proforma/:shipmentId', verifyTokenFlexible, async (req, res) => {
   try {
     const id = toInt(req.params.shipmentId);
-    const ship = await loadShipment(id);
+    const ship = await loadShipment(id, req.user);
     if (!ship) return sendError(res, 'Sevkiyat bulunamadı', 404);
 
     const financial = parseJsonField(ship.financial_data);
@@ -450,7 +461,7 @@ router.get('/proforma/:shipmentId', verifyTokenFlexible, async (req, res) => {
 router.get('/storage-report/:shipmentId', verifyTokenFlexible, async (req, res) => {
   try {
     const id = toInt(req.params.shipmentId);
-    const ship = await loadShipment(id);
+    const ship = await loadShipment(id, req.user);
     if (!ship || ship.transport_type !== 'storage') {
       return sendError(res, 'Depolama sevkiyatı bulunamadı', 404);
     }
@@ -546,7 +557,7 @@ router.get('/storage-report/:shipmentId', verifyTokenFlexible, async (req, res) 
 router.get('/barcodes/:shipmentId', verifyTokenFlexible, async (req, res) => {
   try {
     const id = toInt(req.params.shipmentId);
-    const ship = await loadShipment(id);
+    const ship = await loadShipment(id, req.user);
     if (!ship) return sendError(res, 'Sevkiyat bulunamadı', 404);
 
     const count = Math.min(500, parseInt(ship.quantity, 10) || 1);

@@ -1,6 +1,6 @@
 const express = require('express');
 const { pool } = require('../config/database');
-const { verifyToken } = require('../middleware/auth');
+const { verifyToken, requirePermission, can } = require('../middleware/auth');
 const { logAudit } = require('../helpers/audit');
 const {
   sanitizeText, sanitizeEmail, toInt, whitelist, sendSuccess, sendError
@@ -12,7 +12,7 @@ const VALID_TYPES = ['R', 'S', 'T', 'U', 'V', 'Y', 'Z'];
 const VALID_STATUS = ['active', 'inactive'];
 
 // ============ GET /api/warehouses ============
-router.get('/', verifyToken, async (req, res) => {
+router.get('/', verifyToken, requirePermission('warehouses.read'), async (req, res) => {
   try {
     const [rows] = await pool.execute(
       'SELECT * FROM warehouses WHERE deleted_at IS NULL ORDER BY warehouse_code ASC'
@@ -31,6 +31,14 @@ router.post('/', verifyToken, async (req, res) => {
     await conn.beginTransaction();
     const body = req.body || {};
     const id = toInt(body.warehouse_id);
+
+    // İzin: yeni depo → warehouses.create, mevcut depo → warehouses.update
+    const needed = id ? 'warehouses.update' : 'warehouses.create';
+    if (!can(req.user, needed)) {
+      await conn.rollback();
+      return sendError(res, `Bu işlem için yetkiniz yok (${needed})`, 403);
+    }
+
     const name = sanitizeText(body.name);
     if (!name) {
       await conn.rollback();
@@ -91,7 +99,7 @@ router.post('/', verifyToken, async (req, res) => {
 });
 
 // ============ DELETE /api/warehouses/:id ============
-router.delete('/:id', verifyToken, async (req, res) => {
+router.delete('/:id', verifyToken, requirePermission('warehouses.delete'), async (req, res) => {
   try {
     const id = toInt(req.params.id);
     if (!id) return sendError(res, 'Geçersiz ID');

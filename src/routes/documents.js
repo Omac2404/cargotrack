@@ -4,11 +4,31 @@ const fs = require('fs');
 const multer = require('multer');
 const jwt = require('jsonwebtoken');
 const { pool } = require('../config/database');
-const { verifyToken } = require('../middleware/auth');
+const { verifyToken, hasRole, requirePermission } = require('../middleware/auth');
 const { logAudit } = require('../helpers/audit');
 const { toInt, sanitizeText, sendSuccess, sendError } = require('../helpers/utils');
 
 const router = express.Router();
+
+/**
+ * Sevkiyatı yetki kontrolüyle getirir.
+ *
+ * Belge endpoint'leri yalnızca shipment_id ile çalışıyordu; sahiplik kontrolü
+ * olmadığı için herhangi bir oturum sahibi başkasının belgesini indirebiliyordu (IDOR).
+ *
+ * @returns {{ row: object } | { error: string, code: number }}
+ */
+async function loadShipmentForUser(user, shipmentId, columns = 'id, documents_data, created_by') {
+  const [rows] = await pool.execute(
+    `SELECT ${columns} FROM shipments WHERE id = ? AND deleted_at IS NULL LIMIT 1`,
+    [shipmentId]
+  );
+  if (rows.length === 0) return { error: 'Sevkiyat bulunamadı', code: 404 };
+  if (!hasRole(user, 'admin') && rows[0].created_by !== user.id) {
+    return { error: 'Bu sevkiyatın belgelerine erişim yetkiniz yok', code: 403 };
+  }
+  return { row: rows[0] };
+}
 
 const UPLOAD_ROOT = path.resolve(process.env.UPLOAD_DIR || path.join(__dirname, '..', '..', 'uploads'));
 const ALLOWED_EXTS = ['.pdf', '.jpg', '.jpeg', '.png', '.doc', '.docx', '.xls', '.xlsx'];
@@ -33,7 +53,7 @@ function sanitizeFilename(s) {
 }
 
 // ============ POST /api/documents/upload ============
-router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
+router.post('/upload', verifyToken, requirePermission('documents.upload'), upload.single('file'), async (req, res) => {
   try {
     const shipmentId = toInt(req.body.shipment_id);
     const docKey = sanitizeDocKey(req.body.doc_key);
@@ -46,12 +66,10 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
       return sendError(res, 'Desteklenmeyen dosya türü');
     }
 
-    // Shipment var mı?
-    const [rows] = await pool.execute(
-      'SELECT id, documents_data FROM shipments WHERE id = ? AND deleted_at IS NULL LIMIT 1',
-      [shipmentId]
-    );
-    if (rows.length === 0) return sendError(res, 'Sevkiyat bulunamadı', 404);
+    // Shipment var mı + bu kullanıcının erişimi var mı?
+    const access = await loadShipmentForUser(req.user, shipmentId);
+    if (access.error) return sendError(res, access.error, access.code);
+    const rows = [access.row];
 
     // Klasör oluştur — uploads/{shipment_id}/
     const dir = path.join(UPLOAD_ROOT, String(shipmentId));
@@ -135,16 +153,13 @@ function verifyTokenFlexible(req, res, next) {
 }
 
 /** Yardımcı: shipment'in documents_data'sından belirli docKey+version dosyasını çek. */
-async function resolveDocFile(shipmentId, docKey, version) {
-  const [rows] = await pool.execute(
-    'SELECT documents_data FROM shipments WHERE id = ? AND deleted_at IS NULL LIMIT 1',
-    [shipmentId]
-  );
-  if (rows.length === 0) return { error: 'Sevkiyat bulunamadı', code: 404 };
+async function resolveDocFile(user, shipmentId, docKey, version) {
+  const access = await loadShipmentForUser(user, shipmentId);
+  if (access.error) return access;
 
   let docs = {};
-  if (rows[0].documents_data) {
-    try { docs = JSON.parse(rows[0].documents_data) || {}; }
+  if (access.row.documents_data) {
+    try { docs = JSON.parse(access.row.documents_data) || {}; }
     catch (e) { docs = {}; }
   }
   const doc = docs[docKey];
@@ -183,7 +198,7 @@ const MIME_BY_EXT = {
 
 // ============ GET /api/documents/:shipmentId/:docKey?version=N&inline=1 ============
 // version (default 0 = current). inline=1 → preview için iframe-friendly (Content-Disposition: inline)
-router.get('/:shipmentId/:docKey', verifyTokenFlexible, async (req, res) => {
+router.get('/:shipmentId/:docKey', verifyTokenFlexible, requirePermission('documents.read'), async (req, res) => {
   try {
     const shipmentId = toInt(req.params.shipmentId);
     const docKey = sanitizeDocKey(req.params.docKey);
@@ -191,7 +206,7 @@ router.get('/:shipmentId/:docKey', verifyTokenFlexible, async (req, res) => {
     const inline = String(req.query.inline || '') === '1';
     if (!shipmentId || !docKey) return sendError(res, 'Eksik parametre');
 
-    const r = await resolveDocFile(shipmentId, docKey, version);
+    const r = await resolveDocFile(req.user, shipmentId, docKey, version);
     if (r.error) return sendError(res, r.error, r.code);
 
     const ext = path.extname(r.filename).toLowerCase();
@@ -215,20 +230,17 @@ router.get('/:shipmentId/:docKey', verifyTokenFlexible, async (req, res) => {
 });
 
 // ============ GET /api/documents/:shipmentId/:docKey/versions (sadece liste — meta) ============
-router.get('/:shipmentId/:docKey/versions', verifyToken, async (req, res) => {
+router.get('/:shipmentId/:docKey/versions', verifyToken, requirePermission('documents.read'), async (req, res) => {
   try {
     const shipmentId = toInt(req.params.shipmentId);
     const docKey = sanitizeDocKey(req.params.docKey);
     if (!shipmentId || !docKey) return sendError(res, 'Eksik parametre');
 
-    const [rows] = await pool.execute(
-      'SELECT documents_data FROM shipments WHERE id = ? AND deleted_at IS NULL LIMIT 1',
-      [shipmentId]
-    );
-    if (rows.length === 0) return sendError(res, 'Sevkiyat bulunamadı', 404);
+    const access = await loadShipmentForUser(req.user, shipmentId);
+    if (access.error) return sendError(res, access.error, access.code);
     let docs = {};
-    if (rows[0].documents_data) {
-      try { docs = JSON.parse(rows[0].documents_data) || {}; } catch { docs = {}; }
+    if (access.row.documents_data) {
+      try { docs = JSON.parse(access.row.documents_data) || {}; } catch { docs = {}; }
     }
     const doc = docs[docKey];
     if (!doc) return sendSuccess(res, { current: null, versions: [] });
@@ -256,20 +268,17 @@ router.get('/:shipmentId/:docKey/versions', verifyToken, async (req, res) => {
 
 // ============ POST /api/documents/:shipmentId/:docKey/restore?version=N ============
 // N. versiyonu güncel (current) yap; mevcut current'ı versions[]'a taşır.
-router.post('/:shipmentId/:docKey/restore', verifyToken, async (req, res) => {
+router.post('/:shipmentId/:docKey/restore', verifyToken, requirePermission('documents.upload'), async (req, res) => {
   try {
     const shipmentId = toInt(req.params.shipmentId);
     const docKey = sanitizeDocKey(req.params.docKey);
     const version = Math.max(1, toInt(req.query.version) || 0);
     if (!shipmentId || !docKey || !version) return sendError(res, 'Eksik parametre');
 
-    const [rows] = await pool.execute(
-      'SELECT documents_data FROM shipments WHERE id = ? AND deleted_at IS NULL LIMIT 1',
-      [shipmentId]
-    );
-    if (rows.length === 0) return sendError(res, 'Sevkiyat bulunamadı', 404);
+    const access = await loadShipmentForUser(req.user, shipmentId);
+    if (access.error) return sendError(res, access.error, access.code);
     let docs = {};
-    try { docs = JSON.parse(rows[0].documents_data || '{}') || {}; } catch { docs = {}; }
+    try { docs = JSON.parse(access.row.documents_data || '{}') || {}; } catch { docs = {}; }
     const doc = docs[docKey];
     if (!doc) return sendError(res, 'Belge bulunamadı', 404);
     const versions = Array.isArray(doc.versions) ? doc.versions : [];
@@ -305,21 +314,18 @@ router.post('/:shipmentId/:docKey/restore', verifyToken, async (req, res) => {
 });
 
 // ============ DELETE /api/documents/:shipmentId/:docKey ============
-router.delete('/:shipmentId/:docKey', verifyToken, async (req, res) => {
+router.delete('/:shipmentId/:docKey', verifyToken, requirePermission('documents.delete'), async (req, res) => {
   try {
     const shipmentId = toInt(req.params.shipmentId);
     const docKey = sanitizeDocKey(req.params.docKey);
     if (!shipmentId || !docKey) return sendError(res, 'Eksik parametre');
 
-    const [rows] = await pool.execute(
-      'SELECT documents_data FROM shipments WHERE id = ? AND deleted_at IS NULL LIMIT 1',
-      [shipmentId]
-    );
-    if (rows.length === 0) return sendError(res, 'Sevkiyat bulunamadı', 404);
+    const access = await loadShipmentForUser(req.user, shipmentId);
+    if (access.error) return sendError(res, access.error, access.code);
 
     let docs = {};
-    if (rows[0].documents_data) {
-      try { docs = JSON.parse(rows[0].documents_data) || {}; }
+    if (access.row.documents_data) {
+      try { docs = JSON.parse(access.row.documents_data) || {}; }
       catch (e) { docs = {}; }
     }
 

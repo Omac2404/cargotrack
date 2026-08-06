@@ -1,6 +1,6 @@
 const express = require('express');
 const { pool } = require('../config/database');
-const { verifyToken, hasRole } = require('../middleware/auth');
+const { verifyToken, hasRole, requirePermission, can } = require('../middleware/auth');
 const { logAudit } = require('../helpers/audit');
 const { notify } = require('../helpers/notifications');
 const {
@@ -20,7 +20,7 @@ const MODE_LABELS = {
 };
 
 // ============ GET /api/assignments?vehicle_id=X&shipment_id=Y ============
-router.get('/', verifyToken, async (req, res) => {
+router.get('/', verifyToken, requirePermission('assignments.read'), async (req, res) => {
   try {
     const vehicleId = toInt(req.query.vehicle_id);
     const shipmentId = toInt(req.query.shipment_id);
@@ -65,7 +65,7 @@ router.get('/', verifyToken, async (req, res) => {
 // Query: ?status=unassigned|partial|all (default: partial — kalan > 0)
 //        ?transport_type=road|maritime|air|...
 //        ?q=arama (shipment_no veya client_billing)
-router.get('/load-pool', verifyToken, async (req, res) => {
+router.get('/load-pool', verifyToken, requirePermission('assignments.read'), async (req, res) => {
   try {
     const status = sanitizeText(req.query.status || 'partial');
     const transportType = sanitizeText(req.query.transport_type || '');
@@ -113,9 +113,12 @@ router.get('/load-pool', verifyToken, async (req, res) => {
       const remainingWgt = Math.max(0, totalWgt - assignedWgt);
       const isUnassigned = assignedQty === 0;
       const isFullyAssigned = totalQty > 0 && remainingQty === 0;
+      // Kap adedi girilmemiş sevkiyat atama yapılamaz durumdadır ama havuzdan
+      // gizlenirse kullanıcı "sevkiyatım kayboldu" diye takılıyor — uyarıyla göster.
+      const needsCargoInfo = totalQty === 0;
 
       if (status === 'unassigned' && !isUnassigned) continue;
-      if (status === 'partial' && (isFullyAssigned || (totalQty === 0 && assignedQty === 0))) continue;
+      if (status === 'partial' && isFullyAssigned) continue;
       // status === 'all' → hepsi
 
       out.push({
@@ -129,6 +132,7 @@ router.get('/load-pool', verifyToken, async (req, res) => {
         remaining_weight: remainingWgt,
         is_unassigned: isUnassigned,
         is_fully_assigned: isFullyAssigned,
+        needs_cargo_info: needsCargoInfo,
       });
     }
 
@@ -152,13 +156,20 @@ router.post('/', verifyToken, async (req, res) => {
     const qty = toInt(body.assigned_quantity);
     const weight = toFloat(body.assigned_weight);
 
+    // İzin: yeni atama → assignments.create, mevcut atama → assignments.update
+    const neededPerm = id ? 'assignments.update' : 'assignments.create';
+    if (!can(req.user, neededPerm)) {
+      await conn.rollback();
+      return sendError(res, `Bu işlem için yetkiniz yok (${neededPerm})`, 403);
+    }
+
     if (vehicleId <= 0) { await conn.rollback(); return sendError(res, 'Araç seçilmedi'); }
     if (shipmentId <= 0) { await conn.rollback(); return sendError(res, 'Sevkiyat seçilmedi'); }
     if (qty <= 0) { await conn.rollback(); return sendError(res, 'Atama miktarı 0\'dan büyük olmalı'); }
 
     // Pessimistic lock: shipment satırını kilitle (concurrent overbooking'i engelle)
     const [shipmentRows] = await conn.execute(
-      'SELECT id, quantity, gross_weight, transport_type FROM shipments WHERE id = ? AND deleted_at IS NULL FOR UPDATE',
+      'SELECT id, quantity, gross_weight, transport_type, created_by FROM shipments WHERE id = ? AND deleted_at IS NULL FOR UPDATE',
       [shipmentId]
     );
     if (shipmentRows.length === 0) {
@@ -166,6 +177,12 @@ router.post('/', verifyToken, async (req, res) => {
       return sendError(res, 'Sevkiyat bulunamadı', 404);
     }
     const shipment = shipmentRows[0];
+
+    // Sahiplik: admin altı roller yalnızca kendi sevkiyatlarına atama yapabilir
+    if (!hasRole(req.user, 'admin') && shipment.created_by !== req.user.id) {
+      await conn.rollback();
+      return sendError(res, 'Bu sevkiyata atama yapma yetkiniz yok', 403);
+    }
 
     // Vehicle satırını da kilitle (silinmesini engellemek için)
     const [vehicleRows] = await conn.execute(
@@ -185,7 +202,10 @@ router.post('/', verifyToken, async (req, res) => {
       await conn.rollback();
       return sendError(res, 'Depolama işlemleri araç ataması alamaz');
     }
-    if (shipTT !== vehTT) {
+    // İthalat/ihracat gümrük operasyonlarının kendi araç modu yok (araçlar road/sea/air).
+    // Fiziksel taşıma modu atama anında seçilir → her moddaki araca atanabilir.
+    const isCustomsOp = shipTT === 'import' || shipTT === 'export';
+    if (!isCustomsOp && shipTT !== vehTT) {
       await conn.rollback();
       return sendError(
         res,
@@ -300,15 +320,24 @@ router.post('/', verifyToken, async (req, res) => {
 });
 
 // ============ DELETE /api/assignments/:id ============
-router.delete('/:id', verifyToken, async (req, res) => {
+router.delete('/:id', verifyToken, requirePermission('assignments.delete'), async (req, res) => {
   try {
     const id = toInt(req.params.id);
     if (!id) return sendError(res, 'Geçersiz ID');
     const [rows] = await pool.execute(
-      'SELECT id FROM vehicle_assignments WHERE id = ? AND deleted_at IS NULL LIMIT 1',
+      `SELECT a.id, s.created_by AS shipment_owner
+       FROM vehicle_assignments a
+       LEFT JOIN shipments s ON s.id = a.shipment_id
+       WHERE a.id = ? AND a.deleted_at IS NULL LIMIT 1`,
       [id]
     );
     if (rows.length === 0) return sendError(res, 'Kayıt bulunamadı', 404);
+
+    // Sahiplik: admin altı roller yalnızca kendi sevkiyatlarının atamalarını silebilir
+    if (!hasRole(req.user, 'admin') && rows[0].shipment_owner !== req.user.id) {
+      return sendError(res, 'Bu atamayı silme yetkiniz yok', 403);
+    }
+
     // Soft-delete
     await pool.execute(
       'UPDATE vehicle_assignments SET deleted_at = NOW(), deleted_by = ? WHERE id = ?',

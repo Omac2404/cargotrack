@@ -97,8 +97,12 @@ const DEFAULT_ROLE_PERMISSIONS = {
     'shipments.delete.own',
     'shipments.financial',
 
-    // Partner, araç, depo: sadece okuma
+    // Partner: sevkiyat girerken yeni müşteri/gönderici açabilmeli (formdaki "+" butonu),
+    // ama mevcut kayıtları düzenleyemez/silemez.
+    'partners.create',
     'partners.read',
+
+    // Araç, depo: sadece okuma
     'vehicles.read',
     'warehouses.read',
 

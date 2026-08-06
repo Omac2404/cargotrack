@@ -1,6 +1,6 @@
 const express = require('express');
 const { pool } = require('../config/database');
-const { verifyToken, hasRole } = require('../middleware/auth');
+const { verifyToken, requirePermission, can } = require('../middleware/auth');
 const { logAudit } = require('../helpers/audit');
 const {
   sanitizeText, sanitizeEmail, toInt, whitelist, sendSuccess, sendError
@@ -11,7 +11,7 @@ const router = express.Router();
 const VALID_TYPES = ['customer', 'receiver', 'sender', 'agent'];
 
 // ============ GET /api/partners?type=customer ============
-router.get('/', verifyToken, async (req, res) => {
+router.get('/', verifyToken, requirePermission('partners.read'), async (req, res) => {
   try {
     const type = sanitizeText(req.query.type || '');
     let rows;
@@ -41,6 +41,13 @@ router.post('/', verifyToken, async (req, res) => {
   try {
     const body = req.body || {};
     const partnerId = toInt(body.partner_id);
+
+    // İzin: yeni kayıt → partners.create, mevcut kayıt → partners.update
+    const needed = partnerId ? 'partners.update' : 'partners.create';
+    if (!can(req.user, needed)) {
+      return sendError(res, `Bu işlem için yetkiniz yok (${needed})`, 403);
+    }
+
     const type = whitelist(sanitizeText(body.type), VALID_TYPES, 'customer');
     const companyName = sanitizeText(body.company_name);
     if (!companyName) return sendError(res, 'Şirket adı zorunludur');
@@ -179,7 +186,7 @@ router.get('/:id/shipments', verifyToken, async (req, res) => {
 });
 
 // ============ DELETE /api/partners/:id ============
-router.delete('/:id', verifyToken, async (req, res) => {
+router.delete('/:id', verifyToken, requirePermission('partners.delete'), async (req, res) => {
   try {
     const id = toInt(req.params.id);
     if (!id) return sendError(res, 'Geçersiz ID');

@@ -1,6 +1,6 @@
 const express = require('express');
 const { pool } = require('../config/database');
-const { verifyToken } = require('../middleware/auth');
+const { verifyToken, hasRole } = require('../middleware/auth');
 const { sanitizeText, toInt, sendSuccess, sendError } = require('../helpers/utils');
 
 const router = express.Router();
@@ -65,7 +65,16 @@ router.post('/', verifyToken, async (req, res) => {
       }
     }
     if (f.currency) { whereParts.push('currency_code = ?'); params.push(f.currency); }
+    // Sahiplik: admin altı roller yalnızca kendi sevkiyatlarının rakamlarını görür
+    // (sevkiyat listesi zaten böyle filtreleniyordu; istatistik tüm şirketin cirosunu açıyordu)
+    if (!hasRole(req.user, 'admin')) { whereParts.push('created_by = ?'); params.push(req.user.id); }
     const whereSql = whereParts.join(' AND ');
+
+    // Kendi WHERE'ini kuran sorgular için aynı sahiplik filtresi.
+    // (whereSql kullanmayan trend/dağılım sorguları aksi halde tüm şirketi gösterirdi.)
+    const isAdmin = hasRole(req.user, 'admin');
+    const ownSql = isAdmin ? '' : ' AND created_by = ?';
+    const ownParam = isAdmin ? [] : [req.user.id];
 
     // === Genel Bakış ===
     const overviewSql = `SELECT
@@ -122,8 +131,8 @@ router.post('/', verifyToken, async (req, res) => {
       DATE_FORMAT(created_at, '%Y-%m') AS month,
       SUM(sale_price) AS revenue, SUM(purchase_price) AS cost,
       SUM(sale_price - purchase_price) AS profit, COUNT(*) AS count
-      FROM shipments WHERE deleted_at IS NULL AND created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)`;
-    const monthlyParams = [];
+      FROM shipments WHERE deleted_at IS NULL AND created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)${ownSql}`;
+    const monthlyParams = [...ownParam];
     if (f.ttFilter) { monthlySql += ' AND transport_type = ?'; monthlyParams.push(f.ttFilter); }
     if (f.currency) { monthlySql += ' AND currency_code = ?'; monthlyParams.push(f.currency); }
     monthlySql += ' GROUP BY month ORDER BY month ASC';
@@ -132,9 +141,9 @@ router.post('/', verifyToken, async (req, res) => {
     // Para birimi dağılımı (tarih aralığı)
     const [currencyBreakdown] = await pool.execute(
       `SELECT currency_code, SUM(sale_price) AS revenue, COUNT(*) AS count
-       FROM shipments WHERE deleted_at IS NULL AND DATE(created_at) BETWEEN ? AND ?
+       FROM shipments WHERE deleted_at IS NULL AND DATE(created_at) BETWEEN ? AND ?${ownSql}
        GROUP BY currency_code ORDER BY revenue DESC`,
-      [f.dateFrom, f.dateTo]
+      [f.dateFrom, f.dateTo, ...ownParam]
     );
 
     // Ödenmemiş faturalar
@@ -181,8 +190,8 @@ router.post('/', verifyToken, async (req, res) => {
     let modeSql = `SELECT transport_type, COUNT(*) AS count, SUM(sale_price) AS revenue,
       SUM(sale_price - purchase_price) AS profit,
       AVG(CASE WHEN sale_price > 0 THEN ((sale_price - purchase_price) / sale_price) * 100 ELSE NULL END) AS avg_margin
-      FROM shipments WHERE deleted_at IS NULL AND DATE(created_at) BETWEEN ? AND ?`;
-    const modeParams = [f.dateFrom, f.dateTo];
+      FROM shipments WHERE deleted_at IS NULL AND DATE(created_at) BETWEEN ? AND ?${ownSql}`;
+    const modeParams = [f.dateFrom, f.dateTo, ...ownParam];
     if (f.currency) { modeSql += ' AND currency_code = ?'; modeParams.push(f.currency); }
     modeSql += ' GROUP BY transport_type ORDER BY revenue DESC';
     const [modeBreakdown] = await pool.execute(modeSql, modeParams);
@@ -223,11 +232,15 @@ router.post('/', verifyToken, async (req, res) => {
        FROM shipments s1
        WHERE s1.deleted_at IS NULL
          AND DATE(s1.created_at) BETWEEN ? AND ? AND s1.client_billing != ''
+         ${isAdmin ? '' : 'AND s1.created_by = ?'}
        AND NOT EXISTS (
          SELECT 1 FROM shipments s2
          WHERE s2.deleted_at IS NULL AND s2.client_billing = s1.client_billing AND DATE(s2.created_at) < ?
+           ${isAdmin ? '' : 'AND s2.created_by = ?'}
        )`,
-      [f.dateFrom, f.dateTo, f.dateFrom]
+      isAdmin
+        ? [f.dateFrom, f.dateTo, f.dateFrom]
+        : [f.dateFrom, f.dateTo, req.user.id, f.dateFrom, req.user.id]
     );
     const newCustomers = parseInt(newCustRow.new_count || 0, 10);
 
@@ -236,11 +249,11 @@ router.post('/', verifyToken, async (req, res) => {
     const [inactiveCustomers] = await pool.execute(
       `SELECT client_billing, MAX(created_at) AS last_activity,
        COUNT(*) AS total_shipments, SUM(sale_price) AS lifetime_revenue
-       FROM shipments WHERE deleted_at IS NULL AND client_billing != ''
+       FROM shipments WHERE deleted_at IS NULL AND client_billing != ''${ownSql}
        GROUP BY client_billing
        HAVING MAX(created_at) < ?
        ORDER BY last_activity DESC LIMIT 20`,
-      [inactiveCutoff]
+      [...ownParam, inactiveCutoff]
     );
 
     // Coğrafi
@@ -376,6 +389,8 @@ router.post('/export-excel', verifyToken, async (req, res) => {
     const params = [f.dateFrom, f.dateTo];
     if (f.ttFilter) { whereParts.push('transport_type = ?'); params.push(f.ttFilter); }
     if (f.currency) { whereParts.push('currency_code = ?'); params.push(f.currency); }
+    // Sahiplik: admin altı roller kendi sevkiyatları dışını export edemez
+    if (!hasRole(req.user, 'admin')) { whereParts.push('created_by = ?'); params.push(req.user.id); }
     const where = whereParts.join(' AND ');
 
     const [shipments] = await pool.execute(
