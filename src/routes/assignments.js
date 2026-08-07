@@ -243,19 +243,43 @@ router.post('/', verifyToken, async (req, res) => {
       );
     }
 
-    // Araç kapasitesi kontrolü (bu aracın mevcut atamaları + yeni, arşivde olmayanlar)
-    const [vehSumRows] = await conn.execute(
-      'SELECT COALESCE(SUM(assigned_weight),0) AS wgt FROM vehicle_assignments WHERE vehicle_id = ? AND deleted_at IS NULL' + (id > 0 ? ' AND id != ?' : ''),
-      id > 0 ? [vehicleId, id] : [vehicleId]
-    );
+    // Araç kapasitesi kontrolü — aracın AKTİF yükü.
+    //
+    // shipments JOIN'i şart: bir sevkiyat arşive taşındığında atamaları silinmiyor.
+    // Bu satırlar atama listesinden ve araç yük panelinden gizleniyor (oralarda
+    // s.deleted_at IS NULL filtresi var) ama kapasite hesabında sayılıyordu.
+    // Sonuç: araç ekranda bomboş görünürken "zaten X kg yüklü" hatası alınıyordu.
+    const vehSumSql = `
+      SELECT COALESCE(SUM(a.assigned_weight), 0) AS wgt
+      FROM vehicle_assignments a
+      JOIN shipments s ON s.id = a.shipment_id
+      WHERE a.vehicle_id = ? AND a.deleted_at IS NULL AND s.deleted_at IS NULL
+      ${id > 0 ? 'AND a.id != ?' : ''}`;
+    const [vehSumRows] = await conn.execute(vehSumSql, id > 0 ? [vehicleId, id] : [vehicleId]);
     const vehAlreadyWgt = parseFloat(vehSumRows[0].wgt || 0);
     const vehCapacity = parseFloat(vehicle.capacity_kg || 0);
     if (vehCapacity > 0 && weight > 0 && (vehAlreadyWgt + weight) > (vehCapacity + 0.01)) {
       const kalan = (vehCapacity - vehAlreadyWgt).toFixed(2);
+
+      // Kapasiteyi neyin doldurduğunu söyle — "araç boş görünüyor ama dolu diyor"
+      // durumunu kullanıcının kendi başına çözebilmesi için.
+      const [occupants] = await conn.execute(
+        `SELECT s.shipment_no, a.assigned_weight
+         FROM vehicle_assignments a
+         JOIN shipments s ON s.id = a.shipment_id
+         WHERE a.vehicle_id = ? AND a.deleted_at IS NULL AND s.deleted_at IS NULL
+         ${id > 0 ? 'AND a.id != ?' : ''}
+         ORDER BY a.assigned_weight DESC LIMIT 5`,
+        id > 0 ? [vehicleId, id] : [vehicleId]
+      );
+      const detay = occupants.length
+        ? ` Araçtaki yükler: ${occupants.map(o => `${o.shipment_no} (${parseFloat(o.assigned_weight).toFixed(0)} kg)`).join(', ')}.`
+        : '';
+
       await conn.rollback();
       return sendError(
         res,
-        `Araç kapasitesi ${vehCapacity} kg, zaten ${vehAlreadyWgt.toFixed(2)} kg yüklü. En fazla ${kalan} kg yükleyebilirsiniz.`
+        `Araç kapasitesi ${vehCapacity} kg, zaten ${vehAlreadyWgt.toFixed(2)} kg yüklü. En fazla ${kalan} kg yükleyebilirsiniz.${detay}`
       );
     }
 

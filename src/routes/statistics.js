@@ -204,7 +204,10 @@ router.post('/', verifyToken, async (req, res) => {
        SUM(va.assigned_weight) AS total_load,
        SUM(v.capacity_kg) AS total_capacity
        FROM vehicles v
-       LEFT JOIN vehicle_assignments va ON va.vehicle_id = v.id AND va.deleted_at IS NULL
+       LEFT JOIN vehicle_assignments va
+              ON va.vehicle_id = v.id
+             AND va.deleted_at IS NULL
+             AND EXISTS (SELECT 1 FROM shipments s WHERE s.id = va.shipment_id AND s.deleted_at IS NULL)
        WHERE v.status = 'active' AND v.deleted_at IS NULL
        GROUP BY v.transport_type`
     );
@@ -291,6 +294,7 @@ router.post('/', verifyToken, async (req, res) => {
        LEFT JOIN vehicle_assignments va ON va.vehicle_id = v.id
          AND va.deleted_at IS NULL
          AND DATE(va.created_at) BETWEEN ? AND ?
+         AND EXISTS (SELECT 1 FROM shipments s WHERE s.id = va.shipment_id AND s.deleted_at IS NULL)
        WHERE v.deleted_at IS NULL AND v.status = 'active'
        GROUP BY v.id, v.vehicle_code, v.plate, v.transport_type, v.driver_name
        HAVING assignment_count > 0

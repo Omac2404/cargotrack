@@ -22,7 +22,11 @@ router.get('/vehicle-summary', verifyToken, async (req, res) => {
           THEN ROUND((COALESCE(SUM(va.assigned_weight),0) / v.capacity_kg) * 100, 1)
           ELSE 0 END AS load_percent
       FROM vehicles v
-      LEFT JOIN vehicle_assignments va ON va.vehicle_id = v.id AND va.deleted_at IS NULL
+      LEFT JOIN vehicle_assignments va
+             ON va.vehicle_id = v.id
+            AND va.deleted_at IS NULL
+            -- Arşivlenmiş sevkiyatın ataması aracı dolu göstermemeli
+            AND EXISTS (SELECT 1 FROM shipments s WHERE s.id = va.shipment_id AND s.deleted_at IS NULL)
       WHERE v.deleted_at IS NULL
       GROUP BY v.id, v.vehicle_code, v.plate, v.transport_type, v.status, v.capacity_kg, v.volume_m3, v.driver_name
       ORDER BY load_percent DESC, v.vehicle_code

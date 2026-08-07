@@ -219,6 +219,7 @@ router.get('/vehicle-utilization', async (req, res) => {
        LEFT JOIN vehicle_assignments a ON a.vehicle_id = v.id
          AND a.deleted_at IS NULL
          AND a.loading_date BETWEEN ? AND ?
+         AND EXISTS (SELECT 1 FROM shipments s WHERE s.id = a.shipment_id AND s.deleted_at IS NULL)
        WHERE v.status = 'active' AND v.deleted_at IS NULL
        GROUP BY v.id
        ORDER BY assignment_count DESC`,

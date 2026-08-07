@@ -158,8 +158,10 @@ router.get('/:id/load', verifyToken, requirePermission('vehicles.read'), async (
               s.departure_country, s.arrival_country, s.status AS shipment_status,
               s.quantity AS shipment_total_quantity, s.gross_weight AS shipment_total_weight
        FROM vehicle_assignments a
-       LEFT JOIN shipments s ON s.id = a.shipment_id
-       WHERE a.vehicle_id = ? AND a.deleted_at IS NULL AND (s.deleted_at IS NULL OR s.id IS NULL)
+       -- INNER JOIN: kapasite kontrolüyle birebir aynı kural. Sevkiyatı arşivlenmiş
+       -- ya da hiç bulunmayan atamalar ne listede ne de doluluk hesabında yer alır.
+       JOIN shipments s ON s.id = a.shipment_id AND s.deleted_at IS NULL
+       WHERE a.vehicle_id = ? AND a.deleted_at IS NULL
        ORDER BY a.loading_date DESC, a.created_at DESC`,
       [id]
     );
@@ -209,9 +211,14 @@ router.delete('/:id', verifyToken, requirePermission('vehicles.delete'), async (
     );
     if (vrows.length === 0) return sendError(res, 'Kayıt bulunamadı', 404);
 
-    // RESTRICT: aktif atamaları olan araç silinemez
+    // RESTRICT: aktif atamaları olan araç silinemez.
+    // Arşivlenmiş sevkiyatların atamaları sayılmaz — yoksa araç ekranda boş
+    // görünürken "atamaları var" diye silinemez hale geliyordu.
     const [refs] = await pool.execute(
-      'SELECT COUNT(*) AS c FROM vehicle_assignments WHERE vehicle_id = ? AND deleted_at IS NULL',
+      `SELECT COUNT(*) AS c
+       FROM vehicle_assignments a
+       JOIN shipments s ON s.id = a.shipment_id
+       WHERE a.vehicle_id = ? AND a.deleted_at IS NULL AND s.deleted_at IS NULL`,
       [id]
     );
     if (refs[0].c > 0) {
