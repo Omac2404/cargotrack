@@ -347,16 +347,27 @@ export function ShipmentFormPage() {
 
   /** Doğrulama başarısız — sessizce yutma, kullanıcıyı hatalı alana götür. */
   const onInvalid = (errs: FieldErrors<ShipmentFormValues>) => {
-    const firstField = Object.keys(errs)[0]
+    const fields = Object.keys(errs)
+    if (fields.length === 0) return
+    goToFirstError()
+    const list = fields.map((f) => labelForField(f)).join(', ')
+    const firstMsg = (errs as Record<string, { message?: string }>)[fields[0]]?.message
+    toast.error(
+      fields.length === 1 ? `${list}: ${firstMsg || 'geçersiz değer'}` : `Hatalı alanlar: ${list}`,
+      { description: 'Kayıt yapılmadı — ilgili sekmeye götürüldünüz.' }
+    )
+  }
+
+  /** Hata rozetine tıklanınca da aynı davranış: ilk hatalı alanın sekmesine git. */
+  const goToFirstError = () => {
+    const firstField = Object.keys(errors)[0]
     if (!firstField) return
     const targetTab = FIELD_TAB[firstField]
     if (targetTab) setActiveTab(targetTab)
-    const msg = (errs as Record<string, { message?: string }>)[firstField]?.message
-    toast.error(
-      `${labelForField(firstField)}: ${msg || 'geçersiz değer'}`,
-      { description: 'Kayıt yapılmadı — işaretli alanı düzeltip tekrar deneyin.' }
-    )
   }
+
+  /** Banner/rozet metni — hangi alanların sorunlu olduğunu açıkça söyler. */
+  const errorFieldLabels = Object.keys(errors).map((f) => labelForField(f))
 
   if (isEdit && loadingExisting) {
     return (
@@ -398,10 +409,15 @@ export function ShipmentFormPage() {
             </div>
             <div className="flex items-center gap-2 shrink-0">
               {hasErrors && (
-                <span className="hidden md:flex items-center gap-1 text-xs text-destructive">
-                  <AlertCircle className="w-3.5 h-3.5" />
-                  {t('shipment.errors_present')}
-                </span>
+                <button
+                  type="button"
+                  onClick={goToFirstError}
+                  title={`Sorunlu alan(lar): ${errorFieldLabels.join(', ')} — tıklayınca ilgili sekmeye gider`}
+                  className="hidden md:flex items-center gap-1 text-xs text-destructive hover:underline max-w-[340px]"
+                >
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  <span className="truncate">{errorFieldLabels.join(', ')}</span>
+                </button>
               )}
               {isEdit && id && (
                 <>
@@ -546,7 +562,7 @@ export function ShipmentFormPage() {
                 </div>
               </Card>
             )}
-            <TabSaveBar isEdit={isEdit} isPending={saveMut.isPending} hasErrors={hasErrors} />
+            <TabSaveBar isEdit={isEdit} isPending={saveMut.isPending} errorLabels={errorFieldLabels} onErrorClick={goToFirstError} />
           </TabsContent>
 
           {/* === TARAFLAR === */}
@@ -677,7 +693,7 @@ export function ShipmentFormPage() {
                 </div>
               </Card>
             </div>
-            <TabSaveBar isEdit={isEdit} isPending={saveMut.isPending} hasErrors={hasErrors} />
+            <TabSaveBar isEdit={isEdit} isPending={saveMut.isPending} errorLabels={errorFieldLabels} onErrorClick={goToFirstError} />
 
             {/* Hızlı partner ekleme dialog'u */}
             <PartnerFormDialog
@@ -788,10 +804,18 @@ export function ShipmentFormPage() {
                 <CratesEditor
                   value={watch('crates_data') as string}
                   onChange={(json) => setValue('crates_data', json, { shouldDirty: true })}
+                  currentQty={Number(watch('quantity') || 0)}
+                  currentWeight={Number(watch('gross_weight') || 0)}
+                  onApplyTotals={({ qty, weight, volume }) => {
+                    setValue('quantity', qty, { shouldDirty: true })
+                    setValue('gross_weight', Number(weight.toFixed(2)), { shouldDirty: true })
+                    if (volume > 0) setValue('volume_cbm', Number(volume.toFixed(3)), { shouldDirty: true })
+                    toast.success(`Yük alanları güncellendi: ${qty} kap / ${weight.toFixed(1)} kg`)
+                  }}
                 />
               </div>
             </Card>
-            <TabSaveBar isEdit={isEdit} isPending={saveMut.isPending} hasErrors={hasErrors} />
+            <TabSaveBar isEdit={isEdit} isPending={saveMut.isPending} errorLabels={errorFieldLabels} onErrorClick={goToFirstError} />
           </TabsContent>
 
           {/* === FİNANSAL === */}
@@ -824,7 +848,7 @@ export function ShipmentFormPage() {
                 </div>
               </details>
             </Card>
-            <TabSaveBar isEdit={isEdit} isPending={saveMut.isPending} hasErrors={hasErrors} />
+            <TabSaveBar isEdit={isEdit} isPending={saveMut.isPending} errorLabels={errorFieldLabels} onErrorClick={goToFirstError} />
           </TabsContent>
 
           {/* === BELGELER === */}
@@ -888,7 +912,7 @@ export function ShipmentFormPage() {
                 </>
               )}
             </Card>
-            <TabSaveBar isEdit={isEdit} isPending={saveMut.isPending} hasErrors={hasErrors} />
+            <TabSaveBar isEdit={isEdit} isPending={saveMut.isPending} errorLabels={errorFieldLabels} onErrorClick={goToFirstError} />
           </TabsContent>
 
           {/* === GEÇİCİ / TRANSİT DEPO === */}
@@ -958,7 +982,7 @@ export function ShipmentFormPage() {
                 onChangeStockLog={(json) => setValue('depo_stock_log', json, { shouldDirty: true })}
               />
             </div>
-            <TabSaveBar isEdit={isEdit} isPending={saveMut.isPending} hasErrors={hasErrors} />
+            <TabSaveBar isEdit={isEdit} isPending={saveMut.isPending} errorLabels={errorFieldLabels} onErrorClick={goToFirstError} />
           </TabsContent>
 
           {/* === SEVK PLANI === */}
@@ -1040,7 +1064,7 @@ export function ShipmentFormPage() {
                 </>
               )}
             </div>
-            <TabSaveBar isEdit={isEdit} isPending={saveMut.isPending} hasErrors={hasErrors} />
+            <TabSaveBar isEdit={isEdit} isPending={saveMut.isPending} errorLabels={errorFieldLabels} onErrorClick={goToFirstError} />
           </TabsContent>
 
           {/* === FATURALAMA === */}
@@ -1064,7 +1088,7 @@ export function ShipmentFormPage() {
               </div>
               <FieldArea label={t('invoice.payment_notes', { defaultValue: 'Ödeme Notları' })} name="payment_notes" register={register} errors={errors} />
             </Card>
-            <TabSaveBar isEdit={isEdit} isPending={saveMut.isPending} hasErrors={hasErrors} />
+            <TabSaveBar isEdit={isEdit} isPending={saveMut.isPending} errorLabels={errorFieldLabels} onErrorClick={goToFirstError} />
           </TabsContent>
 
           {/* === GEÇMİŞ === */}
@@ -1131,15 +1155,26 @@ function FieldArea({ label, name, register, errors, className }: Omit<FieldProps
   )
 }
 
-function TabSaveBar({ isEdit, isPending, hasErrors }: { isEdit: boolean; isPending: boolean; hasErrors: boolean }) {
+function TabSaveBar({
+  isEdit, isPending, errorLabels, onErrorClick,
+}: {
+  isEdit: boolean
+  isPending: boolean
+  errorLabels: string[]
+  onErrorClick: () => void
+}) {
   const { t } = useTranslation()
   return (
     <div className="mt-4 pt-4 border-t flex items-center justify-end gap-2">
-      {hasErrors && (
-        <span className="hidden md:flex items-center gap-1 text-xs text-destructive mr-auto">
-          <AlertCircle className="w-3.5 h-3.5" />
-          {t('shipment.errors_present')}
-        </span>
+      {errorLabels.length > 0 && (
+        <button
+          type="button"
+          onClick={onErrorClick}
+          className="flex items-center gap-1 text-xs text-destructive mr-auto hover:underline text-left"
+        >
+          <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+          <span>Düzeltilmesi gereken: {errorLabels.join(', ')}</span>
+        </button>
       )}
       <span className="text-xs text-muted-foreground hidden sm:inline">
         {t('shipment.save_bar_hint')}

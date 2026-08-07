@@ -16,6 +16,23 @@ const numericString = z.union([z.string(), z.number()]).nullish().transform((v) 
   return isFinite(n) ? n : null
 })
 
+/**
+ * JSON tutan kolonlar için ortak dönüşüm.
+ *
+ * Backend bu alanları bazen düz metin (LONGTEXT), bazen ayrıştırılmış nesne
+ * (gerçek JSON kolonu → mysql2 otomatik parse eder) olarak döndürür. Tek bir
+ * tipe bağlanırsa diğer durumda form doğrulaması patlar ve kullanıcı hangi
+ * alan olduğunu göremediği için kaydı hiç yapamaz. Her iki biçimi de kabul
+ * edip her zaman string olarak gönderiyoruz.
+ */
+const jsonField = z
+  .union([z.string(), z.record(z.string(), z.unknown()), z.array(z.unknown())])
+  .nullish()
+  .transform((v) => {
+    if (v === undefined || v === null || v === '') return ''
+    return typeof v === 'string' ? v : JSON.stringify(v)
+  })
+
 export const shipmentSchema = z.object({
   id: z.union([z.number(), z.string()]).optional(),
 
@@ -56,7 +73,10 @@ export const shipmentSchema = z.object({
   incoterm_location: optString,
   insurance: z.boolean().or(z.number()).default(0).transform((v) => (v ? 1 : 0)),
   goods_value: numericString,
-  parties_data: z.string().optional().or(z.literal('')),
+  // parties_data DB'de JSON kolonu; mysql2 bunu NESNE olarak döndürüyor.
+  // Yalnızca string kabul edildiğinde, taraf ek bilgisi girilmiş her sevkiyat
+  // doğrulamadan geçemiyor ve "Eksik / hatalı alanlar var" ile kaydedilemiyordu.
+  parties_data: jsonField,
 
   // Finansal
   purchase_price: numericString,
@@ -102,29 +122,14 @@ export const shipmentSchema = z.object({
   invoice_generated: z.boolean().or(z.number()).default(0).transform((v) => (v ? 1 : 0)),
 
   // JSON kolonları — string olarak saklanır
-  mode_data: z.union([z.string(), z.record(z.string(), z.unknown())]).optional().transform((v) => {
-    if (v === undefined || v === null || v === '') return ''
-    return typeof v === 'string' ? v : JSON.stringify(v)
-  }),
-  financial_data: z.union([z.string(), z.record(z.string(), z.unknown())]).optional().transform((v) => {
-    if (v === undefined || v === null || v === '') return ''
-    return typeof v === 'string' ? v : JSON.stringify(v)
-  }),
-  storage_data: z.union([z.string(), z.record(z.string(), z.unknown())]).optional().transform((v) => {
-    if (v === undefined || v === null || v === '') return ''
-    return typeof v === 'string' ? v : JSON.stringify(v)
-  }),
+  mode_data: jsonField,
+  financial_data: jsonField,
+  storage_data: jsonField,
   // documents_data BİLEREK YOK: belge yükleme/durum güncellemesi kendi endpoint'i
   // üzerinden yürüyor. Formda tutulursa, form açıkken yüklenen belgeler
   // Kaydet'e basıldığında eski (bayat) değerle geri ezilir.
-  crates_data: z.union([z.string(), z.array(z.record(z.string(), z.unknown()))]).optional().transform((v) => {
-    if (v === undefined || v === null || v === '') return ''
-    return typeof v === 'string' ? v : JSON.stringify(v)
-  }),
-  depo_stock_log: z.union([z.string(), z.array(z.record(z.string(), z.unknown()))]).optional().transform((v) => {
-    if (v === undefined || v === null || v === '') return ''
-    return typeof v === 'string' ? v : JSON.stringify(v)
-  }),
+  crates_data: jsonField,
+  depo_stock_log: jsonField,
 })
 
 export type ShipmentFormValues = z.input<typeof shipmentSchema>

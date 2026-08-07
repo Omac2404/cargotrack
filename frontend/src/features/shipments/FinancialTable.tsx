@@ -1,5 +1,5 @@
-import { useMemo } from 'react'
-import { TrendingUp, TrendingDown, Coins, Plus, Trash2 } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { TrendingUp, TrendingDown, Coins, Plus, Trash2, StickyNote } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import {
@@ -18,6 +18,27 @@ interface Props {
   currency: string
   value: FinancialData
   onChange: (data: FinancialData) => void
+}
+
+/**
+ * Kalem gerçekten boş mu?
+ *
+ * Eskiden `!income && !expense && !note` kontrol ediliyordu. Bu iki şeyi bozuyordu:
+ *   1) "Özel Kalem" butonu satırı income=0 ile ekliyordu; 0 falsy olduğu için
+ *      satır eklendiği anda tekrar siliniyor, butona basınca hiçbir şey olmuyordu.
+ *   2) Tutarı 0 girilen ya da yalnızca adı/açıklaması yazılmış kalemler siliniyordu.
+ * Artık "değer var mı" diye bakılıyor, "değer doğru mu" diye değil.
+ */
+/** Kullanıcının elle eklediği kalem mi? (anahtar `custom_<grup>_<zaman>` biçiminde) */
+function isCustomKey(key: string): boolean {
+  return key.startsWith('custom_')
+}
+
+function isEmptyEntry(e: FinLineEntry | undefined): boolean {
+  if (!e) return true
+  const hasNumber = (v: unknown) => v !== undefined && v !== null && v !== ''
+  const hasText = (v: unknown) => typeof v === 'string' && v.trim() !== ''
+  return !hasNumber(e.income) && !hasNumber(e.expense) && !hasText(e.note) && !hasText(e.label)
 }
 
 /**
@@ -41,10 +62,18 @@ export function FinancialTable({ mode, currency, value, onChange }: Props) {
 
   const setEntry = (key: string, patch: Partial<FinLineEntry>) => {
     const next: FinancialData = { ...value, [key]: { ...value[key], ...patch } }
-    // Boş kalemler temizle
-    if (!next[key].income && !next[key].expense && !next[key].note) {
+    // Şema kalemleri boşaltılınca temizlenir; kullanıcının eklediği özel kalemler
+    // yalnızca çöp kutusu butonuyla silinir — yoksa adını silip yeniden yazmaya
+    // çalışırken satır ortadan kayboluyor.
+    if (!isCustomKey(key) && isEmptyEntry(next[key])) {
       delete next[key]
     }
+    onChange(next)
+  }
+
+  const removeEntry = (key: string) => {
+    const next: FinancialData = { ...value }
+    delete next[key]
     onChange(next)
   }
 
@@ -84,6 +113,7 @@ export function FinancialTable({ mode, currency, value, onChange }: Props) {
                 items={items}
                 value={value}
                 onSetEntry={setEntry}
+                onRemoveEntry={removeEntry}
                 sym={sym}
               />
             ))}
@@ -143,6 +173,7 @@ interface FinGroupProps {
   items: ReturnType<typeof getFinSchema>
   value: FinancialData
   onSetEntry: (key: string, patch: Partial<FinLineEntry>) => void
+  onRemoveEntry: (key: string) => void
   sym: string
 }
 
@@ -161,12 +192,13 @@ function slugifyGroup(name: string): string {
     .replace(/^_+|_+$/g, '')
 }
 
-function FinGroup({ groupName, items, value, onSetEntry, sym }: FinGroupProps) {
+function FinGroup({ groupName, items, value, onSetEntry, onRemoveEntry, sym }: FinGroupProps) {
   const customKeys = getCustomKeysForGroup(value, groupName)
 
   const addCustomItem = () => {
     const newKey = `custom_${slugifyGroup(groupName)}_${Date.now()}`
-    onSetEntry(newKey, { label: 'Özel Kalem', income: 0 })
+    // Sadece label ver: income:0 falsy olduğu için satır anında siliniyordu
+    onSetEntry(newKey, { label: '' , note: '' })
   }
 
   return (
@@ -189,80 +221,9 @@ function FinGroup({ groupName, items, value, onSetEntry, sym }: FinGroupProps) {
           </Button>
         </td>
       </tr>
-      {items.map((item) => {
-        const entry = value[item.key] || {}
-        const noVat = item.noVat
-        return (
-          <tr key={item.key} className="border-b border-border/40 hover:bg-muted/20">
-            <td className="px-3 py-1.5 text-sm">{item.label || item.key}</td>
-
-            {/* Gelir */}
-            <td className="px-2 py-1">
-              <Input
-                type="number"
-                step="0.01"
-                placeholder="0,00"
-                value={entry.income ?? ''}
-                onChange={(e) => onSetEntry(item.key, { income: e.target.value ? Number(e.target.value) : undefined })}
-                className="h-8 text-right tabular-nums bg-success/5 border-success/20"
-              />
-            </td>
-
-            {/* Gelir KDV */}
-            <td className="px-2 py-1">
-              {noVat ? (
-                <span className="text-[10px] text-muted-foreground">—</span>
-              ) : (
-                <VatPicker
-                  value={entry.income_vat || '20'}
-                  customValue={String(entry.income_vat || '') === 'custom' ? '' : ''}
-                  onChange={(v, custom) => onSetEntry(item.key, { income_vat: v === 'custom' ? `custom:${custom || 0}` : v })}
-                />
-              )}
-            </td>
-
-            {/* Gider */}
-            <td className="px-2 py-1">
-              <Input
-                type="number"
-                step="0.01"
-                placeholder="0,00"
-                value={entry.expense ?? ''}
-                onChange={(e) => onSetEntry(item.key, { expense: e.target.value ? Number(e.target.value) : undefined })}
-                className="h-8 text-right tabular-nums bg-destructive/5 border-destructive/20"
-              />
-            </td>
-
-            {/* Gider KDV */}
-            <td className="px-2 py-1">
-              {noVat ? (
-                <span className="text-[10px] text-muted-foreground">—</span>
-              ) : (
-                <VatPicker
-                  value={entry.expense_vat || '20'}
-                  customValue={String(entry.expense_vat || '') === 'custom' ? '' : ''}
-                  onChange={(v, custom) => onSetEntry(item.key, { expense_vat: v === 'custom' ? `custom:${custom || 0}` : v })}
-                />
-              )}
-            </td>
-
-            {/* Kâr (tek satır) */}
-            <td className="px-2 py-1 text-right tabular-nums text-xs">
-              {(() => {
-                const income = entry.income || 0
-                const expense = entry.expense || 0
-                const diff = income - expense
-                if (income === 0 && expense === 0) return <span className="text-muted-foreground">—</span>
-                return (
-                  <span className={diff >= 0 ? 'text-success font-medium' : 'text-destructive font-medium'}>
-                    {sym}{diff.toFixed(2)}
-                  </span>
-                )
-              })()}
-            </td>
-          </tr>
-        )
-      })}
+      {items.map((item) => (
+        <FinRow key={item.key} item={item} entry={value[item.key] || {}} onSetEntry={onSetEntry} sym={sym} />
+      ))}
 
       {/* Custom (kullanıcı-eklenmiş) kalemler */}
       {customKeys.map((key) => (
@@ -271,6 +232,7 @@ function FinGroup({ groupName, items, value, onSetEntry, sym }: FinGroupProps) {
           rowKey={key}
           entry={value[key] || {}}
           onSetEntry={onSetEntry}
+          onRemove={onRemoveEntry}
           sym={sym}
         />
       ))}
@@ -278,39 +240,163 @@ function FinGroup({ groupName, items, value, onSetEntry, sym }: FinGroupProps) {
   )
 }
 
-interface CustomFinRowProps {
-  rowKey: string
+/**
+ * Şema kalemi satırı (Navlun, Sigorta, Diğer...).
+ * Etiketin yanındaki not ikonuyla o kaleme açıklama yazılabilir; açıklama
+ * doluysa alan kalıcı olarak açık kalır.
+ */
+function FinRow({
+  item, entry, onSetEntry, sym,
+}: {
+  item: ReturnType<typeof getFinSchema>[number]
   entry: FinLineEntry
   onSetEntry: (key: string, patch: Partial<FinLineEntry>) => void
   sym: string
-}
-
-function CustomFinRow({ rowKey, entry, onSetEntry, sym }: CustomFinRowProps) {
-  const handleDelete = () => {
-    // Patch ile boş bırak; setEntry boş kalemleri otomatik siler (FinancialTable mantığı)
-    onSetEntry(rowKey, { label: undefined, income: undefined, expense: undefined, note: undefined })
-  }
+}) {
+  const [noteOpen, setNoteOpen] = useState(false)
+  const showNote = noteOpen || !!entry.note
+  const noVat = item.noVat
 
   return (
-    <tr className="border-b border-border/40 hover:bg-muted/20 bg-primary/5">
-      <td className="px-3 py-1.5">
+    <tr className="border-b border-border/40 hover:bg-muted/20">
+      <td className="px-3 py-1.5 text-sm">
         <div className="flex items-center gap-1">
-          <Input
-            value={entry.label || ''}
-            onChange={(e) => onSetEntry(rowKey, { label: e.target.value })}
-            placeholder="Kalem adı..."
-            className="h-7 text-xs border-primary/30"
-          />
+          <span className="flex-1">{item.label || item.key}</span>
           <Button
             type="button"
             variant="ghost"
             size="icon"
-            className="h-6 w-6 text-destructive hover:bg-destructive/10 shrink-0"
-            onClick={handleDelete}
-            title="Kalemi sil"
+            className={cn(
+              'h-5 w-5 shrink-0',
+              entry.note ? 'text-primary' : 'text-muted-foreground/50 hover:text-foreground'
+            )}
+            onClick={() => setNoteOpen((v) => !v)}
+            title={entry.note ? 'Açıklamayı düzenle' : 'Açıklama ekle'}
           >
-            <Trash2 className="w-3 h-3" />
+            <StickyNote className="w-3 h-3" />
           </Button>
+        </div>
+        {showNote && (
+          <Input
+            value={entry.note || ''}
+            onChange={(e) => onSetEntry(item.key, { note: e.target.value })}
+            placeholder="Açıklama (opsiyonel)"
+            className="h-6 text-[11px] mt-1 text-muted-foreground border-dashed"
+            autoFocus={noteOpen && !entry.note}
+          />
+        )}
+      </td>
+
+      {/* Gelir */}
+      <td className="px-2 py-1">
+        <Input
+          type="number"
+          step="0.01"
+          placeholder="0,00"
+          value={entry.income ?? ''}
+          onChange={(e) => onSetEntry(item.key, { income: e.target.value === '' ? undefined : Number(e.target.value) })}
+          className="h-8 text-right tabular-nums bg-success/5 border-success/20"
+        />
+      </td>
+
+      {/* Gelir KDV */}
+      <td className="px-2 py-1">
+        {noVat ? (
+          <span className="text-[10px] text-muted-foreground">—</span>
+        ) : (
+          <VatPicker
+            value={entry.income_vat || '20'}
+            customValue=""
+            onChange={(v, custom) => onSetEntry(item.key, { income_vat: v === 'custom' ? `custom:${custom || 0}` : v })}
+          />
+        )}
+      </td>
+
+      {/* Gider */}
+      <td className="px-2 py-1">
+        <Input
+          type="number"
+          step="0.01"
+          placeholder="0,00"
+          value={entry.expense ?? ''}
+          onChange={(e) => onSetEntry(item.key, { expense: e.target.value === '' ? undefined : Number(e.target.value) })}
+          className="h-8 text-right tabular-nums bg-destructive/5 border-destructive/20"
+        />
+      </td>
+
+      {/* Gider KDV */}
+      <td className="px-2 py-1">
+        {noVat ? (
+          <span className="text-[10px] text-muted-foreground">—</span>
+        ) : (
+          <VatPicker
+            value={entry.expense_vat || '20'}
+            customValue=""
+            onChange={(v, custom) => onSetEntry(item.key, { expense_vat: v === 'custom' ? `custom:${custom || 0}` : v })}
+          />
+        )}
+      </td>
+
+      {/* Kâr */}
+      <td className="px-2 py-1 text-right tabular-nums text-xs">
+        <LineProfit entry={entry} sym={sym} />
+      </td>
+    </tr>
+  )
+}
+
+/** Tek satırın gelir-gider farkı */
+function LineProfit({ entry, sym }: { entry: FinLineEntry; sym: string }) {
+  const income = Number(entry.income || 0)
+  const expense = Number(entry.expense || 0)
+  const diff = income - expense
+  if (income === 0 && expense === 0) return <span className="text-muted-foreground">—</span>
+  return (
+    <span className={diff >= 0 ? 'text-success font-medium' : 'text-destructive font-medium'}>
+      {sym}{diff.toFixed(2)}
+    </span>
+  )
+}
+
+interface CustomFinRowProps {
+  rowKey: string
+  entry: FinLineEntry
+  onSetEntry: (key: string, patch: Partial<FinLineEntry>) => void
+  onRemove: (key: string) => void
+  sym: string
+}
+
+function CustomFinRow({ rowKey, entry, onSetEntry, onRemove, sym }: CustomFinRowProps) {
+  return (
+    <tr className="border-b border-border/40 hover:bg-muted/20 bg-primary/5">
+      <td className="px-3 py-1.5">
+        <div className="space-y-1">
+          <div className="flex items-center gap-1">
+            <Input
+              value={entry.label || ''}
+              onChange={(e) => onSetEntry(rowKey, { label: e.target.value })}
+              placeholder="Kalem adı... (örn. Liman Ardiye)"
+              className="h-7 text-xs border-primary/30"
+              autoFocus={!entry.label && !entry.note}
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 text-destructive hover:bg-destructive/10 shrink-0"
+              onClick={() => onRemove(rowKey)}
+              title="Kalemi sil"
+            >
+              <Trash2 className="w-3 h-3" />
+            </Button>
+          </div>
+          {/* Açıklama — faturaya/dosyaya not düşmek için */}
+          <Input
+            value={entry.note || ''}
+            onChange={(e) => onSetEntry(rowKey, { note: e.target.value })}
+            placeholder="Açıklama (opsiyonel)"
+            className="h-6 text-[11px] text-muted-foreground border-dashed"
+          />
         </div>
       </td>
       <td className="px-2 py-1">
@@ -344,17 +430,7 @@ function CustomFinRow({ rowKey, entry, onSetEntry, sym }: CustomFinRowProps) {
         />
       </td>
       <td className="px-2 py-1 text-right tabular-nums text-xs">
-        {(() => {
-          const income = entry.income || 0
-          const expense = entry.expense || 0
-          const diff = income - expense
-          if (income === 0 && expense === 0) return <span className="text-muted-foreground">—</span>
-          return (
-            <span className={diff >= 0 ? 'text-success font-medium' : 'text-destructive font-medium'}>
-              {sym}{diff.toFixed(2)}
-            </span>
-          )
-        })()}
+        <LineProfit entry={entry} sym={sym} />
       </td>
     </tr>
   )

@@ -17,6 +17,17 @@ interface SaveResponse {
   message: string
 }
 
+/**
+ * Sevkiyat query anahtarları.
+ *
+ * ID bazı yerlerden string (URL parametresi), bazı yerlerden number (prop) geliyordu.
+ * React Query anahtarları derin eşitlikle karşılaştırdığı için ['shipment', 123] ile
+ * ['shipment', '123'] eşleşmiyor; belge yüklendiğinde invalidate hedefi bulamıyor ve
+ * ekran ancak F5 ile güncelleniyordu. Anahtar üretimi tek yerden ve hep string.
+ */
+export const shipmentKey = (id: number | string) => ['shipment', String(id)] as const
+export const shipmentHistoryKey = (id: number | string) => ['shipment-history', String(id)] as const
+
 export function useShipments(transportType?: TransportType) {
   return useQuery({
     queryKey: ['shipments', transportType],
@@ -27,7 +38,7 @@ export function useShipments(transportType?: TransportType) {
 
 export function useShipment(id: number | string | undefined) {
   return useQuery({
-    queryKey: ['shipment', id],
+    queryKey: shipmentKey(id ?? ''),
     queryFn: () => api.get<Shipment>(`/api/shipments/${id}`),
     enabled: !!id,
   })
@@ -39,7 +50,7 @@ export function useSaveShipment() {
     mutationFn: (data: Partial<Shipment>) => api.post<SaveResponse>('/api/shipments', data),
     onSuccess: (_, vars) => {
       qc.invalidateQueries({ queryKey: ['shipments'] })
-      if (vars.id) qc.invalidateQueries({ queryKey: ['shipment', vars.id] })
+      if (vars.id) qc.invalidateQueries({ queryKey: shipmentKey(vars.id as number | string) })
     },
   })
 }
@@ -56,7 +67,7 @@ export interface ShipmentHistory {
 
 export function useShipmentHistory(id: number | string | undefined) {
   return useQuery({
-    queryKey: ['shipment-history', id],
+    queryKey: shipmentHistoryKey(id ?? ''),
     queryFn: () => api.get<ShipmentHistory>(`/api/shipments/${id}/history`),
     enabled: !!id,
   })

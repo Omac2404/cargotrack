@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { api } from '@/lib/api'
+import { shipmentKey } from '@/features/shipments/hooks'
 import { formatDate } from '@/lib/utils'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -55,7 +56,7 @@ export function DocumentPreviewDialog({ shipmentId, docKey, docLabel, open, onOp
     onSuccess: (_, version) => {
       toast.success(`Versiyon ${version} geri yüklendi`)
       qc.invalidateQueries({ queryKey: ['doc-versions', shipmentId, docKey] })
-      qc.invalidateQueries({ queryKey: ['shipment', shipmentId] })
+      qc.invalidateQueries({ queryKey: shipmentKey(shipmentId) })
       setSelectedVersion(0)
     },
     onError: (err: Error) => toast.error(err.message),

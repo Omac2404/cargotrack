@@ -10,6 +10,7 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { cn, formatDate } from '@/lib/utils'
 import { useUploadDocument, useDeleteDocument, downloadDocument } from '@/features/documents/hooks'
+import { shipmentKey } from './hooks'
 import { DocumentPreviewDialog } from '@/features/documents/DocumentPreviewDialog'
 import { api } from '@/lib/api'
 import type { DocItem } from '@/lib/constants/transportModes'
@@ -54,7 +55,7 @@ export function DocumentChecklist({ shipmentId, docList, documentsData, onStageC
     },
     onSuccess: (_, vars) => {
       onStageChange?.(vars.docKey, vars.stage)
-      qc.invalidateQueries({ queryKey: ['shipment', shipmentId] })
+      qc.invalidateQueries({ queryKey: shipmentKey(shipmentId) })
       toast.success(`${vars.docKey} → ${STAGE_LABELS[vars.stage]}`)
     },
     onError: (err: Error) => toast.error(err.message),
@@ -66,7 +67,7 @@ export function DocumentChecklist({ shipmentId, docList, documentsData, onStageC
       {
         onSuccess: () => {
           toast.success(`${file.name} yüklendi`)
-          qc.invalidateQueries({ queryKey: ['shipment', shipmentId] })
+          qc.invalidateQueries({ queryKey: shipmentKey(shipmentId) })
         },
         onError: (err: Error) => toast.error(err.message),
       }
@@ -80,7 +81,7 @@ export function DocumentChecklist({ shipmentId, docList, documentsData, onStageC
       {
         onSuccess: () => {
           toast.success('Belge silindi')
-          qc.invalidateQueries({ queryKey: ['shipment', shipmentId] })
+          qc.invalidateQueries({ queryKey: shipmentKey(shipmentId) })
         },
         onError: (err: Error) => toast.error(err.message),
       }

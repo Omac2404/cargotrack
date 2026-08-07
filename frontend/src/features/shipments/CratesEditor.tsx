@@ -1,17 +1,22 @@
 import { useMemo, useState } from 'react'
-import { Plus, Trash2, Package, Calculator } from 'lucide-react'
+import { Plus, Trash2, Package, Calculator, ArrowUp, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { formatNumber } from '@/lib/utils'
+import { cn, formatNumber } from '@/lib/utils'
 import type { Crate } from '@/types/api'
 
 interface Props {
   /** crates_data JSON string */
   value?: string
   onChange: (json: string) => void
+  /** Kap listesi toplamlarını Yük alanlarına (kap adedi / brüt ağırlık / hacim) yazar */
+  onApplyTotals?: (totals: { qty: number; weight: number; volume: number }) => void
+  /** Formdaki mevcut değerler — uyuşmazlık uyarısı göstermek için */
+  currentQty?: number
+  currentWeight?: number
 }
 
 /**
@@ -19,7 +24,7 @@ interface Props {
  * Her kalem: qty × (length × width × height cm) + ağırlık + açıklama
  * Otomatik toplam: adet, brüt ağırlık, hacim (m³), CBM.
  */
-export function CratesEditor({ value, onChange }: Props) {
+export function CratesEditor({ value, onChange, onApplyTotals, currentQty, currentWeight }: Props) {
   const crates = useMemo<Crate[]>(() => {
     if (!value) return []
     try {
@@ -69,6 +74,12 @@ export function CratesEditor({ value, onChange }: Props) {
     return { totalQty, totalWeight, totalVolume }
   }, [crates])
 
+  // Formdaki kap/ağırlık ile liste toplamı tutuyor mu? (ağırlıkta 1 kg tolerans)
+  const mismatch =
+    crates.length > 0 &&
+    (totals.totalQty !== (currentQty || 0) ||
+      Math.abs(totals.totalWeight - (currentWeight || 0)) > 1)
+
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
@@ -84,6 +95,48 @@ export function CratesEditor({ value, onChange }: Props) {
           </div>
         )}
       </div>
+
+      {/* Kap listesi toplamlari, Yuk alanlarina otomatik yansimiyordu; kullanici
+          listeyi doldurup kaydediyor ama sevkiyat 0 kap kaliyor ve yuk havuzunda
+          atama yapilamiyordu. Uyusmazlik goruldugu anda tek tikla aktarilir. */}
+      {crates.length > 0 && onApplyTotals && (
+        <div className={cn(
+          'flex flex-wrap items-center gap-2 rounded-md border p-2.5 text-xs',
+          mismatch ? 'border-warning/40 bg-warning/10' : 'border-border bg-muted/30'
+        )}>
+          {mismatch ? (
+            <AlertCircle className="w-4 h-4 text-warning shrink-0" />
+          ) : (
+            <Calculator className="w-4 h-4 text-muted-foreground shrink-0" />
+          )}
+          <span className="flex-1 min-w-[220px]">
+            {mismatch ? (
+              <>
+                <strong className="text-warning">Kap listesi ile Yük bilgileri uyuşmuyor.</strong>{' '}
+                Listede <strong>{totals.totalQty} kap / {formatNumber(totals.totalWeight, 1)} kg</strong>,
+                formda <strong>{currentQty || 0} kap / {formatNumber(currentWeight || 0, 1)} kg</strong> yazıyor.
+                Araç ataması formdaki değerlere göre yapılır.
+              </>
+            ) : (
+              <>Kap listesi toplamları Yük alanlarıyla uyumlu.</>
+            )}
+          </span>
+          <Button
+            type="button"
+            size="sm"
+            variant={mismatch ? 'default' : 'outline'}
+            className="h-7"
+            onClick={() => onApplyTotals({
+              qty: totals.totalQty,
+              weight: totals.totalWeight,
+              volume: totals.totalVolume,
+            })}
+          >
+            <ArrowUp className="w-3.5 h-3.5" />
+            Toplamları Yük alanlarına aktar
+          </Button>
+        </div>
+      )}
 
       {/* Mevcut kaplar */}
       {crates.length > 0 && (
@@ -180,7 +233,15 @@ export function CratesEditor({ value, onChange }: Props) {
             <Label className="text-[10px]">Açıklama</Label>
             <Input value={draft.description || ''} onChange={(e) => setDraftField('description', e.target.value)} className="h-8" />
           </div>
-          <Button type="button" size="sm" onClick={addCrate} className="h-8">
+          {/* Adet 0/boşken buton sessizce hiçbir şey yapmıyordu — artık devre dışı ve nedeni yazılı */}
+          <Button
+            type="button"
+            size="sm"
+            onClick={addCrate}
+            disabled={!draft.qty || draft.qty <= 0}
+            title={!draft.qty || draft.qty <= 0 ? 'Önce adet gir' : 'Kap listesine ekle'}
+            className="h-8"
+          >
             <Plus className="w-3.5 h-3.5" />
             Ekle
           </Button>

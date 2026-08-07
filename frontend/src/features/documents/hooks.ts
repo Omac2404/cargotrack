@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { api, getToken } from '@/lib/api'
+import { shipmentKey } from '@/features/shipments/hooks'
 
 interface UploadResp {
   message: string
@@ -18,7 +19,7 @@ export function useUploadDocument() {
       return api.upload<UploadResp>('/api/documents/upload', fd)
     },
     onSuccess: (_, vars) => {
-      qc.invalidateQueries({ queryKey: ['shipment', vars.shipmentId] })
+      qc.invalidateQueries({ queryKey: shipmentKey(vars.shipmentId) })
       qc.invalidateQueries({ queryKey: ['shipments'] })
     },
   })
@@ -30,7 +31,7 @@ export function useDeleteDocument() {
     mutationFn: ({ shipmentId, docKey }: { shipmentId: number; docKey: string }) =>
       api.delete<{ message: string }>(`/api/documents/${shipmentId}/${docKey}`),
     onSuccess: (_, vars) => {
-      qc.invalidateQueries({ queryKey: ['shipment', vars.shipmentId] })
+      qc.invalidateQueries({ queryKey: shipmentKey(vars.shipmentId) })
       qc.invalidateQueries({ queryKey: ['shipments'] })
     },
   })
