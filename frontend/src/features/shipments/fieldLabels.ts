@@ -52,6 +52,7 @@ const TOP_LEVEL: Record<string, string> = {
   insurance: 'Sigortalı',
   goods_value: 'Mal Değeri',
   crates_data: 'Kap Listesi',
+  goods_items: 'Ürün / Kalem Listesi',
 
   // Finansal
   purchase_price: 'Toplam Alış (özet)',

@@ -32,6 +32,16 @@ function parseJsonField(raw) {
   try { return JSON.parse(raw) || {}; } catch { return {}; }
 }
 
+/** goods_items (çoklu ürün listesi) → dizi. Bozuk/boş veride boş dizi döner. */
+function parseGoodsItems(raw) {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw;
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch { return []; }
+}
+
 /**
  * Sevkiyatı PDF üretimi için getirir.
  *
@@ -270,9 +280,27 @@ router.get('/file-cover/:shipmentId', verifyTokenFlexible, async (req, res) => {
        .strokeColor(COLORS.fieldBorder)
        .fillColor(COLORS.white)
        .fillAndStroke();
-    if (ship.goods_description) {
+    // Observation: mal tanımı + varsa çoklu ürün listesinin kısa dökümü
+    const coverItems = parseGoodsItems(ship.goods_items);
+    const obsLines = [];
+    if (ship.goods_description) obsLines.push(ship.goods_description);
+    if (coverItems.length > 0) {
+      obsLines.push('');
+      obsLines.push(`MAL LİSTESİ (${coverItems.length} kalem):`);
+      for (const it of coverItems) {
+        const parts = [
+          it.description || '—',
+          it.hs_code ? `HS ${it.hs_code}` : null,
+          it.origin_country || null,
+          it.quantity ? `${it.quantity} kap` : null,
+          it.gross_weight ? `${formatTr(it.gross_weight, 1)} kg` : null,
+        ].filter(Boolean);
+        obsLines.push(`• ${parts.join(' · ')}`);
+      }
+    }
+    if (obsLines.length > 0) {
       doc.fontSize(9).font('Helvetica').fillColor(COLORS.text)
-         .text(ship.goods_description, colLeftX + 10, y + 8, { width: innerW - 44, height: obsContentH - 16 });
+         .text(obsLines.join('\n'), colLeftX + 10, y + 8, { width: innerW - 44, height: obsContentH - 16 });
     }
 
     doc.end();
@@ -356,8 +384,67 @@ router.get('/proforma/:shipmentId', verifyTokenFlexible, async (req, res) => {
 
     // Watermark en sona taşındı (bufferPages + switchToPage ile overlay)
 
-    // === Kalemler tablosu başlık ===
+    // === Mal listesi (çoklu ürün) ===
+    // goods_items doluysa gümrük için kalem kalem HS kodu / menşe / kıymet dökümü
+    // basılır. Boşsa üst seviye tek ürün bilgisi eski davranışla korunur.
     let tableY = cardY + cardH + 30;
+    const goodsItems = parseGoodsItems(ship.goods_items);
+    if (goodsItems.length > 0) {
+      doc.fontSize(9).font('Helvetica-Bold').fillColor(COLORS.textLight);
+      doc.text('MAL LİSTESİ', 50, tableY);
+      tableY += 14;
+      doc.fontSize(7.5).font('Helvetica-Bold').fillColor(COLORS.textLight);
+      doc.text('ÜRÜN', 50, tableY, { width: 180, ellipsis: true });
+      doc.text('HS KODU', 235, tableY, { width: 70 });
+      doc.text('MENŞE', 310, tableY, { width: 60, ellipsis: true });
+      doc.text('KAP', 375, tableY, { width: 30, align: 'right' });
+      doc.text('BRÜT', 410, tableY, { width: 50, align: 'right' });
+      doc.text('NET', 465, tableY, { width: 45, align: 'right' });
+      doc.text(`KIYMET`, 515, tableY, { width: 45, align: 'right' });
+      tableY += 11;
+      doc.moveTo(40, tableY).lineTo(W - 40, tableY).strokeColor(COLORS.borderLight).lineWidth(0.8).stroke();
+      tableY += 5;
+
+      doc.font('Helvetica').fontSize(8).fillColor(COLORS.text);
+      let gQty = 0, gGross = 0, gNet = 0, gValue = 0;
+      for (const it of goodsItems) {
+        if (tableY > 660) { doc.addPage(); tableY = 60; }
+        gQty += Number(it.quantity) || 0;
+        gGross += Number(it.gross_weight) || 0;
+        gNet += Number(it.net_weight) || 0;
+        gValue += Number(it.value) || 0;
+
+        doc.fillColor(COLORS.text);
+        doc.text(it.description || '—', 50, tableY, { width: 180, ellipsis: true, lineBreak: false });
+        doc.font('Courier').text(it.hs_code || '—', 235, tableY, { width: 70, lineBreak: false });
+        doc.font('Helvetica').text(it.origin_country || '—', 310, tableY, { width: 60, ellipsis: true, lineBreak: false });
+        doc.text(String(it.quantity || 0), 375, tableY, { width: 30, align: 'right' });
+        doc.text(formatTr(it.gross_weight || 0, 1), 410, tableY, { width: 50, align: 'right' });
+        doc.text(formatTr(it.net_weight || 0, 1), 465, tableY, { width: 45, align: 'right' });
+        doc.text(formatTr(it.value || 0), 515, tableY, { width: 45, align: 'right' });
+        tableY += 15;
+
+        if (it.note) {
+          doc.fontSize(7).fillColor(COLORS.textMuted)
+             .text(it.note, 56, tableY - 2, { width: 490, ellipsis: true, lineBreak: false });
+          doc.fontSize(8);
+          tableY += 10;
+        }
+      }
+
+      // Mal listesi toplam satırı
+      doc.moveTo(40, tableY).lineTo(W - 40, tableY).strokeColor(COLORS.borderLight).lineWidth(0.5).stroke();
+      tableY += 5;
+      doc.font('Helvetica-Bold').fontSize(8).fillColor(COLORS.text);
+      doc.text(`TOPLAM (${goodsItems.length} kalem)`, 50, tableY, { width: 320 });
+      doc.text(String(gQty), 375, tableY, { width: 30, align: 'right' });
+      doc.text(formatTr(gGross, 1), 410, tableY, { width: 50, align: 'right' });
+      doc.text(formatTr(gNet, 1), 465, tableY, { width: 45, align: 'right' });
+      doc.text(`${symbol}${formatTr(gValue)}`, 505, tableY, { width: 55, align: 'right' });
+      tableY += 28;
+    }
+
+    // === Kalemler tablosu başlık ===
     doc.fontSize(9).font('Helvetica-Bold').fillColor(COLORS.textLight);
     doc.text('HİZMET / KALEM', 50, tableY);
     doc.text(`TUTAR (${cur})`, 350, tableY, { width: 80, align: 'right' });

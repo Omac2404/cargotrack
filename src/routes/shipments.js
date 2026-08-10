@@ -81,6 +81,7 @@ const COL_DEFS = {
   insurance: { type: 'bool' },
   goods_value: { type: 'float' },
   crates_data: { type: 'text' },
+  goods_items: { type: 'text' },
 
   purchase_price: { type: 'float' },
   sale_price: { type: 'float' },

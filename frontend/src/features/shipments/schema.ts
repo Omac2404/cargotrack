@@ -129,6 +129,7 @@ export const shipmentSchema = z.object({
   // üzerinden yürüyor. Formda tutulursa, form açıkken yüklenen belgeler
   // Kaydet'e basıldığında eski (bayat) değerle geri ezilir.
   crates_data: jsonField,
+  goods_items: jsonField,
   depo_stock_log: jsonField,
 })
 

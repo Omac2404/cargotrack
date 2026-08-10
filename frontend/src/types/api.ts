@@ -273,6 +273,22 @@ export interface WarehouseSummary {
   last_activity: string | null
 }
 
+/** goods_items içindeki tek ürün/kalem satırı */
+export interface GoodsItem {
+  description?: string
+  hs_code?: string
+  origin_country?: string
+  /** Bu kalemin kap adedi */
+  quantity?: number
+  package_type?: string
+  gross_weight?: number
+  net_weight?: number
+  volume_cbm?: number
+  /** Bu kalemin toplam kıymeti (sevkiyat para biriminde) */
+  value?: number
+  note?: string
+}
+
 export interface Shipment {
   id: number
   shipment_no: string

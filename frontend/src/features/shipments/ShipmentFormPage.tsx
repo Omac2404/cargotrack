@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
 import {
   ArrowLeft, Save, Loader2, FileText, Users, Package, DollarSign, Receipt, AlertCircle,
-  Files, Warehouse, ClipboardList, FileWarning, ExternalLink, History, Search, Plus,
+  Files, Warehouse, ClipboardList, FileWarning, ExternalLink, History, Search, Plus, Boxes,
 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -35,6 +35,7 @@ import { FileBadge2, FileCheck2, Barcode, FileSpreadsheet } from 'lucide-react'
 import { FinancialTable } from './FinancialTable'
 import { StorageSection } from './StorageSection'
 import { CratesEditor } from './CratesEditor'
+import { GoodsEditor, parseGoodsItems, calcGoodsTotals } from './GoodsEditor'
 import { DocumentChecklist } from './DocumentChecklist'
 import { CountryCombobox } from '@/components/shared/CountryCombobox'
 import { CurrencyCombobox } from '@/components/shared/CurrencyCombobox'
@@ -98,7 +99,7 @@ const FIELD_TAB: Record<string, string> = {
   client_delivery_address: 'parties', departure_country: 'parties',
   arrival_country: 'parties', parties_data: 'parties',
 
-  goods_description: 'cargo', hs_code: 'cargo', goods_value: 'cargo',
+  goods_description: 'cargo', hs_code: 'cargo', goods_value: 'cargo', goods_items: 'cargo',
   gross_weight: 'cargo', net_weight: 'cargo', volume_cbm: 'cargo', dimensions: 'cargo',
   quantity: 'cargo', package_count: 'cargo', package_type: 'cargo',
   dangerous_goods: 'cargo', adr_code: 'cargo', temperature_controlled: 'cargo',
@@ -265,6 +266,36 @@ export function ShipmentFormPage() {
     }
     setValue('parties_data', JSON.stringify(next), { shouldDirty: true })
   }
+
+  // === Çoklu ürün listesi ===
+  // Liste doluysa üst seviye yük alanları (kap/ağırlık/hacim/kıymet) listenin
+  // toplamıyla senkron tutulur. Araç ataması ve kapasite kontrolü bu alanları
+  // okuduğu için ikisinin ayrışması "yük havuzunda görünmüyor" tipi sorunlara
+  // yol açıyordu — bu yüzden manuel değil otomatik.
+  const goodsItemsStr = watch('goods_items') as string | undefined
+  const goodsItems = useMemo(() => parseGoodsItems(goodsItemsStr), [goodsItemsStr])
+  const hasGoodsItems = goodsItems.length > 0
+  const goodsTotals = useMemo(() => calcGoodsTotals(goodsItems), [goodsItems])
+
+  useEffect(() => {
+    if (!hasGoodsItems) return
+    const sync = (field: keyof ShipmentFormValues, next: number, decimals: number) => {
+      const rounded = Number(next.toFixed(decimals))
+      if (Number(watch(field) || 0) !== rounded) {
+        setValue(field as never, rounded as never, { shouldDirty: true })
+      }
+    }
+    sync('quantity', goodsTotals.quantity, 0)
+    sync('gross_weight', goodsTotals.gross_weight, 2)
+    sync('net_weight', goodsTotals.net_weight, 2)
+    sync('volume_cbm', goodsTotals.volume_cbm, 3)
+    sync('goods_value', goodsTotals.value, 2)
+    // İlk kalemin HS kodu üst seviyede saklanır — PDF/rapor tek kod gösterir
+    const firstHs = goodsItems[0]?.hs_code || ''
+    if (firstHs && watch('hs_code') !== firstHs) {
+      setValue('hs_code', firstHs, { shouldDirty: true })
+    }
+  }, [hasGoodsItems, goodsTotals, goodsItems, setValue, watch])
 
   // Quick-add partner dialog state
   const [quickAddType, setQuickAddType] = useState<PartnerType | null>(null)
@@ -709,10 +740,24 @@ export function ShipmentFormPage() {
               <SectionTitle>{t('shipment.sections.cargo_info')}</SectionTitle>
               <FieldArea label="Mal Tanımı" name="goods_description" register={register} errors={errors} />
 
+              {hasGoodsItems && (
+                <div className="rounded-md border border-primary/30 bg-primary/5 p-3 flex items-start gap-2 text-xs">
+                  <Boxes className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="text-primary">{goodsItems.length} kalemlik ürün listesi kullanılıyor.</strong>{' '}
+                    Kap adedi, ağırlıklar, hacim ve mal değeri aşağıdaki listeden otomatik hesaplanıyor;
+                    bu alanlar elle değiştirilemez. Değiştirmek için ürün listesindeki kalemleri düzenle.
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {/* HS Kodu + Fransız Gümrük lookup butonu */}
                 <div className="space-y-1.5">
-                  <Label htmlFor="hs_code">HS Kodu</Label>
+                  <Label htmlFor="hs_code">
+                    HS Kodu
+                    {hasGoodsItems && <span className="text-[10px] text-muted-foreground ml-1">(1. kalem)</span>}
+                  </Label>
                   <div className="flex items-center gap-1">
                     <Input id="hs_code" {...register('hs_code')} placeholder="örn. 8703.23.10" />
                     <Button
@@ -744,17 +789,18 @@ export function ShipmentFormPage() {
                   type="number"
                   step="0.01"
                   suffix={watch('currency_code') || 'EUR'}
+                  readOnly={hasGoodsItems}
                 />
 
                 {/* Ağırlıklar */}
-                <FieldWithSuffix label="Brüt Ağırlık" name="gross_weight" register={register} errors={errors} type="number" step="0.01" suffix="kg" />
-                <FieldWithSuffix label="Net Ağırlık"  name="net_weight"   register={register} errors={errors} type="number" step="0.01" suffix="kg" />
+                <FieldWithSuffix label="Brüt Ağırlık" name="gross_weight" register={register} errors={errors} type="number" step="0.01" suffix="kg" readOnly={hasGoodsItems} />
+                <FieldWithSuffix label="Net Ağırlık"  name="net_weight"   register={register} errors={errors} type="number" step="0.01" suffix="kg" readOnly={hasGoodsItems} />
 
                 {/* Hacim + birim seçici (sadece UI; değer m³ olarak saklanır) */}
-                <VolumeField form={form} />
+                <VolumeField form={form} readOnly={hasGoodsItems} />
 
                 <Field label="Boyutlar" name="dimensions" register={register} errors={errors} placeholder="120x80x100 cm" />
-                <Field label="Kap Adedi" name="quantity" register={register} errors={errors} type="number" />
+                <Field label="Kap Adedi" name="quantity" register={register} errors={errors} type="number" readOnly={hasGoodsItems} />
                 <Field label="Paket Sayısı" name="package_count" register={register} errors={errors} type="number" />
               </div>
 
@@ -769,6 +815,15 @@ export function ShipmentFormPage() {
                 <p className="text-[10px] text-muted-foreground">
                   UN Recommendation 21 standart kodları (Fransız Gümrük). Listede yoksa kendi etiketinizi yazıp Enter'a basabilirsiniz.
                 </p>
+              </div>
+
+              {/* Çoklu ürün listesi — her kalemin kendi HS kodu / menşei / ağırlığı */}
+              <div className="pt-4 border-t">
+                <GoodsEditor
+                  value={goodsItemsStr}
+                  onChange={(json) => setValue('goods_items', json, { shouldDirty: true })}
+                  currency={watch('currency_code') || 'EUR'}
+                />
               </div>
 
               <SectionTitle className="pt-4 border-t">Özel Koşullar</SectionTitle>
@@ -1131,14 +1186,26 @@ type FieldProps = {
   step?: string
   placeholder?: string
   className?: string
+  /** Ürün listesinden hesaplanan alanlar elle değiştirilemez */
+  readOnly?: boolean
 }
 
-function Field({ label, name, register, errors, className, ...rest }: FieldProps) {
+function Field({ label, name, register, errors, className, readOnly, ...rest }: FieldProps) {
   const err = (errors as Record<string, { message?: string } | undefined>)[name as string]
   return (
     <div className={cn('space-y-1.5', className)}>
-      <Label htmlFor={name as string}>{label}</Label>
-      <Input id={name as string} {...register(name as never)} {...rest} />
+      <Label htmlFor={name as string}>
+        {label}
+        {readOnly && <span className="text-[10px] text-muted-foreground ml-1">(otomatik)</span>}
+      </Label>
+      <Input
+        id={name as string}
+        {...register(name as never)}
+        {...rest}
+        readOnly={readOnly}
+        tabIndex={readOnly ? -1 : undefined}
+        className={cn(readOnly && 'bg-muted/50 text-muted-foreground cursor-not-allowed')}
+      />
       {err && <p className="text-xs text-destructive">{String(err.message ?? '')}</p>}
     </div>
   )
@@ -1191,12 +1258,15 @@ function TabSaveBar({
  * Sayı/metin alanı + suffix (örn. "kg", "€", "°C") — input'un sağ iç tarafına yapışık küçük etiket.
  */
 function FieldWithSuffix({
-  label, name, register, errors, suffix, type, step, placeholder, className,
+  label, name, register, errors, suffix, type, step, placeholder, className, readOnly,
 }: FieldProps & { suffix: string }) {
   const err = (errors as Record<string, { message?: string } | undefined>)[name as string]
   return (
     <div className={cn('space-y-1.5', className)}>
-      <Label htmlFor={name as string}>{label}</Label>
+      <Label htmlFor={name as string}>
+        {label}
+        {readOnly && <span className="text-[10px] text-muted-foreground ml-1">(otomatik)</span>}
+      </Label>
       <div className="relative">
         <Input
           id={name as string}
@@ -1204,7 +1274,9 @@ function FieldWithSuffix({
           type={type}
           step={step}
           placeholder={placeholder}
-          className="pr-12"
+          readOnly={readOnly}
+          tabIndex={readOnly ? -1 : undefined}
+          className={cn('pr-12', readOnly && 'bg-muted/50 text-muted-foreground cursor-not-allowed')}
         />
         <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none font-medium">
           {suffix}
@@ -1219,7 +1291,7 @@ function FieldWithSuffix({
  * Hacim alanı + birim seçici. Birim m³ harici seçilirse değer otomatik m³'e çevrilir
  * (DB her zaman m³ saklar). UI hangi birimde girildiğini kullanıcıya gösterir.
  */
-function VolumeField({ form }: { form: ReturnType<typeof useForm<ShipmentFormValues>> }) {
+function VolumeField({ form, readOnly }: { form: ReturnType<typeof useForm<ShipmentFormValues>>; readOnly?: boolean }) {
   const { watch, setValue, register } = form
   const [unit, setUnit] = useState<'m3' | 'litre' | 'ft3'>('m3')
   const currentM3 = Number(watch('volume_cbm') || 0)
@@ -1230,12 +1302,18 @@ function VolumeField({ form }: { form: ReturnType<typeof useForm<ShipmentFormVal
 
   return (
     <div className="space-y-1.5">
-      <Label htmlFor="volume_cbm">Hacim</Label>
+      <Label htmlFor="volume_cbm">
+        Hacim
+        {readOnly && <span className="text-[10px] text-muted-foreground ml-1">(otomatik)</span>}
+      </Label>
       <div className="flex items-center gap-1">
         <div className="relative flex-1">
           <Input
             type="number"
             step="0.01"
+            readOnly={readOnly}
+            tabIndex={readOnly ? -1 : undefined}
+            className={cn(readOnly && 'bg-muted/50 text-muted-foreground cursor-not-allowed')}
             value={Number.isFinite(displayValue) && displayValue > 0 ? Number(displayValue.toFixed(3)) : ''}
             onChange={(e) => {
               const v = parseFloat(e.target.value) || 0

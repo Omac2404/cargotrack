@@ -133,6 +133,11 @@ const SECTIONS: Section[] = [
             result: 'Araç ataması bu iki alana göre hesaplanır — boş bırakırsan yük havuzunda atama yapamazsın.',
           },
           {
+            where: 'Form → Yük sekmesi → Ürün / Kalem Listesi',
+            action: 'Birden fazla ürün varsa "Ürün Ekle"',
+            result: 'Her ürünün kendi HS kodu, menşe ülkesi, ağırlığı ve kıymeti girilir. Liste doldurulduğunda üstteki Kap Adedi / Ağırlık / Hacim / Mal Değeri alanları toplamdan otomatik hesaplanır.',
+          },
+          {
             where: 'Form → sağ üst',
             action: '"Kaydet" butonu',
             result: 'Dosya numarası üretilir ve form düzenleme moduna geçer. Belgeler, Sevk Planı ve Geçmiş sekmeleri artık kullanılabilir.',
@@ -145,6 +150,40 @@ const SECTIONS: Section[] = [
         ],
         warnings: [
           'Belgeler ve Sevk Planı sekmeleri kayıt yapılmadan çalışmaz — dosyanın bir ID\'si olması gerekir. Önce Kaydet.',
+        ],
+      },
+      {
+        title: 'Bir sevkiyatta birden fazla ürün',
+        useCase: 'Aynı yükte farklı HS kodlu, farklı menşeli birkaç ürün var (gümrük kalem kalem ister).',
+        steps: [
+          {
+            where: 'Sevkiyat formu → Yük sekmesi → en alt',
+            action: '"Ürün Ekle" butonu',
+            result: 'Yeni bir kalem satırı açılır ve detayları görünür.',
+          },
+          {
+            where: 'Açılan kalem',
+            action: 'Ürün adı, HS kodu, menşe ülke, ambalaj tipi, kap adedi, brüt/net ağırlık, hacim ve kıymet gir',
+            result: 'Satır başlığında özet görünür (HS kodu, kap, kg). Kapatıp diğer kaleme geçebilirsin.',
+          },
+          {
+            where: 'Kalem satırı',
+            action: 'Kopyala ikonu',
+            result: 'Benzer ürünleri sıfırdan yazmadan çoğaltırsın; sadece farklı alanları düzeltirsin.',
+          },
+          {
+            where: 'Listenin altı',
+            action: 'Toplam kutucuklarını kontrol et',
+            result: 'Toplam kap, brüt/net ağırlık, hacim ve kıymet üstteki Yük Bilgileri alanlarına otomatik yazılır. O alanlar "(otomatik)" etiketiyle kilitlenir.',
+          },
+        ],
+        tips: [
+          'Üstteki HS Kodu alanı 1. kalemin kodunu gösterir; tam liste Proforma PDF\'inde "Mal Listesi" tablosunda çıkar.',
+          'Tek ürünlü sevkiyatlarda listeyi hiç kullanmana gerek yok — eski gibi üstteki alanları elle doldur.',
+          'Listeyi tamamen boşaltırsan alanlar tekrar elle düzenlenebilir hale gelir.',
+        ],
+        warnings: [
+          'Liste doluyken kap adedi ve ağırlığı elle değiştiremezsin — araç ataması bu değerleri kullandığı için listeyle her zaman aynı kalması gerekir.',
         ],
       },
       {
