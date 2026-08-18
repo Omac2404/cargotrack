@@ -8,7 +8,7 @@ import {
 import { Card } from '@/components/ui/card'
 import { cn, formatMoney, formatNumber } from '@/lib/utils'
 import {
-  getFinSchema, VAT_RATES, calcFinTotals,
+  getFinSchema, VAT_RATES, calcFinTotals, DEFAULT_VAT_RATE,
   type FinancialData, type FinLineEntry,
 } from '@/lib/constants/finSchemas'
 import { currencySymbol } from '@/lib/constants'
@@ -305,7 +305,7 @@ function FinRow({
           <span className="text-[10px] text-muted-foreground">—</span>
         ) : (
           <VatPicker
-            value={entry.income_vat || '20'}
+            value={entry.income_vat || DEFAULT_VAT_RATE}
             customValue=""
             onChange={(v, custom) => onSetEntry(item.key, { income_vat: v === 'custom' ? `custom:${custom || 0}` : v })}
           />
@@ -330,7 +330,7 @@ function FinRow({
           <span className="text-[10px] text-muted-foreground">—</span>
         ) : (
           <VatPicker
-            value={entry.expense_vat || '20'}
+            value={entry.expense_vat || DEFAULT_VAT_RATE}
             customValue=""
             onChange={(v, custom) => onSetEntry(item.key, { expense_vat: v === 'custom' ? `custom:${custom || 0}` : v })}
           />
@@ -409,7 +409,7 @@ function CustomFinRow({ rowKey, entry, onSetEntry, onRemove, sym }: CustomFinRow
       </td>
       <td className="px-2 py-1">
         <VatPicker
-          value={entry.income_vat || '20'}
+          value={entry.income_vat || DEFAULT_VAT_RATE}
           customValue=""
           onChange={(v, custom) => onSetEntry(rowKey, { income_vat: v === 'custom' ? `custom:${custom || 0}` : v })}
         />
@@ -424,7 +424,7 @@ function CustomFinRow({ rowKey, entry, onSetEntry, onRemove, sym }: CustomFinRow
       </td>
       <td className="px-2 py-1">
         <VatPicker
-          value={entry.expense_vat || '20'}
+          value={entry.expense_vat || DEFAULT_VAT_RATE}
           customValue=""
           onChange={(v, custom) => onSetEntry(rowKey, { expense_vat: v === 'custom' ? `custom:${custom || 0}` : v })}
         />

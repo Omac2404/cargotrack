@@ -46,7 +46,10 @@ RUN mkdir -p /build/public && npm run build
 FROM node:20-alpine AS runtime
 
 # tini → graceful shutdown signal handler (PID 1 problem'i çözer)
-RUN apk add --no-cache tini
+# ttf-dejavu → PDF'lerde Türkçe/Fransızca karakterler. PDFKit'in gömülü Helvetica'sı
+#   WinAnsi kodlamasında olduğu için ş/ğ/ı/İ gibi harfleri sessizce bozuyordu
+#   ("HİZMET" → "H ¤ÔUB"). DejaVu tam Unicode kapsar.
+RUN apk add --no-cache tini ttf-dejavu
 
 WORKDIR /app
 

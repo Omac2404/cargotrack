@@ -11,6 +11,16 @@ export interface FinItem {
   noVat?: boolean
 }
 
+/**
+ * Gümrükleme masrafları — üç taşıma modunda da aynı kalemler kullanılıyor,
+ * tek yerden yönetilsin diye ayrıldı.
+ */
+const IMPORT_CLEARANCE_ITEMS: FinItem[] = [
+  { group: 'İthalat Vergileri', key: 'ith_frais_t1', label: 'Frais de T1 (T1 Transit Masrafı)' },
+  { group: 'İthalat Vergileri', key: 'ith_forfait_dedouanement', label: 'Forfait Dédouanement (Gümrükleme Ücreti)' },
+  { group: 'İthalat Vergileri', key: 'ith_frais_bad', label: 'Frais de BAD (Teslim Emri Masrafı)' },
+]
+
 const ROAD_SCHEMA: FinItem[] = [
   { group: 'Navlun', key: 'navlun', label: 'Navlun' },
   { group: 'Çıkış Ülkesi', key: 'ihracat_gumruk', label: 'İhracat Gümrük' },
@@ -24,6 +34,7 @@ const ROAD_SCHEMA: FinItem[] = [
   { group: 'İthalat Vergileri', key: 'ith_taxe_parafiscal', label: 'Taxe Parafiscal (Sektörel Vergi)' },
   { group: 'İthalat Vergileri', key: 'ith_anti_dumping', label: 'Anti-Dumping (Haksız Rekabet Vergisi)' },
   { group: 'İthalat Vergileri', key: 'ith_droit_porte', label: 'Droit Porte (Liman/Terminal Geçiş Vergisi)' },
+  ...IMPORT_CLEARANCE_ITEMS,
   { group: 'Genel', key: 'sigorta', label: 'Sigorta' },
   { group: 'Genel', key: 'diger', label: 'Diğer' },
 ]
@@ -51,6 +62,7 @@ const MARITIME_SCHEMA: FinItem[] = [
   { group: 'İthalat Vergileri', key: 'ith_taxe_parafiscal', label: 'Taxe Parafiscal' },
   { group: 'İthalat Vergileri', key: 'ith_anti_dumping', label: 'Anti-Dumping' },
   { group: 'İthalat Vergileri', key: 'ith_droit_porte', label: 'Droit Porte / Liman Vergisi' },
+  ...IMPORT_CLEARANCE_ITEMS,
   { group: 'Genel', key: 'diger', label: 'Diğer' },
 ]
 
@@ -73,6 +85,7 @@ const AIR_SCHEMA: FinItem[] = [
   { group: 'İthalat Vergileri', key: 'ith_droit_douane', label: 'Droit Douane (Gümrük Vergisi)' },
   { group: 'İthalat Vergileri', key: 'ith_taxe_parafiscal', label: 'Taxe Parafiscal' },
   { group: 'İthalat Vergileri', key: 'ith_anti_dumping', label: 'Anti-Dumping' },
+  ...IMPORT_CLEARANCE_ITEMS,
   { group: 'Genel', key: 'diger', label: 'Diğer' },
 ]
 
@@ -116,12 +129,32 @@ export interface FinLineEntry {
 
 export type FinancialData = Record<string, FinLineEntry>
 
+/**
+ * Varsayılan KDV oranı.
+ *
+ * KDV seçici, oran girilmemiş kalemlerde ekranda %20 gösteriyordu ama bu değer
+ * kaydedilmiyordu; hesap ise boş oranı 0 sayıyordu. Sonuç: kullanıcı %20 görüp
+ * KDV'nin hesaplanmasını bekliyor, toplamda 0,00 çıkıyordu. Ekranda görünen
+ * oranla hesapta kullanılan oran artık aynı kaynaktan geliyor.
+ */
+export const DEFAULT_VAT_RATE = '20'
+
+/** Kalemde saklı KDV oranını sayıya çevirir ('custom:7.5' biçimini de anlar). */
+export function parseVatRate(raw: string | number | undefined | null): number {
+  if (raw === undefined || raw === null || raw === '') return Number(DEFAULT_VAT_RATE)
+  const s = String(raw)
+  if (s.startsWith('custom:')) return parseFloat(s.slice(7)) || 0
+  if (s === 'custom') return 0
+  const n = parseFloat(s)
+  return Number.isFinite(n) ? n : 0
+}
+
 /** Tek bir kalemin gelir/gider KDV hesabı */
 export function calcFinLineTotals(entry: FinLineEntry, noVat?: boolean) {
   const income = Number(entry.income || 0)
   const expense = Number(entry.expense || 0)
-  const incomeVatRate = noVat ? 0 : Number(entry.income_vat || 0)
-  const expenseVatRate = noVat ? 0 : Number(entry.expense_vat || 0)
+  const incomeVatRate = noVat ? 0 : parseVatRate(entry.income_vat)
+  const expenseVatRate = noVat ? 0 : parseVatRate(entry.expense_vat)
 
   return {
     income,
