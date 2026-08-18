@@ -29,26 +29,29 @@ function addressLines() {
   return [
     COMPANY.address,
     [COMPANY.postalCity, COMPANY.country].filter(Boolean).join(' '),
-    [COMPANY.phone && `Tel: ${COMPANY.phone}`, COMPANY.email].filter(Boolean).join('  ·  '),
+    [COMPANY.phone && `Tél : ${COMPANY.phone}`, COMPANY.email].filter(Boolean).join('  ·  '),
     COMPANY.web,
   ].filter((l) => l && String(l).trim());
 }
 
-/** Antette kimlik bilgileri satırı (vergi no, SIRET, EORI). */
+/**
+ * Antette kimlik bilgileri satırı (vergi no, SIRET, EORI).
+ * Etiketler Fransızca: bu blok Fransızca basılan proforma faturada kullanılıyor.
+ */
 function identityLines() {
   return [
-    COMPANY.vatNumber && `TVA / KDV No: ${COMPANY.vatNumber}`,
-    COMPANY.registrationNo && `SIRET / Vergi No: ${COMPANY.registrationNo}`,
-    COMPANY.eori && `EORI: ${COMPANY.eori}`,
+    COMPANY.vatNumber && `N° TVA : ${COMPANY.vatNumber}`,
+    COMPANY.registrationNo && `SIRET : ${COMPANY.registrationNo}`,
+    COMPANY.eori && `EORI : ${COMPANY.eori}`,
   ].filter(Boolean);
 }
 
-/** Fatura altına basılacak banka bilgisi satırları. */
+/** Fatura altına basılacak banka bilgisi satırları (Fransızca etiketli). */
 function bankLines() {
   return [
-    COMPANY.bankName && `Banka: ${COMPANY.bankName}`,
-    COMPANY.iban && `IBAN: ${COMPANY.iban}`,
-    COMPANY.bic && `BIC/SWIFT: ${COMPANY.bic}`,
+    COMPANY.bankName && `Banque : ${COMPANY.bankName}`,
+    COMPANY.iban && `IBAN : ${COMPANY.iban}`,
+    COMPANY.bic && `BIC / SWIFT : ${COMPANY.bic}`,
   ].filter(Boolean);
 }
 

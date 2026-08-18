@@ -99,12 +99,105 @@ function setupFonts(doc) {
   return { regular: 'Helvetica', bold: 'Helvetica-Bold', italic: 'Helvetica-Oblique' };
 }
 
+// ============================================================
+// Proforma fatura — Fransızca sözlükler
+// ============================================================
+// Fatura Fransız müşteriye/gümrüğe gittiği için proforma tamamen Fransızca
+// basılır. Diğer PDF'ler (dosya kapağı, depo raporu) mevcut dilinde kalır.
+
+/** Finansal kalem anahtarı → Fransızca ad. Anahtarlar FIN_SCHEMAS ile aynı. */
+const FIN_LABELS_FR = {
+  navlun: 'Fret',
+  thc_origin: 'THC départ (manutention terminal)',
+  thc_dest: 'THC destination (manutention terminal)',
+  bl_fee: 'Frais de B/L',
+  awb_fee: 'Frais de LTA (AWB)',
+  baf: 'BAF (ajustement carburant)',
+  caf: 'CAF (ajustement devise)',
+  fuel_surcharge: 'Surcharge carburant',
+  security_surcharge: 'Surcharge sûreté',
+  xray_fee: 'Scanner / rayons X',
+  handling_origin: 'Manutention départ',
+  handling_dest: 'Manutention destination',
+
+  ihracat_gumruk: 'Douane export',
+  cikis_tasima: 'Transport / manutention (départ)',
+  cikis_ic_nakliye: 'Transport intérieur (départ)',
+  cikis_nakliye: 'Transport intérieur (vers le port)',
+  cikis_depolama: 'Stockage (départ)',
+  cikis_sigorta: 'Assurance (départ)',
+  demurrage_origin: 'Surestaries (départ)',
+
+  ithalat_gumruk: 'Douane import',
+  varis_depo: 'Entrepôt / manutention (destination)',
+  varis_depolama: 'Stockage / manutention (destination)',
+  varis_ic_nakliye: 'Transport intérieur (destination)',
+  varis_liman: 'Frais portuaires',
+  varis_sigorta: 'Assurance (destination)',
+  demurrage_dest: 'Surestaries / détention (destination)',
+
+  ith_tva: 'TVA',
+  ith_droit_douane: 'Droit de douane',
+  ith_taxe_parafiscal: 'Taxe parafiscale',
+  ith_anti_dumping: 'Droit anti-dumping',
+  ith_droit_porte: 'Droit de port',
+  ith_frais_t1: 'Frais de T1',
+  ith_forfait_dedouanement: 'Forfait dédouanement',
+  ith_frais_bad: 'Frais de BAD',
+
+  sigorta: 'Assurance',
+  diger: 'Divers',
+};
+
+/** Ödeme tipi → Fransızca. */
+const PAYMENT_FR = {
+  havale: 'Virement bancaire',
+  cek: 'Chèque',
+  nakit: 'Espèces',
+  kredi_karti: 'Carte bancaire',
+  akreditif: 'Crédit documentaire',
+  vesaik: 'Remise documentaire',
+  diger: 'Autre',
+};
+
+/** Ülke adları veritabanında Türkçe saklanıyor; faturada Fransızca gösterilir. */
+const COUNTRY_FR = {
+  'Türkiye': 'Turquie', 'Almanya': 'Allemagne', 'Fransa': 'France', 'İtalya': 'Italie',
+  'İspanya': 'Espagne', 'Hollanda': 'Pays-Bas', 'Belçika': 'Belgique', 'Polonya': 'Pologne',
+  'Romanya': 'Roumanie', 'Bulgaristan': 'Bulgarie', 'Yunanistan': 'Grèce', 'Avusturya': 'Autriche',
+  'Çekya': 'Tchéquie', 'Macaristan': 'Hongrie', 'Slovakya': 'Slovaquie', 'Hırvatistan': 'Croatie',
+  'Sırbistan': 'Serbie', 'İsviçre': 'Suisse', 'Norveç': 'Norvège', 'İsveç': 'Suède',
+  'Danimarka': 'Danemark', 'Finlandiya': 'Finlande', 'Portekiz': 'Portugal', 'İrlanda': 'Irlande',
+  'İngiltere': 'Royaume-Uni', 'Rusya': 'Russie', 'Ukrayna': 'Ukraine', 'Belarus': 'Biélorussie',
+  'Gürcistan': 'Géorgie', 'Azerbaycan': 'Azerbaïdjan', 'İran': 'Iran', 'Irak': 'Irak',
+  'Suriye': 'Syrie', 'Lübnan': 'Liban', 'İsrail': 'Israël', 'Mısır': 'Égypte',
+  'Libya': 'Libye', 'Fas': 'Maroc', 'Tunus': 'Tunisie', 'Cezayir': 'Algérie',
+  'S. Arabistan': 'Arabie saoudite', 'BAE': 'Émirats arabes unis', 'Katar': 'Qatar',
+  'Kuveyt': 'Koweït', 'ABD': 'États-Unis', 'Kanada': 'Canada', 'Meksika': 'Mexique',
+  'Brezilya': 'Brésil', 'Arjantin': 'Argentine', 'Çin': 'Chine', 'Japonya': 'Japon',
+  'Güney Kore': 'Corée du Sud', 'Hindistan': 'Inde', 'Pakistan': 'Pakistan',
+  'Kazakistan': 'Kazakhstan', 'Özbekistan': 'Ouzbékistan', 'Türkmenistan': 'Turkménistan',
+};
+const countryFr = (name) => COUNTRY_FR[String(name || '').trim()] || name || '—';
+
+/** Fransız biçiminde sayı: 1 895,00 */
+function formatFr(n, decimals = 2) {
+  return new Intl.NumberFormat('fr-FR', {
+    minimumFractionDigits: decimals, maximumFractionDigits: decimals,
+  }).format(Number(n) || 0);
+}
+
+/** Fransız biçiminde tarih: 18/08/2026 */
+function formatDateFr(d) {
+  if (!d) return '';
+  const date = typeof d === 'string' ? new Date(d) : d;
+  if (isNaN(date.getTime())) return '';
+  return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
 /**
- * Finansal kalem anahtarı → insan-okunabilir ad.
- *
- * Önceden anahtar makineyle güzelleştiriliyordu ("ith_anti_dumping" →
- * "Ith Anti Dumping"), faturada yarı Türkçe yarı bozuk adlar çıkıyordu.
- * Liste frontend'deki FIN_SCHEMAS ile aynı tutulmalı.
+ * Finansal kalem anahtarı → insan-okunabilir ad (Türkçe).
+ * Dosya kapağı gibi Türkçe kalan belgeler için.
  */
 const FIN_LABELS = {
   navlun: 'Navlun',
@@ -506,9 +599,9 @@ router.get('/proforma/:shipmentId', verifyTokenFlexible, async (req, res) => {
 
     // Sağ üst: belge başlığı
     doc.fontSize(24).font(F.bold).fillColor(COLORS.primary)
-       .text('PROFORMA FATURA', 300, 44, { width: W - 340, align: 'right' });
+       .text('FACTURE PROFORMA', 300, 44, { width: W - 340, align: 'right' });
     doc.fontSize(7.5).font(F.regular).fillColor(COLORS.textMuted)
-       .text('Bu belge bilgilendirme amaçlıdır. Resmi fatura niteliği taşımaz.',
+       .text('Ce document est fourni à titre informatif et ne constitue pas une facture officielle.',
              300, 74, { width: W - 340, align: 'right' });
 
     // Antet ayırıcı çizgisi
@@ -537,22 +630,22 @@ router.get('/proforma/:shipmentId', verifyTokenFlexible, async (req, res) => {
     const colL = 60, colR = W / 2 + 20;
     let infoY = cardY + 15;
     // Row 1
-    infoLabel('FATURA NO', colL, infoY);
+    infoLabel('N° DE FACTURE', colL, infoY);
     infoValue(ship.shipment_no, colL, infoY);
-    infoLabel('TARİH', colR, infoY);
-    infoValue(formatDateTr(new Date()), colR, infoY);
+    infoLabel('DATE', colR, infoY);
+    infoValue(formatDateFr(new Date()), colR, infoY);
     infoY += 30;
     // Row 2
-    infoLabel('MÜŞTERİ', colL, infoY);
+    infoLabel('CLIENT', colL, infoY);
     infoValue(ship.client_billing, colL, infoY);
-    infoLabel('SEVKİYAT NO', colR, infoY);
+    infoLabel('N° DE DOSSIER', colR, infoY);
     infoValue(ship.shipment_no, colR, infoY);
     infoY += 30;
     // Row 3
-    infoLabel('GÜZERGAH', colL, infoY);
-    infoValue(`${ship.departure_country || '?'}  →  ${ship.arrival_country || '?'}`, colL, infoY);
-    infoLabel('ÖDEME TİPİ', colR, infoY);
-    infoValue(ship.payment_type || '—', colR, infoY);
+    infoLabel('ITINÉRAIRE', colL, infoY);
+    infoValue(`${countryFr(ship.departure_country)}  →  ${countryFr(ship.arrival_country)}`, colL, infoY);
+    infoLabel('MODE DE PAIEMENT', colR, infoY);
+    infoValue(PAYMENT_FR[ship.payment_type] || ship.payment_type || '—', colR, infoY);
 
     // Watermark en sona taşındı (bufferPages + switchToPage ile overlay)
 
@@ -563,16 +656,16 @@ router.get('/proforma/:shipmentId', verifyTokenFlexible, async (req, res) => {
     const goodsItems = parseGoodsItems(ship.goods_items);
     if (goodsItems.length > 0) {
       doc.fontSize(9).font(F.bold).fillColor(COLORS.textLight);
-      doc.text('MAL LİSTESİ', 50, tableY);
+      doc.text('LISTE DES MARCHANDISES', 50, tableY);
       tableY += 14;
       doc.fontSize(7.5).font(F.bold).fillColor(COLORS.textLight);
-      doc.text('ÜRÜN', 50, tableY, { width: 180, ellipsis: true });
-      doc.text('HS KODU', 235, tableY, { width: 70 });
-      doc.text('MENŞE', 310, tableY, { width: 60, ellipsis: true });
-      doc.text('KAP', 375, tableY, { width: 30, align: 'right' });
-      doc.text('BRÜT', 410, tableY, { width: 50, align: 'right' });
+      doc.text('DÉSIGNATION', 50, tableY, { width: 180, ellipsis: true });
+      doc.text('CODE SH', 235, tableY, { width: 70 });
+      doc.text('ORIGINE', 310, tableY, { width: 60, ellipsis: true });
+      doc.text('COLIS', 375, tableY, { width: 30, align: 'right' });
+      doc.text('BRUT', 410, tableY, { width: 50, align: 'right' });
       doc.text('NET', 465, tableY, { width: 45, align: 'right' });
-      doc.text(`KIYMET`, 515, tableY, { width: 45, align: 'right' });
+      doc.text(`VALEUR`, 515, tableY, { width: 45, align: 'right' });
       tableY += 11;
       doc.moveTo(40, tableY).lineTo(W - 40, tableY).strokeColor(COLORS.borderLight).lineWidth(0.8).stroke();
       tableY += 5;
@@ -589,11 +682,11 @@ router.get('/proforma/:shipmentId', verifyTokenFlexible, async (req, res) => {
         doc.fillColor(COLORS.text);
         doc.text(it.description || '—', 50, tableY, { width: 180, ellipsis: true, lineBreak: false });
         doc.font('Courier').text(it.hs_code || '—', 235, tableY, { width: 70, lineBreak: false });
-        doc.font(F.regular).text(it.origin_country || '—', 310, tableY, { width: 60, ellipsis: true, lineBreak: false });
+        doc.font(F.regular).text(countryFr(it.origin_country), 310, tableY, { width: 60, ellipsis: true, lineBreak: false });
         doc.text(String(it.quantity || 0), 375, tableY, { width: 30, align: 'right' });
-        doc.text(formatTr(it.gross_weight || 0, 1), 410, tableY, { width: 50, align: 'right' });
-        doc.text(formatTr(it.net_weight || 0, 1), 465, tableY, { width: 45, align: 'right' });
-        doc.text(formatTr(it.value || 0), 515, tableY, { width: 45, align: 'right' });
+        doc.text(formatFr(it.gross_weight || 0, 1), 410, tableY, { width: 50, align: 'right' });
+        doc.text(formatFr(it.net_weight || 0, 1), 465, tableY, { width: 45, align: 'right' });
+        doc.text(formatFr(it.value || 0), 515, tableY, { width: 45, align: 'right' });
         tableY += 15;
 
         if (it.note) {
@@ -608,20 +701,20 @@ router.get('/proforma/:shipmentId', verifyTokenFlexible, async (req, res) => {
       doc.moveTo(40, tableY).lineTo(W - 40, tableY).strokeColor(COLORS.borderLight).lineWidth(0.5).stroke();
       tableY += 5;
       doc.font(F.bold).fontSize(8).fillColor(COLORS.text);
-      doc.text(`TOPLAM (${goodsItems.length} kalem)`, 50, tableY, { width: 320 });
+      doc.text(`TOTAL (${goodsItems.length} poste(s))`, 50, tableY, { width: 320 });
       doc.text(String(gQty), 375, tableY, { width: 30, align: 'right' });
-      doc.text(formatTr(gGross, 1), 410, tableY, { width: 50, align: 'right' });
-      doc.text(formatTr(gNet, 1), 465, tableY, { width: 45, align: 'right' });
-      doc.text(`${symbol}${formatTr(gValue)}`, 505, tableY, { width: 55, align: 'right' });
+      doc.text(formatFr(gGross, 1), 410, tableY, { width: 50, align: 'right' });
+      doc.text(formatFr(gNet, 1), 465, tableY, { width: 45, align: 'right' });
+      doc.text(`${symbol}${formatFr(gValue)}`, 505, tableY, { width: 55, align: 'right' });
       tableY += 28;
     }
 
     // === Kalemler tablosu başlık ===
     doc.fontSize(9).font(F.bold).fillColor(COLORS.textLight);
-    doc.text('HİZMET / KALEM', 50, tableY);
-    doc.text(`TUTAR (${cur})`, 350, tableY, { width: 80, align: 'right' });
-    doc.text('KDV %', 440, tableY, { width: 40, align: 'right' });
-    doc.text('KDV TUTARI', 490, tableY, { width: 70, align: 'right' });
+    doc.text('DÉSIGNATION', 50, tableY);
+    doc.text(`MONTANT (${cur})`, 350, tableY, { width: 80, align: 'right' });
+    doc.text('TVA %', 440, tableY, { width: 40, align: 'right' });
+    doc.text('MONTANT TVA', 490, tableY, { width: 70, align: 'right' });
     tableY += 14;
     doc.moveTo(40, tableY).lineTo(W - 40, tableY).strokeColor(COLORS.borderLight).lineWidth(1).stroke();
     tableY += 6;
@@ -642,13 +735,13 @@ router.get('/proforma/:shipmentId', verifyTokenFlexible, async (req, res) => {
 
       // Kullanıcının yazdığı özel kalem adı > şema etiketi > son çare anahtar
       const label = entry.label
-        || FIN_LABELS[key]
-        || key.replace(/^custom_[a-z_]*?_\d+$/, 'Özel Kalem').replace(/_/g, ' ');
+        || FIN_LABELS_FR[key]
+        || key.replace(/^custom_[a-z_]*?_\d+$/, 'Poste personnalisé').replace(/_/g, ' ');
       doc.fillColor(COLORS.text).font(F.regular).fontSize(10);
       doc.text(label, 50, tableY, { width: 290, ellipsis: true });
-      doc.text(formatTr(income), 350, tableY, { width: 80, align: 'right' });
+      doc.text(formatFr(income), 350, tableY, { width: 80, align: 'right' });
       doc.text(`${vatRate.toFixed(0)}%`, 440, tableY, { width: 40, align: 'right' });
-      doc.text(formatTr(vat), 490, tableY, { width: 70, align: 'right' });
+      doc.text(formatFr(vat), 490, tableY, { width: 70, align: 'right' });
       tableY += 22;
       lineCount++;
 
@@ -657,7 +750,7 @@ router.get('/proforma/:shipmentId', verifyTokenFlexible, async (req, res) => {
 
     if (lineCount === 0) {
       doc.fontSize(10).font(F.italic).fillColor(COLORS.textLight);
-      doc.text('Finansal kalem girilmemiş', 50, tableY, { width: 500, align: 'center' });
+      doc.text('Aucun poste financier saisi', 50, tableY, { width: 500, align: 'center' });
       tableY += 22;
     }
 
@@ -671,29 +764,29 @@ router.get('/proforma/:shipmentId', verifyTokenFlexible, async (req, res) => {
     const totalsValueW = 80;
 
     doc.fontSize(11).font(F.regular).fillColor(COLORS.text);
-    doc.text('Ara Toplam (KDV Hariç):', totalsX, tableY, { width: 150 });
+    doc.text('Total HT :', totalsX, tableY, { width: 150 });
     doc.font(F.bold).fillColor(COLORS.text)
-       .text(`${symbol}${formatTr(totalIncome)}`, totalsValueX, tableY, { width: totalsValueW, align: 'right' });
+       .text(`${symbol}${formatFr(totalIncome)}`, totalsValueX, tableY, { width: totalsValueW, align: 'right' });
     tableY += 22;
 
     doc.font(F.regular).fillColor(COLORS.text)
-       .text('Toplam KDV:', totalsX, tableY, { width: 150 });
+       .text('Total TVA :', totalsX, tableY, { width: 150 });
     doc.font(F.bold).fillColor(COLORS.text)
-       .text(`${symbol}${formatTr(totalIncomeVat)}`, totalsValueX, tableY, { width: totalsValueW, align: 'right' });
+       .text(`${symbol}${formatFr(totalIncomeVat)}`, totalsValueX, tableY, { width: totalsValueW, align: 'right' });
     tableY += 30;
 
     // === Genel Toplam (büyük, primary renkli) ===
     doc.fontSize(15).font(F.bold).fillColor(COLORS.primary)
-       .text('GENEL TOPLAM (KDV Dahil):', totalsX, tableY, { width: 200 });
+       .text('TOTAL TTC :', totalsX, tableY, { width: 200 });
     doc.fontSize(18).font(F.bold).fillColor(COLORS.primary)
-       .text(`${symbol}${formatTr(totalIncome + totalIncomeVat)}`, totalsValueX - 30, tableY - 2, { width: totalsValueW + 30, align: 'right' });
+       .text(`${symbol}${formatFr(totalIncome + totalIncomeVat)}`, totalsValueX - 30, tableY - 2, { width: totalsValueW + 30, align: 'right' });
 
     // === Banka bilgileri (env'de tanımlıysa) ===
     const bank = bankLines();
     if (bank.length > 0) {
       let bankY = Math.min(tableY + 45, 730);
       doc.fontSize(8).font(F.bold).fillColor(COLORS.textLight)
-         .text('ÖDEME BİLGİLERİ', 40, bankY, { characterSpacing: 0.5 });
+         .text('COORDONNÉES BANCAIRES', 40, bankY, { characterSpacing: 0.5 });
       bankY += 12;
       doc.fontSize(8.5).font(F.regular).fillColor(COLORS.text);
       for (const line of bank) {
@@ -704,7 +797,7 @@ router.get('/proforma/:shipmentId', verifyTokenFlexible, async (req, res) => {
 
     // === Footer ===
     doc.fontSize(8).font(F.regular).fillColor(COLORS.textLight)
-       .text('CargoTrack Lojistik Yönetim Platformu  ·  webreta web teknolojileri',
+       .text('CargoTrack — Plateforme de gestion logistique  ·  webreta web teknolojileri',
              40, 810, { align: 'center', width: W - 80, lineBreak: false });
 
     // === Watermark — bufferedPages mode, ilk sayfaya geri dönüp diagonal overlay ===
