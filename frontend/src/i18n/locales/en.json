@@ -248,12 +248,7 @@
     "adr_certified": "ADR Certified",
     "search_placeholder": "Plate, code, driver, brand...",
     "load_pool": "Load Pool",
-    "vehicle_info": "Vehicle Info",
-    "status": {
-      "active": "Active",
-      "inactive": "Inactive",
-      "maintenance": "Maintenance"
-    }
+    "vehicle_info": "Vehicle Info"
   },
   "warehouse": {
     "title": "Warehouses",
@@ -592,5 +587,85 @@
       "restored_n": "{{count}} records restored",
       "purged_n": "{{count}} records permanently deleted"
     }
+  },
+  "fin": {
+    "groups": {
+      "navlun": "Freight",
+      "cikis": "Origin Country",
+      "varis": "Destination Country",
+      "ith_vergi": "Import Taxes",
+      "genel": "General"
+    },
+    "items": {
+      "navlun": "Freight",
+      "thc_origin": "THC Origin (Terminal Handling)",
+      "thc_dest": "THC Destination (Terminal Handling)",
+      "bl_fee": "B/L Fee",
+      "awb_fee": "AWB Fee",
+      "baf": "BAF (Bunker Adjustment)",
+      "caf": "CAF (Currency Adjustment)",
+      "fuel_surcharge": "Fuel Surcharge",
+      "security_surcharge": "Security Surcharge",
+      "xray_fee": "X-Ray / Scanning",
+      "handling_origin": "Handling Origin",
+      "handling_dest": "Handling Destination",
+      "ihracat_gumruk": "Export Customs",
+      "cikis_tasima": "Transport / Handling (Origin)",
+      "cikis_ic_nakliye": "Inland Transport (Origin)",
+      "cikis_nakliye": "Inland Transport (to Port)",
+      "cikis_depolama": "Storage (Origin)",
+      "cikis_sigorta": "Insurance (Origin)",
+      "demurrage_origin": "Demurrage (Origin)",
+      "ithalat_gumruk": "Import Customs",
+      "varis_depo": "Warehouse / Handling (Destination)",
+      "varis_depolama": "Storage / Handling (Destination)",
+      "varis_ic_nakliye": "Inland Transport (Destination)",
+      "varis_liman": "Port Charges",
+      "varis_sigorta": "Insurance (Destination)",
+      "demurrage_dest": "Demurrage / Detention (Destination)",
+      "ith_tva": "VAT",
+      "ith_droit_douane": "Customs Duty",
+      "ith_taxe_parafiscal": "Parafiscal Tax",
+      "ith_anti_dumping": "Anti-Dumping Duty",
+      "ith_droit_porte": "Port Duty",
+      "ith_frais_t1": "T1 Transit Fee",
+      "ith_forfait_dedouanement": "Customs Clearance Fee",
+      "ith_frais_bad": "Delivery Order Fee (BAD)",
+      "ith_stop_douane": "Customs Hold",
+      "sigorta": "Insurance",
+      "diger": "Other"
+    },
+    "ui": {
+      "item": "Item",
+      "income": "Income",
+      "expense": "Expense",
+      "vat": "VAT",
+      "profit": "Profit",
+      "custom_item": "Custom Item",
+      "add_custom": "Add a custom item to this group",
+      "item_name_ph": "Item name... (e.g. port storage)",
+      "note_ph": "Note (optional)",
+      "add_note": "Add a note",
+      "edit_note": "Edit note",
+      "delete_item": "Delete item",
+      "services_total": "Services Total (excl. VAT)",
+      "debours": "Taxes / Disbursements",
+      "debours_hint": "not subject to VAT",
+      "net_payable": "Net Payable",
+      "total_revenue": "Total Revenue",
+      "total_cost": "Total Cost",
+      "gross_profit": "Gross Profit",
+      "margin": "Margin",
+      "currency": "Currency",
+      "items_title": "Financial Items"
+    }
+  },
+  "cover": {
+    "title": "File Cover",
+    "subtitle": "Fields are prefilled from the shipment. You can edit them or fill in the blanks. Clicking Generate builds the PDF with the values shown - the shipment record is not changed.",
+    "generate": "Generate",
+    "reset": "Reset to auto values",
+    "reset_done": "Fields reset to auto values",
+    "observation_ph": "Goods description, notes, item list..."
   }
 }

@@ -32,3 +32,58 @@ export function getBarcodesUrl(shipmentId: number) {
 export function openPdf(url: string) {
   window.open(url, '_blank')
 }
+
+// ============================================================
+// Dosya kapağı — düzenlenebilir alanlar
+// ============================================================
+
+export interface CoverFieldDef {
+  key: string
+  label: string
+}
+
+export interface CoverFieldsResponse {
+  shipment_no: string
+  fields: { left: CoverFieldDef[]; right: CoverFieldDef[] }
+  values: Record<string, string>
+}
+
+/** Kapak alanlarının otomatik doldurulmuş hâlini getirir (düzenleme formu için). */
+export async function fetchCoverFields(shipmentId: number): Promise<CoverFieldsResponse> {
+  const { api } = await import('@/lib/api')
+  return api.get<CoverFieldsResponse>(`/api/pdf/file-cover/${shipmentId}/fields`)
+}
+
+/**
+ * Düzenlenmiş alanlarla kapağı üretir ve yeni sekmede açar.
+ *
+ * POST gövdesi gerektiği için <a href> ile açılamıyor: PDF blob olarak alınır,
+ * object URL'e çevrilip yeni sekmede gösterilir.
+ */
+export async function openFileCoverWithValues(
+  shipmentId: number,
+  values: Record<string, string>
+): Promise<void> {
+  const token = getToken()
+  const resp = await fetch(`/api/pdf/file-cover/${shipmentId}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify(values),
+  })
+  if (!resp.ok) {
+    let message = `PDF üretilemedi (HTTP ${resp.status})`
+    try {
+      const j = await resp.json()
+      message = j?.data?.message || message
+    } catch { /* gövde PDF değilse yoksay */ }
+    throw new Error(message)
+  }
+  const blob = await resp.blob()
+  const url = URL.createObjectURL(blob)
+  window.open(url, '_blank')
+  // Sekme açıldıktan sonra bırak; erken revoke edilirse boş sayfa açılıyor
+  setTimeout(() => URL.revokeObjectURL(url), 60_000)
+}

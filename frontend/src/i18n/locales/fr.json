@@ -248,12 +248,7 @@
     "adr_certified": "Certifié ADR",
     "search_placeholder": "Plaque, code, chauffeur, marque...",
     "load_pool": "Pool de charge",
-    "vehicle_info": "Infos véhicule",
-    "status": {
-      "active": "Actif",
-      "inactive": "Inactif",
-      "maintenance": "Maintenance"
-    }
+    "vehicle_info": "Infos véhicule"
   },
   "warehouse": {
     "title": "Entrepôts",
@@ -592,5 +587,85 @@
       "restored_n": "{{count}} enregistrements restaurés",
       "purged_n": "{{count}} enregistrements supprimés définitivement"
     }
+  },
+  "fin": {
+    "groups": {
+      "navlun": "Fret",
+      "cikis": "Pays de départ",
+      "varis": "Pays de destination",
+      "ith_vergi": "Taxes à l’importation",
+      "genel": "Divers"
+    },
+    "items": {
+      "navlun": "Fret",
+      "thc_origin": "THC départ (manutention terminal)",
+      "thc_dest": "THC destination (manutention terminal)",
+      "bl_fee": "Frais de B/L",
+      "awb_fee": "Frais de LTA (AWB)",
+      "baf": "BAF (ajustement carburant)",
+      "caf": "CAF (ajustement devise)",
+      "fuel_surcharge": "Surcharge carburant",
+      "security_surcharge": "Surcharge sûreté",
+      "xray_fee": "Scanner / rayons X",
+      "handling_origin": "Manutention départ",
+      "handling_dest": "Manutention destination",
+      "ihracat_gumruk": "Douane export",
+      "cikis_tasima": "Transport / manutention (départ)",
+      "cikis_ic_nakliye": "Transport intérieur (départ)",
+      "cikis_nakliye": "Transport intérieur (vers le port)",
+      "cikis_depolama": "Stockage (départ)",
+      "cikis_sigorta": "Assurance (départ)",
+      "demurrage_origin": "Surestaries (départ)",
+      "ithalat_gumruk": "Douane import",
+      "varis_depo": "Entrepôt / manutention (destination)",
+      "varis_depolama": "Stockage / manutention (destination)",
+      "varis_ic_nakliye": "Transport intérieur (destination)",
+      "varis_liman": "Frais portuaires",
+      "varis_sigorta": "Assurance (destination)",
+      "demurrage_dest": "Surestaries / détention (destination)",
+      "ith_tva": "TVA",
+      "ith_droit_douane": "Droit de douane",
+      "ith_taxe_parafiscal": "Taxe parafiscale",
+      "ith_anti_dumping": "Droit anti-dumping",
+      "ith_droit_porte": "Droit de port",
+      "ith_frais_t1": "Frais de T1",
+      "ith_forfait_dedouanement": "Forfait dédouanement",
+      "ith_frais_bad": "Frais de BAD",
+      "ith_stop_douane": "Stop douane",
+      "sigorta": "Assurance",
+      "diger": "Divers"
+    },
+    "ui": {
+      "item": "Poste",
+      "income": "Recette",
+      "expense": "Dépense",
+      "vat": "TVA",
+      "profit": "Marge",
+      "custom_item": "Poste personnalisé",
+      "add_custom": "Ajouter un poste personnalisé à ce groupe",
+      "item_name_ph": "Nom du poste… (ex. magasinage portuaire)",
+      "note_ph": "Description (facultatif)",
+      "add_note": "Ajouter une description",
+      "edit_note": "Modifier la description",
+      "delete_item": "Supprimer le poste",
+      "services_total": "Total prestations (HT)",
+      "debours": "Débours et taxes",
+      "debours_hint": "non soumis à TVA",
+      "net_payable": "Net à payer",
+      "total_revenue": "Chiffre d’affaires",
+      "total_cost": "Coût total",
+      "gross_profit": "Marge brute",
+      "margin": "Marge",
+      "currency": "Devise",
+      "items_title": "Éléments financiers"
+    }
+  },
+  "cover": {
+    "title": "Couverture de dossier",
+    "subtitle": "Les champs sont préremplis à partir de l’expédition. Vous pouvez les modifier ou compléter ceux qui sont vides. En cliquant sur « Générer », le PDF est créé avec les valeurs affichées — l’expédition n’est pas modifiée.",
+    "generate": "Générer",
+    "reset": "Rétablir les valeurs automatiques",
+    "reset_done": "Champs rétablis aux valeurs automatiques",
+    "observation_ph": "Désignation, remarques, liste des marchandises…"
   }
 }

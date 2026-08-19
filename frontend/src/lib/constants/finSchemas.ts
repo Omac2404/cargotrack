@@ -250,3 +250,28 @@ export function calcFinTotals(schema: FinItem[], data: FinancialData) {
       : 0,
   }
 }
+
+/**
+ * Grup adı → i18n anahtarı.
+ *
+ * Grup metni veri olarak kalıyor (özel kalem anahtarları `custom_<grup-slug>_…`
+ * biçiminde üretildiği için değiştirilirse kayıtlı veri bulunamaz hale gelir);
+ * yalnızca EKRANDA gösterilen ad çevriliyor.
+ */
+const GROUP_I18N: Record<string, string> = {
+  'Navlun': 'navlun',
+  'Çıkış Ülkesi': 'cikis',
+  'Varış Ülkesi': 'varis',
+  'İthalat Vergileri': 'ith_vergi',
+  'Genel': 'genel',
+}
+
+export function finGroupI18nKey(group: string): string {
+  const k = GROUP_I18N[group]
+  return k ? `fin.groups.${k}` : ''
+}
+
+/** Kalem anahtarı → i18n anahtarı (şema anahtarıyla birebir). */
+export function finItemI18nKey(itemKey: string): string {
+  return `fin.items.${itemKey}`
+}

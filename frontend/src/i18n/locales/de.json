@@ -248,12 +248,7 @@
     "adr_certified": "ADR-zertifiziert",
     "search_placeholder": "Kennzeichen, Code, Fahrer, Marke...",
     "load_pool": "Lade-Pool",
-    "vehicle_info": "Fahrzeuginfo",
-    "status": {
-      "active": "Aktiv",
-      "inactive": "Inaktiv",
-      "maintenance": "Wartung"
-    }
+    "vehicle_info": "Fahrzeuginfo"
   },
   "warehouse": {
     "title": "Lagerhäuser",
@@ -592,5 +587,85 @@
       "restored_n": "{{count}} Datensätze wiederhergestellt",
       "purged_n": "{{count}} Datensätze endgültig gelöscht"
     }
+  },
+  "fin": {
+    "groups": {
+      "navlun": "Fracht",
+      "cikis": "Abgangsland",
+      "varis": "Zielland",
+      "ith_vergi": "Einfuhrabgaben",
+      "genel": "Allgemein"
+    },
+    "items": {
+      "navlun": "Fracht",
+      "thc_origin": "THC Abgang (Terminalabfertigung)",
+      "thc_dest": "THC Ziel (Terminalabfertigung)",
+      "bl_fee": "B/L-Gebuehr",
+      "awb_fee": "AWB-Gebuehr",
+      "baf": "BAF (Treibstoffzuschlag)",
+      "caf": "CAF (Waehrungsausgleich)",
+      "fuel_surcharge": "Treibstoffzuschlag",
+      "security_surcharge": "Sicherheitszuschlag",
+      "xray_fee": "Roentgen / Scan",
+      "handling_origin": "Abfertigung Abgang",
+      "handling_dest": "Abfertigung Ziel",
+      "ihracat_gumruk": "Ausfuhrzoll",
+      "cikis_tasima": "Transport / Umschlag (Abgang)",
+      "cikis_ic_nakliye": "Inlandtransport (Abgang)",
+      "cikis_nakliye": "Inlandtransport (zum Hafen)",
+      "cikis_depolama": "Lagerung (Abgang)",
+      "cikis_sigorta": "Versicherung (Abgang)",
+      "demurrage_origin": "Liegegeld (Abgang)",
+      "ithalat_gumruk": "Einfuhrzoll",
+      "varis_depo": "Lager / Umschlag (Ziel)",
+      "varis_depolama": "Lagerung / Umschlag (Ziel)",
+      "varis_ic_nakliye": "Inlandtransport (Ziel)",
+      "varis_liman": "Hafengebuehren",
+      "varis_sigorta": "Versicherung (Ziel)",
+      "demurrage_dest": "Liegegeld / Detention (Ziel)",
+      "ith_tva": "MwSt.",
+      "ith_droit_douane": "Zollabgabe",
+      "ith_taxe_parafiscal": "Parafiskalische Abgabe",
+      "ith_anti_dumping": "Antidumpingzoll",
+      "ith_droit_porte": "Hafenabgabe",
+      "ith_frais_t1": "T1-Versandgebuehr",
+      "ith_forfait_dedouanement": "Verzollungspauschale",
+      "ith_frais_bad": "Lieferauftragsgebuehr (BAD)",
+      "ith_stop_douane": "Zollstopp",
+      "sigorta": "Versicherung",
+      "diger": "Sonstiges"
+    },
+    "ui": {
+      "item": "Position",
+      "income": "Einnahme",
+      "expense": "Ausgabe",
+      "vat": "MwSt.",
+      "profit": "Gewinn",
+      "custom_item": "Eigene Position",
+      "add_custom": "Eigene Position zu dieser Gruppe",
+      "item_name_ph": "Positionsname... (z. B. Hafenlagerung)",
+      "note_ph": "Notiz (optional)",
+      "add_note": "Notiz hinzufuegen",
+      "edit_note": "Notiz bearbeiten",
+      "delete_item": "Position loeschen",
+      "services_total": "Leistungen gesamt (netto)",
+      "debours": "Steuern / Auslagen",
+      "debours_hint": "nicht MwSt.-pflichtig",
+      "net_payable": "Zahlbetrag",
+      "total_revenue": "Gesamtumsatz",
+      "total_cost": "Gesamtkosten",
+      "gross_profit": "Rohertrag",
+      "margin": "Marge",
+      "currency": "Waehrung",
+      "items_title": "Finanzpositionen"
+    }
+  },
+  "cover": {
+    "title": "Aktendeckblatt",
+    "subtitle": "Die Felder werden aus der Sendung vorbefuellt. Sie koennen sie aendern oder leere ergaenzen. Mit Erstellen wird das PDF mit den angezeigten Werten erzeugt - die Sendung bleibt unveraendert.",
+    "generate": "Erstellen",
+    "reset": "Automatische Werte",
+    "reset_done": "Felder zurueckgesetzt",
+    "observation_ph": "Warenbeschreibung, Notizen, Positionsliste..."
   }
 }

@@ -22,14 +22,16 @@ const COMPANY = {
    */
   letterheadPath: process.env.COMPANY_LETTERHEAD
     || path.join(__dirname, '..', '..', 'assets', 'letterhead.png'),
-  /** TVA intracommunautaire / KDV numarası */
-  vatNumber: process.env.COMPANY_VAT || '',
-  /** SIRET / SIREN / vergi kimlik no */
-  registrationNo: process.env.COMPANY_REG_NO || '',
+  /** TVA intracommunautaire */
+  vatNumber: process.env.COMPANY_VAT || 'FR80 538664335',
+  /** SIRET */
+  registrationNo: process.env.COMPANY_REG_NO || '538 664 335 00048',
   eori: process.env.COMPANY_EORI || '',
-  bankName: process.env.COMPANY_BANK || '',
-  iban: process.env.COMPANY_IBAN || '',
-  bic: process.env.COMPANY_BIC || '',
+  /** Sermaye (Fransız faturalarında zorunlu bilgi) */
+  capital: process.env.COMPANY_CAPITAL || '50 000 €',
+  bankName: process.env.COMPANY_BANK || 'BNP Paribas',
+  iban: process.env.COMPANY_IBAN || 'FR76 3000 4006 0800 0100 8618 565',
+  bic: process.env.COMPANY_BIC || 'BNPAFRPPXXX',
 };
 
 /** Antette adres bloğu olarak basılacak satırlar (boş olanlar atlanır). */
@@ -63,4 +65,23 @@ function bankLines() {
   ].filter(Boolean);
 }
 
-module.exports = { COMPANY, addressLines, identityLines, bankLines };
+/**
+ * Belge altına basılan yasal künye — Fransız faturalarında zorunlu bilgiler
+ * (ünvan, sermaye, SIRET, TVA intracommunautaire, banka).
+ * Müşterinin gönderdiği antet bilgisiyle birebir aynı düzende.
+ */
+function legalFooterLines() {
+  const line1 = [
+    COMPANY.name,
+    COMPANY.capital && `CAPITAL : ${COMPANY.capital}`,
+    COMPANY.registrationNo && `Siret : ${COMPANY.registrationNo}`,
+  ].filter(Boolean).join(' · ');
+  const line2 = COMPANY.vatNumber ? `TVA Intracommunautaire : ${COMPANY.vatNumber}` : '';
+  const line3 = [
+    COMPANY.iban && `IBAN : ${COMPANY.iban}`,
+    COMPANY.bic && `BIC : ${COMPANY.bic}`,
+  ].filter(Boolean).join(' / ');
+  return [line1, line2, line3].filter((l) => l && l.trim());
+}
+
+module.exports = { COMPANY, addressLines, identityLines, bankLines, legalFooterLines };

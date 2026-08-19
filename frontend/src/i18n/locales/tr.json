@@ -233,7 +233,7 @@
     "status": {
       "active": "Aktif",
       "inactive": "Pasif",
-      "maintenance": "Bakım"
+      "maintenance": "Bakımda"
     },
     "plate": "Plaka",
     "trailer_plate": "Dorse Plakası",
@@ -248,12 +248,7 @@
     "adr_certified": "ADR Sertifikalı",
     "search_placeholder": "Plaka, kod, sürücü, marka...",
     "load_pool": "Yük Havuzu",
-    "vehicle_info": "Araç Bilgileri",
-    "status": {
-      "active": "Aktif",
-      "inactive": "Pasif",
-      "maintenance": "Bakımda"
-    }
+    "vehicle_info": "Araç Bilgileri"
   },
   "warehouse": {
     "title": "Depolar",
@@ -592,5 +587,85 @@
       "restored_n": "{{count}} kayıt geri yüklendi",
       "purged_n": "{{count}} kayıt kalıcı silindi"
     }
+  },
+  "fin": {
+    "groups": {
+      "navlun": "Navlun",
+      "cikis": "Cikis Ulkesi",
+      "varis": "Varis Ulkesi",
+      "ith_vergi": "Ithalat Vergileri",
+      "genel": "Genel"
+    },
+    "items": {
+      "navlun": "Navlun",
+      "thc_origin": "THC Cikis (Terminal Handling)",
+      "thc_dest": "THC Varis (Terminal Handling)",
+      "bl_fee": "B/L Ucreti (Konsimento)",
+      "awb_fee": "AWB Ucreti (Konsimento)",
+      "baf": "BAF (Yakit Duzeltme)",
+      "caf": "CAF (Para Birimi Duzeltme)",
+      "fuel_surcharge": "Yakit Eki",
+      "security_surcharge": "Guvenlik Eki",
+      "xray_fee": "X-Ray / Tarama",
+      "handling_origin": "Handling Cikis",
+      "handling_dest": "Handling Varis",
+      "ihracat_gumruk": "Ihracat Gumruk",
+      "cikis_tasima": "Tasima / Ellecleme",
+      "cikis_ic_nakliye": "Ic Nakliye",
+      "cikis_nakliye": "Ic Nakliye (Limana)",
+      "cikis_depolama": "Depolama",
+      "cikis_sigorta": "Sigorta",
+      "demurrage_origin": "Demuraj (Cikis)",
+      "ithalat_gumruk": "Ithalat Gumruk",
+      "varis_depo": "Depo / Ellecleme",
+      "varis_depolama": "Depolama / Ellecleme",
+      "varis_ic_nakliye": "Ic Nakliye",
+      "varis_liman": "Liman Masraflari",
+      "varis_sigorta": "Sigorta",
+      "demurrage_dest": "Demuraj / Detention (Varis)",
+      "ith_tva": "TVA (KDV)",
+      "ith_droit_douane": "Gumruk Vergisi",
+      "ith_taxe_parafiscal": "Sektorel Vergi",
+      "ith_anti_dumping": "Anti-Dumping (Haksiz Rekabet Vergisi)",
+      "ith_droit_porte": "Liman / Terminal Gecis Vergisi",
+      "ith_frais_t1": "T1 Transit Masrafi",
+      "ith_forfait_dedouanement": "Gumrukleme Ucreti",
+      "ith_frais_bad": "Teslim Emri Masrafi (BAD)",
+      "ith_stop_douane": "Stop Douane (Gumruk Durdurma)",
+      "sigorta": "Sigorta",
+      "diger": "Diger"
+    },
+    "ui": {
+      "item": "Kalem",
+      "income": "Gelir",
+      "expense": "Gider",
+      "vat": "KDV",
+      "profit": "Kar",
+      "custom_item": "Ozel Kalem",
+      "add_custom": "Bu gruba ozel kalem ekle",
+      "item_name_ph": "Kalem adi... (orn. Liman Ardiye)",
+      "note_ph": "Aciklama (opsiyonel)",
+      "add_note": "Aciklama ekle",
+      "edit_note": "Aciklamayi duzenle",
+      "delete_item": "Kalemi sil",
+      "services_total": "Hizmet Toplami (KDV haric)",
+      "debours": "Vergiler / Debours",
+      "debours_hint": "KDV’ye tabi degil",
+      "net_payable": "Odenecek Tutar",
+      "total_revenue": "Toplam Ciro",
+      "total_cost": "Toplam Maliyet",
+      "gross_profit": "Brut Kar",
+      "margin": "Marj",
+      "currency": "Para birimi",
+      "items_title": "Finansal Kalemler"
+    }
+  },
+  "cover": {
+    "title": "Dosya Kapagi",
+    "subtitle": "Alanlar sevkiyattan otomatik dolduruldu. Degistirebilir, bos kalanlari elle yazabilirsin. Olustur dediginde PDF ekrandaki degerlerle hazirlanir - sevkiyat kaydi degismez.",
+    "generate": "Olustur",
+    "reset": "Otomatik degerlere don",
+    "reset_done": "Alanlar otomatik degerlere donduruldu",
+    "observation_ph": "Mal tanimi, notlar, urun listesi..."
   }
 }

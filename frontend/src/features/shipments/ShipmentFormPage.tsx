@@ -30,12 +30,13 @@ import { usePartners } from '@/features/partners/hooks'
 import { useWarehouses } from '@/features/warehouses/hooks'
 import { useAssignments } from '@/features/assignments/hooks'
 import { getTransportMode } from '@/lib/constants/transportModes'
-import { getFileCoverUrl, getProformaUrl, getStorageReportUrl, getBarcodesUrl, openPdf } from '@/features/pdf/hooks'
+import { getProformaUrl, getStorageReportUrl, getBarcodesUrl, openPdf } from '@/features/pdf/hooks'
 import { FileBadge2, FileCheck2, Barcode, FileSpreadsheet } from 'lucide-react'
 import { FinancialTable } from './FinancialTable'
 import { StorageSection } from './StorageSection'
 import { CratesEditor } from './CratesEditor'
 import { GoodsEditor, parseGoodsItems, calcGoodsTotals } from './GoodsEditor'
+import { FileCoverDialog } from './FileCoverDialog'
 import { DocumentChecklist } from './DocumentChecklist'
 import { CountryCombobox } from '@/components/shared/CountryCombobox'
 import { CurrencyCombobox } from '@/components/shared/CurrencyCombobox'
@@ -301,6 +302,8 @@ export function ShipmentFormPage() {
   const [quickAddType, setQuickAddType] = useState<PartnerType | null>(null)
   // Aktif sekme — doğrulama hatasında hatalı alanın sekmesine atlamak için kontrollü
   const [activeTab, setActiveTab] = useState('general')
+  // Dosya kapağı düzenleme ekranı
+  const [coverOpen, setCoverOpen] = useState(false)
 
   // Müşteri seçilince boş alanları partner kaydından doldur (sadece boşsa)
   const clientBilling = watch('client_billing')
@@ -452,7 +455,7 @@ export function ShipmentFormPage() {
               )}
               {isEdit && id && (
                 <>
-                  <Button type="button" variant="outline" size="sm" onClick={() => openPdf(getFileCoverUrl(Number(id)))} title="Dosya Kapağı PDF">
+                  <Button type="button" variant="outline" size="sm" onClick={() => setCoverOpen(true)} title={t('cover.title', { defaultValue: 'Dosya Kapağı' })}>
                     <FileBadge2 className="w-4 h-4" />
                   </Button>
                   <Button type="button" variant="outline" size="sm" onClick={() => openPdf(getProformaUrl(Number(id)))} title="Proforma Fatura PDF">
@@ -879,7 +882,7 @@ export function ShipmentFormPage() {
               <div className="flex items-center justify-between">
                 <SectionTitle>{t('shipment.sections.financial_items', { mode: t(modeCfg.label) })}</SectionTitle>
                 <div className="text-[10px] text-muted-foreground">
-                  Para birimi: <strong className="text-foreground">{watch('currency_code') || 'EUR'}</strong>
+                  {t('fin.ui.currency')}: <strong className="text-foreground">{watch('currency_code') || 'EUR'}</strong>
                 </div>
               </div>
               <FinancialTable
@@ -1163,6 +1166,11 @@ export function ShipmentFormPage() {
           </TabsContent>
         </div>
       </Tabs>
+
+      {/* Dosya kapağı — oluşturmadan önce alanları düzenleme ekranı */}
+      {isEdit && id && (
+        <FileCoverDialog shipmentId={Number(id)} open={coverOpen} onOpenChange={setCoverOpen} />
+      )}
     </form>
   )
 }

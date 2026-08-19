@@ -7,7 +7,7 @@ const { pool } = require('../config/database');
 const { verifyToken, hasRole } = require('../middleware/auth');
 const { logAudit } = require('../helpers/audit');
 const { toInt, sendError } = require('../helpers/utils');
-const { COMPANY, addressLines, identityLines, bankLines } = require('../config/company');
+const { COMPANY, addressLines, identityLines, bankLines, legalFooterLines } = require('../config/company');
 
 const router = express.Router();
 
@@ -319,6 +319,101 @@ function parseGoodsItems(raw) {
   } catch { return []; }
 }
 
+// ============================================================
+// Dosya kapağı alanları
+// ============================================================
+/**
+ * Kapak alanlarının anahtar/etiket tanımı. Frontend'deki düzenleme formu da
+ * bu sırayı ve etiketleri kullanır — tek kaynak.
+ */
+const COVER_FIELDS = {
+  left: [
+    { key: 'expediteur', label: 'EXPÉDITEUR' },
+    { key: 'destinataire', label: 'DESTINATAIRE' },
+    { key: 'facture_client', label: 'FACTURE N° CLIENT' },
+    { key: 'facture_fournisseur', label: 'FACTURE N° FOURNISSEUR' },
+    { key: 'reference', label: 'RÉFÉRENCE' },
+    { key: 'prix_vente', label: 'PRIX DE VENTE' },
+    { key: 'douane_export', label: 'DOUANE EXPORT' },
+  ],
+  right: [
+    { key: 'date', label: 'DATE' },
+    { key: 'poids', label: 'POIDS' },
+    { key: 'colisage', label: 'COLISAGE' },
+    { key: 'dimensions', label: 'DIMENSIONS' },
+    { key: 'transporteur', label: 'TRANSPORTEUR' },
+    { key: 'plaque', label: 'PLAQUE N°' },
+    { key: 'douane_import', label: 'DOUANE IMPORT' },
+  ],
+};
+
+/**
+ * Sevkiyattan kapak alanlarını otomatik doldurur.
+ *
+ * Karayolunda taşıyıcı ve plaka sevkiyatın araç atamasından gelir; atama yoksa
+ * boş bırakılır ve kullanıcı formdan elle yazar.
+ */
+async function buildCoverFields(ship) {
+  const modeData = parseJsonField(ship.mode_data);
+  const isSea = ship.transport_type === 'maritime' || ship.transport_type === 'sea';
+  const isAir = ship.transport_type === 'air';
+
+  let transporteur = '';
+  let plaque = '';
+  if (isSea) {
+    transporteur = modeData.vessel_name || '';
+    plaque = modeData.mbl_no || modeData.hbl_no || '';
+  } else if (isAir) {
+    transporteur = modeData.airline_code ? `${modeData.airline_code} ${modeData.flight_no || ''}`.trim() : '';
+    plaque = modeData.mawb_no || modeData.hawb_no || '';
+  } else {
+    // Karayolu: atanmış araçların plakaları + sürücü
+    const [rows] = await pool.execute(
+      `SELECT v.plate, v.trailer_plate, v.driver_name
+       FROM vehicle_assignments a
+       JOIN vehicles v ON v.id = a.vehicle_id
+       WHERE a.shipment_id = ? AND a.deleted_at IS NULL AND v.deleted_at IS NULL
+       ORDER BY a.created_at ASC`,
+      [ship.id]
+    );
+    plaque = rows
+      .map((r) => [r.plate, r.trailer_plate].filter(Boolean).join(' / '))
+      .filter(Boolean).join(' · ');
+    transporteur = rows.map((r) => r.driver_name).filter(Boolean).join(' · ') || ship.agent || '';
+  }
+
+  return {
+    expediteur: ship.sender || '',
+    destinataire: ship.receiver || '',
+    facture_client: ship.invoice_no || '',
+    facture_fournisseur: '',
+    reference: ship.client_reference || ship.shipment_no || '',
+    prix_vente: ship.sale_price ? `${formatTr(ship.sale_price)} ${ship.currency_code || 'EUR'}` : '',
+    douane_export: ship.departure_country || '',
+    date: formatDateTr(ship.created_date || ship.created_at),
+    poids: ship.gross_weight ? `${formatTr(ship.gross_weight, 0)} kg` : '',
+    colisage: ship.quantity ? `${ship.quantity} kap` : '',
+    dimensions: ship.dimensions || '',
+    transporteur,
+    plaque,
+    douane_import: ship.arrival_country || '',
+    observation: ship.goods_description || '',
+  };
+}
+
+/** İstekten gelen düzenlenmiş değerleri temizleyip otomatik değerlerin üstüne yazar. */
+function mergeCoverOverrides(auto, body) {
+  const out = { ...auto };
+  if (!body || typeof body !== 'object') return out;
+  const allKeys = [...COVER_FIELDS.left, ...COVER_FIELDS.right].map((f) => f.key).concat('observation');
+  for (const key of allKeys) {
+    if (body[key] !== undefined && body[key] !== null) {
+      out[key] = String(body[key]).slice(0, key === 'observation' ? 2000 : 200);
+    }
+  }
+  return out;
+}
+
 /**
  * Sevkiyatı PDF üretimi için getirir.
  *
@@ -369,11 +464,34 @@ const COLORS = {
 // ============================================================
 // 1) Dosya Kapağı (File Cover) — Fransız stil A4
 // ============================================================
-router.get('/file-cover/:shipmentId', verifyTokenFlexible, async (req, res) => {
+// GET  → alanlar otomatik doldurulmuş kapak (eski davranış, tek tıkla çıktı)
+// POST → kullanıcının formda düzenlediği değerlerle kapak
+//        (gövde: { expediteur, destinataire, ..., observation })
+router.get('/file-cover/:shipmentId', verifyTokenFlexible, (req, res) => renderFileCover(req, res));
+router.post('/file-cover/:shipmentId', verifyTokenFlexible, (req, res) => renderFileCover(req, res));
+
+/** Kapak alanlarının otomatik doldurulmuş hâli — düzenleme formunu beslemek için. */
+router.get('/file-cover/:shipmentId/fields', verifyToken, async (req, res) => {
   try {
     const id = toInt(req.params.shipmentId);
     const ship = await loadShipment(id, req.user);
     if (!ship) return sendError(res, 'Sevkiyat bulunamadı', 404);
+    const values = await buildCoverFields(ship);
+    res.json({ success: true, data: { shipment_no: ship.shipment_no, fields: COVER_FIELDS, values } });
+  } catch (err) {
+    console.error('[pdf/file-cover-fields]', err);
+    sendError(res, 'Kapak alanları alınamadı', 500);
+  }
+});
+
+async function renderFileCover(req, res) {
+  try {
+    const id = toInt(req.params.shipmentId);
+    const ship = await loadShipment(id, req.user);
+    if (!ship) return sendError(res, 'Sevkiyat bulunamadı', 404);
+
+    // Otomatik değerler + (POST ise) kullanıcının düzenlemeleri
+    const cover = mergeCoverOverrides(await buildCoverFields(ship), req.body);
 
     const modeData = parseJsonField(ship.mode_data);
     const financial = parseJsonField(ship.financial_data);
@@ -424,32 +542,21 @@ router.get('/file-cover/:shipmentId', verifyTokenFlexible, async (req, res) => {
        .text(ship.shipment_no || '—', titleBoxX, y + 8, { width: titleBoxW, align: 'center' });
     y += titleBoxH + 25;
 
-    // === Logo bölümü ===
-    // Hexagon icon (basit gösterim)
-    const logoY = y;
-    const logoCenterX = W / 2;
-    const hexSize = 22;
-    // Hexagon: 6 köşeli düzgün altıgen
-    doc.lineWidth(2);
-    const hexPoints = [];
-    for (let i = 0; i < 6; i++) {
-      const angle = (Math.PI / 3) * i + Math.PI / 6;
-      hexPoints.push([logoCenterX + hexSize * Math.cos(angle), logoY + hexSize + hexSize * Math.sin(angle)]);
+    // === Antet — şirket logosu (varsa) ortada ===
+    // Eskiden jenerik "CARGO TRACK" yazıyordu; kapak müşteriye/gümrüğe gittiği
+    // için firmanın kendi anteti basılıyor.
+    if (letterheadFile) {
+      const LH_W = 170;
+      doc.image(letterheadFile, (W - LH_W) / 2, y, { width: LH_W });
+      y += Math.round(LH_W * letterheadRatio) + 10;
+    } else {
+      doc.fontSize(20).font(F.bold).fillColor(COLORS.text)
+         .text(COMPANY.name, PAD, y, { width: innerW, align: 'center', lineBreak: false });
+      y += 22;
+      doc.fontSize(8).font(F.regular).fillColor(COLORS.textMuted)
+         .text(COMPANY.tagline, PAD, y, { width: innerW, align: 'center', characterSpacing: 3 });
+      y += 20;
     }
-    doc.moveTo(hexPoints[0][0], hexPoints[0][1]);
-    for (let i = 1; i < 6; i++) doc.lineTo(hexPoints[i][0], hexPoints[i][1]);
-    doc.closePath().strokeColor(COLORS.primaryLight).stroke();
-
-    y += hexSize * 2 + 10;
-
-    // CARGO TRACK — tek text node, bold, centered (continued sorunu yok)
-    doc.fontSize(20).font(F.bold).fillColor(COLORS.text)
-       .text('CARGO TRACK', PAD, y, { width: innerW, align: 'center', lineBreak: false });
-    y += 22;
-    doc.fontSize(8).font(F.regular)
-       .fillColor(COLORS.textMuted)
-       .text('MULTI MODAL SERVICES', PAD, y, { width: innerW, align: 'center', characterSpacing: 3 });
-    y += 20;
 
     // === Dotted ayırıcı ===
     doc.lineWidth(0.5)
@@ -561,7 +668,7 @@ router.get('/file-cover/:shipmentId', verifyTokenFlexible, async (req, res) => {
     // Observation: mal tanımı + varsa çoklu ürün listesinin kısa dökümü
     const coverItems = parseGoodsItems(ship.goods_items);
     const obsLines = [];
-    if (ship.goods_description) obsLines.push(ship.goods_description);
+    if (cover.observation) obsLines.push(cover.observation);
     if (coverItems.length > 0) {
       obsLines.push('');
       obsLines.push(`MAL LİSTESİ (${coverItems.length} kalem):`);
@@ -586,7 +693,7 @@ router.get('/file-cover/:shipmentId', verifyTokenFlexible, async (req, res) => {
     console.error('[pdf/file-cover]', err);
     if (!res.headersSent) sendError(res, 'PDF üretilemedi', 500);
   }
-});
+}
 
 // ============================================================
 // 2) Proforma Fatura — Modern web stili
@@ -889,10 +996,16 @@ router.get('/proforma/:shipmentId', verifyTokenFlexible, async (req, res) => {
       }
     }
 
-    // === Footer ===
-    doc.fontSize(8).font(F.regular).fillColor(COLORS.textLight)
-       .text('CargoTrack — Plateforme de gestion logistique  ·  webreta web teknolojileri',
-             40, 810, { align: 'center', width: W - 80, lineBreak: false });
+    // === Footer — Fransiz faturalarinda zorunlu yasal kunye ===
+    const legal = legalFooterLines();
+    let legalY = 842 - 24 - legal.length * 10;
+    doc.moveTo(40, legalY - 8).lineTo(W - 40, legalY - 8)
+       .lineWidth(0.5).strokeColor(COLORS.borderLight).stroke();
+    doc.fontSize(7.5).font(F.bold).fillColor(COLORS.primary);
+    for (const line of legal) {
+      doc.text(line, 40, legalY, { align: 'center', width: W - 80, lineBreak: false });
+      legalY += 10;
+    }
 
     // === Watermark — bufferedPages mode, ilk sayfaya geri dönüp diagonal overlay ===
     const range = doc.bufferedPageRange();

@@ -9,8 +9,10 @@ import { Card } from '@/components/ui/card'
 import { cn, formatMoney, formatNumber } from '@/lib/utils'
 import {
   getFinSchema, VAT_RATES, calcFinTotals, DEFAULT_VAT_RATE,
+  finGroupI18nKey, finItemI18nKey,
   type FinancialData, type FinLineEntry,
 } from '@/lib/constants/finSchemas'
+import { useTranslation } from 'react-i18next'
 import { currencySymbol } from '@/lib/constants'
 
 interface Props {
@@ -47,6 +49,7 @@ function isEmptyEntry(e: FinLineEntry | undefined): boolean {
  * Sonunda: Ara toplam, KDV toplam, Genel toplam, Kâr, Marj %
  */
 export function FinancialTable({ mode, currency, value, onChange }: Props) {
+  const { t } = useTranslation()
   const schema = useMemo(() => getFinSchema(mode), [mode])
   const sym = currencySymbol(currency)
 
@@ -86,22 +89,22 @@ export function FinancialTable({ mode, currency, value, onChange }: Props) {
           <thead className="bg-muted/40 border-b">
             <tr>
               <th className="text-left px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Kalem
+                {t('fin.ui.item')}
               </th>
               <th className="text-right px-2 py-2 text-[10px] font-semibold uppercase tracking-wider text-success">
-                Gelir ({sym})
+                {t('fin.ui.income')} ({sym})
               </th>
               <th className="text-center px-2 py-2 text-[10px] font-semibold uppercase tracking-wider text-success w-[110px]">
-                KDV %
+                {t('fin.ui.vat')} %
               </th>
               <th className="text-right px-2 py-2 text-[10px] font-semibold uppercase tracking-wider text-destructive">
-                Gider ({sym})
+                {t('fin.ui.expense')} ({sym})
               </th>
               <th className="text-center px-2 py-2 text-[10px] font-semibold uppercase tracking-wider text-destructive w-[110px]">
-                KDV %
+                {t('fin.ui.vat')} %
               </th>
               <th className="text-right px-2 py-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground w-[100px]">
-                Kâr
+                {t('fin.ui.profit')}
               </th>
             </tr>
           </thead>
@@ -123,7 +126,7 @@ export function FinancialTable({ mode, currency, value, onChange }: Props) {
           <tfoot className="bg-muted/40 border-t-2">
             <tr>
               <td className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Hizmet Toplamı (KDV hariç)
+                {t('fin.ui.services_total')}
               </td>
               <td className="px-2 py-2 text-right tabular-nums font-semibold text-success">
                 {formatMoney(totals.totalIncome, currency)}
@@ -144,8 +147,8 @@ export function FinancialTable({ mode, currency, value, onChange }: Props) {
             {(totals.deboursIncome > 0 || totals.deboursExpense > 0) && (
               <tr>
                 <td className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Vergiler / Débours
-                  <span className="ml-1 normal-case font-normal text-[10px]">(KDV'ye tabi değil)</span>
+                  {t('fin.ui.debours')}
+                  <span className="ml-1 normal-case font-normal text-[10px]">({t('fin.ui.debours_hint')})</span>
                 </td>
                 <td colSpan={2} className="px-2 py-2 text-right tabular-nums font-semibold text-success">
                   {formatMoney(totals.deboursIncome, currency)}
@@ -160,7 +163,7 @@ export function FinancialTable({ mode, currency, value, onChange }: Props) {
             )}
             <tr className="bg-primary/5">
               <td className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-primary">
-                Ödenecek Tutar
+                {t('fin.ui.net_payable')}
               </td>
               <td colSpan={2} className="px-2 py-2 text-right tabular-nums font-bold text-success">
                 {formatMoney(totals.netPayableIncome, currency)}
@@ -178,10 +181,10 @@ export function FinancialTable({ mode, currency, value, onChange }: Props) {
 
       {/* Özet kartları */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-        <SummaryBox icon={<TrendingUp className="w-3.5 h-3.5" />} label="Toplam Ciro" value={formatMoney(totals.grossIncome, currency)} variant="success" />
-        <SummaryBox icon={<TrendingDown className="w-3.5 h-3.5" />} label="Toplam Maliyet" value={formatMoney(totals.grossExpense, currency)} variant="destructive" />
-        <SummaryBox icon={<Coins className="w-3.5 h-3.5" />} label="Brüt Kâr" value={formatMoney(totals.profit, currency)} variant="primary" />
-        <SummaryBox label="Marj" value={`${formatNumber(totals.margin, 2)}%`} variant={totals.margin >= 15 ? 'success' : totals.margin >= 5 ? 'warning' : 'destructive'} />
+        <SummaryBox icon={<TrendingUp className="w-3.5 h-3.5" />} label={t('fin.ui.total_revenue')} value={formatMoney(totals.grossIncome, currency)} variant="success" />
+        <SummaryBox icon={<TrendingDown className="w-3.5 h-3.5" />} label={t('fin.ui.total_cost')} value={formatMoney(totals.grossExpense, currency)} variant="destructive" />
+        <SummaryBox icon={<Coins className="w-3.5 h-3.5" />} label={t('fin.ui.gross_profit')} value={formatMoney(totals.profit, currency)} variant="primary" />
+        <SummaryBox label={t('fin.ui.margin')} value={`${formatNumber(totals.margin, 2)}%`} variant={totals.margin >= 15 ? 'success' : totals.margin >= 5 ? 'warning' : 'destructive'} />
       </div>
     </div>
   )
@@ -212,6 +215,7 @@ function slugifyGroup(name: string): string {
 }
 
 function FinGroup({ groupName, items, value, onSetEntry, onRemoveEntry, sym }: FinGroupProps) {
+  const { t } = useTranslation()
   const customKeys = getCustomKeysForGroup(value, groupName)
 
   const addCustomItem = () => {
@@ -224,7 +228,7 @@ function FinGroup({ groupName, items, value, onSetEntry, onRemoveEntry, sym }: F
     <>
       <tr className="bg-accent/30">
         <td colSpan={5} className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-accent-foreground">
-          {groupName}
+          {finGroupI18nKey(groupName) ? t(finGroupI18nKey(groupName)) : groupName}
         </td>
         <td className="px-2 py-1 text-right">
           <Button
@@ -233,10 +237,10 @@ function FinGroup({ groupName, items, value, onSetEntry, onRemoveEntry, sym }: F
             size="sm"
             className="h-6 px-2 text-[10px] hover:bg-primary/10 hover:text-primary"
             onClick={addCustomItem}
-            title="Bu gruba özel kalem ekle"
+            title={t('fin.ui.add_custom')}
           >
             <Plus className="w-3 h-3" />
-            Özel Kalem
+            {t('fin.ui.custom_item')}
           </Button>
         </td>
       </tr>
@@ -272,6 +276,7 @@ function FinRow({
   onSetEntry: (key: string, patch: Partial<FinLineEntry>) => void
   sym: string
 }) {
+  const { t } = useTranslation()
   const [noteOpen, setNoteOpen] = useState(false)
   const showNote = noteOpen || !!entry.note
   const noVat = item.noVat
@@ -280,7 +285,7 @@ function FinRow({
     <tr className="border-b border-border/40 hover:bg-muted/20">
       <td className="px-3 py-1.5 text-sm">
         <div className="flex items-center gap-1">
-          <span className="flex-1">{item.label || item.key}</span>
+          <span className="flex-1">{t(finItemI18nKey(item.key), { defaultValue: item.label || item.key })}</span>
           <Button
             type="button"
             variant="ghost"
@@ -290,7 +295,7 @@ function FinRow({
               entry.note ? 'text-primary' : 'text-muted-foreground/50 hover:text-foreground'
             )}
             onClick={() => setNoteOpen((v) => !v)}
-            title={entry.note ? 'Açıklamayı düzenle' : 'Açıklama ekle'}
+            title={entry.note ? t('fin.ui.edit_note') : t('fin.ui.add_note')}
           >
             <StickyNote className="w-3 h-3" />
           </Button>
@@ -299,7 +304,7 @@ function FinRow({
           <Input
             value={entry.note || ''}
             onChange={(e) => onSetEntry(item.key, { note: e.target.value })}
-            placeholder="Açıklama (opsiyonel)"
+            placeholder={t('fin.ui.note_ph')}
             className="h-6 text-[11px] mt-1 text-muted-foreground border-dashed"
             autoFocus={noteOpen && !entry.note}
           />
@@ -386,6 +391,7 @@ interface CustomFinRowProps {
 }
 
 function CustomFinRow({ rowKey, entry, onSetEntry, onRemove, sym }: CustomFinRowProps) {
+  const { t } = useTranslation()
   return (
     <tr className="border-b border-border/40 hover:bg-muted/20 bg-primary/5">
       <td className="px-3 py-1.5">
@@ -394,7 +400,7 @@ function CustomFinRow({ rowKey, entry, onSetEntry, onRemove, sym }: CustomFinRow
             <Input
               value={entry.label || ''}
               onChange={(e) => onSetEntry(rowKey, { label: e.target.value })}
-              placeholder="Kalem adı... (örn. Liman Ardiye)"
+              placeholder={t('fin.ui.item_name_ph')}
               className="h-7 text-xs border-primary/30"
               autoFocus={!entry.label && !entry.note}
             />
@@ -404,7 +410,7 @@ function CustomFinRow({ rowKey, entry, onSetEntry, onRemove, sym }: CustomFinRow
               size="icon"
               className="h-6 w-6 text-destructive hover:bg-destructive/10 shrink-0"
               onClick={() => onRemove(rowKey)}
-              title="Kalemi sil"
+              title={t('fin.ui.delete_item')}
             >
               <Trash2 className="w-3 h-3" />
             </Button>
@@ -413,7 +419,7 @@ function CustomFinRow({ rowKey, entry, onSetEntry, onRemove, sym }: CustomFinRow
           <Input
             value={entry.note || ''}
             onChange={(e) => onSetEntry(rowKey, { note: e.target.value })}
-            placeholder="Açıklama (opsiyonel)"
+            placeholder={t('fin.ui.note_ph')}
             className="h-6 text-[11px] text-muted-foreground border-dashed"
           />
         </div>
