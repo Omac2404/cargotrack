@@ -118,10 +118,12 @@ export function FinancialTable({ mode, currency, value, onChange }: Props) {
               />
             ))}
           </tbody>
+          {/* Toplamlar — faturadaki yapının aynısı:
+              hizmetler KDV matrahı, vergiler (débours) matrah dışı, sonra net tutar */}
           <tfoot className="bg-muted/40 border-t-2">
             <tr>
               <td className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Ara Toplam
+                Hizmet Toplamı (KDV hariç)
               </td>
               <td className="px-2 py-2 text-right tabular-nums font-semibold text-success">
                 {formatMoney(totals.totalIncome, currency)}
@@ -136,18 +138,35 @@ export function FinancialTable({ mode, currency, value, onChange }: Props) {
                 +{formatMoney(totals.totalExpenseVat, currency)}
               </td>
               <td className="px-2 py-2 text-right tabular-nums font-bold">
-                {formatMoney(totals.profit, currency)}
+                {formatMoney(totals.totalIncome - totals.totalExpense, currency)}
               </td>
             </tr>
+            {(totals.deboursIncome > 0 || totals.deboursExpense > 0) && (
+              <tr>
+                <td className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Vergiler / Débours
+                  <span className="ml-1 normal-case font-normal text-[10px]">(KDV'ye tabi değil)</span>
+                </td>
+                <td colSpan={2} className="px-2 py-2 text-right tabular-nums font-semibold text-success">
+                  {formatMoney(totals.deboursIncome, currency)}
+                </td>
+                <td colSpan={2} className="px-2 py-2 text-right tabular-nums font-semibold text-destructive">
+                  {formatMoney(totals.deboursExpense, currency)}
+                </td>
+                <td className="px-2 py-2 text-right tabular-nums font-bold">
+                  {formatMoney(totals.deboursIncome - totals.deboursExpense, currency)}
+                </td>
+              </tr>
+            )}
             <tr className="bg-primary/5">
               <td className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-primary">
-                KDV Dahil Toplam
+                Ödenecek Tutar
               </td>
               <td colSpan={2} className="px-2 py-2 text-right tabular-nums font-bold text-success">
-                {formatMoney(totals.totalIncomeWithVat, currency)}
+                {formatMoney(totals.netPayableIncome, currency)}
               </td>
               <td colSpan={2} className="px-2 py-2 text-right tabular-nums font-bold text-destructive">
-                {formatMoney(totals.totalExpenseWithVat, currency)}
+                {formatMoney(totals.netPayableExpense, currency)}
               </td>
               <td className="px-2 py-2 text-right tabular-nums font-bold text-primary">
                 {formatMoney(totals.profitWithVat, currency)}
@@ -159,8 +178,8 @@ export function FinancialTable({ mode, currency, value, onChange }: Props) {
 
       {/* Özet kartları */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-        <SummaryBox icon={<TrendingUp className="w-3.5 h-3.5" />} label="Toplam Ciro" value={formatMoney(totals.totalIncome, currency)} variant="success" />
-        <SummaryBox icon={<TrendingDown className="w-3.5 h-3.5" />} label="Toplam Maliyet" value={formatMoney(totals.totalExpense, currency)} variant="destructive" />
+        <SummaryBox icon={<TrendingUp className="w-3.5 h-3.5" />} label="Toplam Ciro" value={formatMoney(totals.grossIncome, currency)} variant="success" />
+        <SummaryBox icon={<TrendingDown className="w-3.5 h-3.5" />} label="Toplam Maliyet" value={formatMoney(totals.grossExpense, currency)} variant="destructive" />
         <SummaryBox icon={<Coins className="w-3.5 h-3.5" />} label="Brüt Kâr" value={formatMoney(totals.profit, currency)} variant="primary" />
         <SummaryBox label="Marj" value={`${formatNumber(totals.margin, 2)}%`} variant={totals.margin >= 15 ? 'success' : totals.margin >= 5 ? 'warning' : 'destructive'} />
       </div>

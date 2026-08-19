@@ -170,36 +170,83 @@ export function calcFinLineTotals(entry: FinLineEntry, noVat?: boolean) {
 }
 
 /** Tüm kalemler için toplam */
+/**
+ * "Débours" — müşteri adına ödenen, hizmet bedeli olmayan gerçek vergiler.
+ *
+ * Bunlar KDV matrahına GİRMEZ ve üzerlerine KDV hesaplanmaz; faturada ayrı
+ * blokta, bire bir aynen yansıtılır. Aksi halde vergiler "KDV hariç toplam"ın
+ * içine girip üstlerine bir kez daha KDV bindiriliyordu.
+ *
+ * Dikkat: ith_frais_t1 / ith_forfait_dedouanement / ith_frais_bad /
+ * ith_stop_douane birer HİZMET bedelidir (vergi değil), normal KDV'ye tabidir.
+ */
+export const DEBOURS_KEYS = [
+  'ith_tva',
+  'ith_droit_douane',
+  'ith_taxe_parafiscal',
+  'ith_anti_dumping',
+  'ith_droit_porte',
+] as const
+
+export function isDeboursKey(key: string): boolean {
+  return (DEBOURS_KEYS as readonly string[]).includes(key)
+}
+
 export function calcFinTotals(schema: FinItem[], data: FinancialData) {
+  // Hizmet bedelleri (KDV matrahı)
   let totalIncome = 0, totalIncomeVat = 0
   let totalExpense = 0, totalExpenseVat = 0
-  const schemaKeys = new Set(schema.map((s) => s.key))
-  for (const item of schema) {
-    const entry = data[item.key] || {}
-    const t = calcFinLineTotals(entry, item.noVat)
+  // Débours — müşteri adına ödenen vergiler; KDV matrahı dışında tutulur
+  let deboursIncome = 0, deboursExpense = 0
+
+  const accumulate = (key: string, entry: FinLineEntry, noVat?: boolean) => {
+    if (isDeboursKey(key)) {
+      deboursIncome += Number(entry.income || 0)
+      deboursExpense += Number(entry.expense || 0)
+      return
+    }
+    const t = calcFinLineTotals(entry, noVat)
     totalIncome += t.income
     totalIncomeVat += t.income_vat
     totalExpense += t.expense
     totalExpenseVat += t.expense_vat
+  }
+
+  const schemaKeys = new Set(schema.map((s) => s.key))
+  for (const item of schema) {
+    accumulate(item.key, data[item.key] || {}, item.noVat)
   }
   // Kullanıcı-eklenmiş custom kalemleri de topla (schema'da olmayan key'ler)
   for (const key of Object.keys(data)) {
     if (schemaKeys.has(key)) continue
-    const t = calcFinLineTotals(data[key] || {}, false)
-    totalIncome += t.income
-    totalIncomeVat += t.income_vat
-    totalExpense += t.expense
-    totalExpenseVat += t.expense_vat
+    accumulate(key, data[key] || {}, false)
   }
+
   return {
     totalIncome,
     totalIncomeVat,
     totalIncomeWithVat: totalIncome + totalIncomeVat,
+    /** Vergiler (débours) — KDV'siz, aynen yansıtılır */
+    deboursIncome,
+    deboursExpense,
+    /** Müşterinin ödeyeceği nihai tutar: hizmet KDV dahil + vergiler */
+    netPayableIncome: totalIncome + totalIncomeVat + deboursIncome,
+    netPayableExpense: totalExpense + totalExpenseVat + deboursExpense,
     totalExpense,
     totalExpenseVat,
     totalExpenseWithVat: totalExpense + totalExpenseVat,
-    profit: totalIncome - totalExpense,
-    profitWithVat: (totalIncome + totalIncomeVat) - (totalExpense + totalExpenseVat),
-    margin: totalIncome > 0 ? ((totalIncome - totalExpense) / totalIncome) * 100 : 0,
+    /**
+     * Kâr/marj débours dahil hesaplanır: vergiler genelde hem gelire hem gidere
+     * aynı tutarla girilip birbirini götürür, ama tek tarafa girildiğinde
+     * sonuca yansıması gerekir. Bu yüzden ciro/maliyet kutuları da bu rakamları
+     * kullanır — kullanıcının bugün gördüğü toplamlar değişmesin.
+     */
+    grossIncome: totalIncome + deboursIncome,
+    grossExpense: totalExpense + deboursExpense,
+    profit: (totalIncome + deboursIncome) - (totalExpense + deboursExpense),
+    profitWithVat: (totalIncome + totalIncomeVat + deboursIncome) - (totalExpense + totalExpenseVat + deboursExpense),
+    margin: (totalIncome + deboursIncome) > 0
+      ? (((totalIncome + deboursIncome) - (totalExpense + deboursExpense)) / (totalIncome + deboursIncome)) * 100
+      : 0,
   }
 }

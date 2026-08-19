@@ -271,6 +271,26 @@ const FIN_LABELS = {
 /** KDV'siz hesaplanan kalemler — kendisi zaten vergi olduğu için üstüne KDV binmez. */
 const NO_VAT_KEYS = new Set(['ith_tva']);
 
+/**
+ * "Débours" — müşteri adına ödenen gerçek vergiler.
+ *
+ * Faturada AYRI blokta, KDV matrahı dışında gösterilir. Eskiden tüm kalemler
+ * tek listede toplanıp "Total HT" (= vergiler hariç toplam) deniyordu; vergiler
+ * bu toplamın içine giriyor, sonra üstüne TVA ekleniyordu — kullanıcı haklı
+ * olarak "KDV iki kere işleme giriyor" diyordu.
+ *
+ * Dikkat: ith_frais_t1 / ith_forfait_dedouanement / ith_frais_bad /
+ * ith_stop_douane birer HİZMET bedelidir, burada YER ALMAZ; normal KDV'ye tabidir.
+ * Liste frontend'deki finSchemas.DEBOURS_KEYS ile aynı tutulmalı.
+ */
+const DEBOURS_KEYS = new Set([
+  'ith_tva',
+  'ith_droit_douane',
+  'ith_taxe_parafiscal',
+  'ith_anti_dumping',
+  'ith_droit_porte',
+]);
+
 /** Varsayılan KDV oranı — frontend finSchemas.DEFAULT_VAT_RATE ile aynı olmalı. */
 const DEFAULT_VAT_RATE = 20;
 
@@ -744,77 +764,116 @@ router.get('/proforma/:shipmentId', verifyTokenFlexible, async (req, res) => {
       tableY += 28;
     }
 
-    // === Kalemler tablosu başlık ===
+    // === Kalemleri ikiye ayır ===
+    // Prestations : hizmet bedelleri → KDV matrahı
+    // Débours     : müşteri adına ödenen vergiler → matrah DIŞI, üzerine KDV binmez
+    // Eskiden hepsi tek listede toplanıp "Total HT" deniyordu; vergiler
+    // "vergiler hariç toplam"ın içine girip üstlerine bir kez daha TVA
+    // hesaplanmış gibi görünüyordu.
+    const prestations = [];
+    const debours = [];
+    for (const [key, entry] of Object.entries(financial)) {
+      if (!entry || typeof entry !== 'object') continue;
+      const income = parseFloat(entry.income || 0);
+      if (!income) continue;
+      const label = entry.label
+        || FIN_LABELS_FR[key]
+        || key.replace(/^custom_[a-z_]*?_\d+$/, 'Poste personnalisé').replace(/_/g, ' ');
+      if (DEBOURS_KEYS.has(key)) {
+        debours.push({ label, income });
+      } else {
+        const vatRate = resolveVatRate(entry.income_vat, NO_VAT_KEYS.has(key));
+        prestations.push({ label, income, vatRate, vat: income * (vatRate / 100) });
+      }
+    }
+
+    const totalIncome = prestations.reduce((s, l) => s + l.income, 0);
+    const totalIncomeVat = prestations.reduce((s, l) => s + l.vat, 0);
+    const totalDebours = debours.reduce((s, l) => s + l.income, 0);
+
+    const pageBreak = () => { if (tableY > 650) { doc.addPage(); tableY = 60; } };
+
+    // === Prestations tablosu ===
     doc.fontSize(9).font(F.bold).fillColor(COLORS.textLight);
-    doc.text('DÉSIGNATION', 50, tableY);
-    doc.text(`MONTANT (${cur})`, 350, tableY, { width: 80, align: 'right' });
+    doc.text('PRESTATIONS', 50, tableY);
+    doc.text(`MONTANT HT (${cur})`, 330, tableY, { width: 100, align: 'right' });
     doc.text('TVA %', 440, tableY, { width: 40, align: 'right' });
     doc.text('MONTANT TVA', 490, tableY, { width: 70, align: 'right' });
     tableY += 14;
     doc.moveTo(40, tableY).lineTo(W - 40, tableY).strokeColor(COLORS.borderLight).lineWidth(1).stroke();
     tableY += 6;
 
-    // === Kalemler ===
-    let totalIncome = 0, totalIncomeVat = 0;
     doc.font(F.regular).fontSize(10).fillColor(COLORS.text);
-    let lineCount = 0;
-
-    for (const [key, entry] of Object.entries(financial)) {
-      if (!entry || typeof entry !== 'object') continue;
-      const income = parseFloat(entry.income || 0);
-      if (!income) continue;
-      const vatRate = resolveVatRate(entry.income_vat, NO_VAT_KEYS.has(key));
-      const vat = income * (vatRate / 100);
-      totalIncome += income;
-      totalIncomeVat += vat;
-
-      // Kullanıcının yazdığı özel kalem adı > şema etiketi > son çare anahtar
-      const label = entry.label
-        || FIN_LABELS_FR[key]
-        || key.replace(/^custom_[a-z_]*?_\d+$/, 'Poste personnalisé').replace(/_/g, ' ');
+    for (const l of prestations) {
       doc.fillColor(COLORS.text).font(F.regular).fontSize(10);
-      doc.text(label, 50, tableY, { width: 290, ellipsis: true });
-      doc.text(formatFr(income), 350, tableY, { width: 80, align: 'right' });
-      doc.text(`${vatRate.toFixed(0)}%`, 440, tableY, { width: 40, align: 'right' });
-      doc.text(formatFr(vat), 490, tableY, { width: 70, align: 'right' });
+      doc.text(l.label, 50, tableY, { width: 270, ellipsis: true });
+      doc.text(formatFr(l.income), 330, tableY, { width: 100, align: 'right' });
+      doc.text(`${l.vatRate.toFixed(0)}%`, 440, tableY, { width: 40, align: 'right' });
+      doc.text(formatFr(l.vat), 490, tableY, { width: 70, align: 'right' });
       tableY += 22;
-      lineCount++;
-
-      if (tableY > 650) { doc.addPage(); tableY = 60; }
+      pageBreak();
     }
-
-    if (lineCount === 0) {
+    if (prestations.length === 0) {
       doc.fontSize(10).font(F.italic).fillColor(COLORS.textLight);
-      doc.text('Aucun poste financier saisi', 50, tableY, { width: 500, align: 'center' });
+      doc.text('Aucune prestation saisie', 50, tableY, { width: 500, align: 'center' });
       tableY += 22;
     }
 
-    // === Toplamlar (sağa hizalı kutu) ===
-    tableY += 20;
-    doc.moveTo(40, tableY).lineTo(W - 40, tableY).strokeColor(COLORS.borderLight).lineWidth(0.5).stroke();
-    tableY += 14;
+    // Prestations alt toplamı
+    tableY += 6;
+    doc.moveTo(320, tableY).lineTo(W - 40, tableY).strokeColor(COLORS.borderLight).lineWidth(0.5).stroke();
+    tableY += 8;
+    const totalsX = 320, totalsValueX = 480, totalsValueW = 80;
+    doc.fontSize(10).font(F.regular).fillColor(COLORS.text)
+       .text('Total HT :', totalsX, tableY, { width: 150 });
+    doc.font(F.bold).text(`${symbol}${formatFr(totalIncome)}`, totalsValueX, tableY, { width: totalsValueW, align: 'right' });
+    tableY += 18;
+    doc.font(F.regular).text('Total TVA :', totalsX, tableY, { width: 150 });
+    doc.font(F.bold).text(`${symbol}${formatFr(totalIncomeVat)}`, totalsValueX, tableY, { width: totalsValueW, align: 'right' });
+    tableY += 18;
+    doc.font(F.regular).text('Total TTC :', totalsX, tableY, { width: 150 });
+    doc.font(F.bold).text(`${symbol}${formatFr(totalIncome + totalIncomeVat)}`, totalsValueX, tableY, { width: totalsValueW, align: 'right' });
+    tableY += 28;
+    pageBreak();
 
-    const totalsX = 320;
-    const totalsValueX = 480;
-    const totalsValueW = 80;
+    // === Débours tablosu (varsa) ===
+    if (debours.length > 0) {
+      doc.fontSize(9).font(F.bold).fillColor(COLORS.textLight);
+      doc.text('DÉBOURS ET TAXES', 50, tableY);
+      doc.fontSize(7).font(F.regular)
+         .text('(avancés pour le compte du client — non soumis à TVA)', 155, tableY + 1.5);
+      doc.fontSize(9).font(F.bold)
+         .text(`MONTANT (${cur})`, 460, tableY, { width: 100, align: 'right' });
+      tableY += 14;
+      doc.moveTo(40, tableY).lineTo(W - 40, tableY).strokeColor(COLORS.borderLight).lineWidth(1).stroke();
+      tableY += 6;
 
-    doc.fontSize(11).font(F.regular).fillColor(COLORS.text);
-    doc.text('Total HT :', totalsX, tableY, { width: 150 });
-    doc.font(F.bold).fillColor(COLORS.text)
-       .text(`${symbol}${formatFr(totalIncome)}`, totalsValueX, tableY, { width: totalsValueW, align: 'right' });
-    tableY += 22;
+      for (const l of debours) {
+        doc.font(F.regular).fontSize(10).fillColor(COLORS.text);
+        doc.text(l.label, 50, tableY, { width: 400, ellipsis: true });
+        doc.text(formatFr(l.income), 460, tableY, { width: 100, align: 'right' });
+        tableY += 22;
+        pageBreak();
+      }
 
-    doc.font(F.regular).fillColor(COLORS.text)
-       .text('Total TVA :', totalsX, tableY, { width: 150 });
-    doc.font(F.bold).fillColor(COLORS.text)
-       .text(`${symbol}${formatFr(totalIncomeVat)}`, totalsValueX, tableY, { width: totalsValueW, align: 'right' });
-    tableY += 30;
+      tableY += 6;
+      doc.moveTo(320, tableY).lineTo(W - 40, tableY).strokeColor(COLORS.borderLight).lineWidth(0.5).stroke();
+      tableY += 8;
+      doc.fontSize(10).font(F.regular).fillColor(COLORS.text)
+         .text('Total débours :', totalsX, tableY, { width: 150 });
+      doc.font(F.bold).text(`${symbol}${formatFr(totalDebours)}`, totalsValueX, tableY, { width: totalsValueW, align: 'right' });
+      tableY += 28;
+      pageBreak();
+    }
 
-    // === Genel Toplam (büyük, primary renkli) ===
+    // === Net à payer (büyük, primary renkli) ===
+    doc.moveTo(320, tableY).lineTo(W - 40, tableY).strokeColor(COLORS.primary).lineWidth(1.2).stroke();
+    tableY += 10;
     doc.fontSize(15).font(F.bold).fillColor(COLORS.primary)
-       .text('TOTAL TTC :', totalsX, tableY, { width: 200 });
+       .text('NET À PAYER :', totalsX, tableY, { width: 200 });
     doc.fontSize(18).font(F.bold).fillColor(COLORS.primary)
-       .text(`${symbol}${formatFr(totalIncome + totalIncomeVat)}`, totalsValueX - 30, tableY - 2, { width: totalsValueW + 30, align: 'right' });
+       .text(`${symbol}${formatFr(totalIncome + totalIncomeVat + totalDebours)}`,
+             totalsValueX - 30, tableY - 2, { width: totalsValueW + 30, align: 'right' });
 
     // === Banka bilgileri (env'de tanımlıysa) ===
     const bank = bankLines();
