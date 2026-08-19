@@ -84,7 +84,7 @@ export function DocumentsPage() {
       { shipmentId: selectedId, docKey: deleteKey },
       {
         onSuccess: () => {
-          toast.success('Belge silindi')
+          toast.success(t('ui.belge_silindi'))
           setDeleteKey(null)
         },
         onError: (err: Error) => toast.error(err.message),
@@ -152,7 +152,7 @@ export function DocumentsPage() {
       {!selectedId ? (
         <Card className="p-16 text-center text-muted-foreground border-dashed">
           <FileText className="w-12 h-12 mx-auto mb-3 opacity-30" />
-          <div className="text-sm">Belgelerini yönetmek için yukarıdan bir sevkiyat seç</div>
+          <div className="text-sm">{t('ui.belgelerini_yonetmek_icin_yukaridan_bir_sevk')}</div>
         </Card>
       ) : isLoading ? (
         <Card className="p-12 text-center text-muted-foreground">
@@ -167,7 +167,7 @@ export function DocumentsPage() {
             </div>
             <Button variant="outline" size="sm" onClick={() => setCustomKeyOpen(true)}>
               <Plus className="w-3.5 h-3.5" />
-              Özel Belge Slotu Ekle
+              {t('ui.ozel_belge_slotu_ekle')}
             </Button>
           </div>
 
@@ -282,7 +282,7 @@ export function DocumentsPage() {
 
           <div className="text-xs text-muted-foreground p-3 rounded-md bg-muted/30 border">
             <AlertCircle className="w-3.5 h-3.5 inline mr-1" />
-            Desteklenen formatlar: PDF, JPG, PNG, DOC(X), XLS(X). Maks. 20MB. Dosyalar yetkili kullanıcılarca <strong>korumalı bir endpoint üzerinden</strong> servis edilir; doğrudan URL paylaşımı çalışmaz.
+            {t('ui.doc_upload_hint')}
           </div>
         </>
       )}
@@ -291,9 +291,9 @@ export function DocumentsPage() {
       <AlertDialog open={customKeyOpen} onOpenChange={setCustomKeyOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Özel Belge Slotu Ekle</AlertDialogTitle>
+            <AlertDialogTitle>{t('ui.ozel_belge_slotu_ekle')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Standart listede olmayan bir belge türü için slot adı gir (örn: <em>"transit_belgesi"</em>).
+              {t('ui.custom_doc_slot_hint')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <Input
@@ -302,7 +302,7 @@ export function DocumentsPage() {
             placeholder="slot_adi"
           />
           <AlertDialogFooter>
-            <AlertDialogCancel>İptal</AlertDialogCancel>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={async (e) => {
                 e.preventDefault()
@@ -339,13 +339,13 @@ export function DocumentsPage() {
       <AlertDialog open={!!deleteKey} onOpenChange={(o) => !o && setDeleteKey(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Belgeyi sil?</AlertDialogTitle>
+            <AlertDialogTitle>{t('ui.delete_document_q')}</AlertDialogTitle>
             <AlertDialogDescription>
-              <strong className="text-foreground">{deleteKey && docs[deleteKey]?.filename}</strong> kalıcı olarak silinecek. Geri alınamaz.
+              {t('ui.delete_document_body', { name: (deleteKey && docs[deleteKey]?.filename) || '' })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleteMut.isPending}>İptal</AlertDialogCancel>
+            <AlertDialogCancel disabled={deleteMut.isPending}>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={(e) => { e.preventDefault(); handleDelete() }}
               disabled={deleteMut.isPending}

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   LineChart, Line,
@@ -31,6 +32,7 @@ const MODES = [
 ]
 
 export function MonthlyRevenueReport() {
+  const { t } = useTranslation()
   const [year, setYear] = useState(CURRENT_YEAR)
   const [mode, setMode] = useState<string>('__all__')
 
@@ -47,7 +49,7 @@ export function MonthlyRevenueReport() {
       {/* Filtreler + Özet */}
       <Card className="p-3 flex flex-wrap items-end gap-3">
         <div className="space-y-1">
-          <Label className="text-[10px]">Yıl</Label>
+          <Label className="text-[10px]">{t('reports.year')}</Label>
           <Select value={String(year)} onValueChange={(v) => setYear(Number(v))}>
             <SelectTrigger className="h-8 w-[100px]"><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -56,7 +58,7 @@ export function MonthlyRevenueReport() {
           </Select>
         </div>
         <div className="space-y-1">
-          <Label className="text-[10px]">Mod</Label>
+          <Label className="text-[10px]">{t('reports.mode')}</Label>
           <Select value={mode} onValueChange={setMode}>
             <SelectTrigger className="h-8 w-[140px]"><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -83,11 +85,11 @@ export function MonthlyRevenueReport() {
 
       {/* Özet kartlar */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        <SummaryCard label="Sevkiyat" value={String(totals.shipment_count)} sub="adet" />
-        <SummaryCard label="Ciro" value={formatMoney(totals.total_sale, 'EUR')} variant="success" />
+        <SummaryCard label={t('statistics.table.shipment')} value={String(totals.shipment_count)} sub="adet" />
+        <SummaryCard label={t('statistics.table.revenue')} value={formatMoney(totals.total_sale, 'EUR')} variant="success" />
         <SummaryCard label="Maliyet" value={formatMoney(totals.total_purchase, 'EUR')} variant="destructive" />
-        <SummaryCard label="Kâr" value={formatMoney(totals.profit, 'EUR')} variant={totals.profit >= 0 ? 'success' : 'destructive'} />
-        <SummaryCard label="Marj" value={`%${formatNumber(totals.margin, 1)}`} variant={totals.margin >= 15 ? 'success' : totals.margin >= 5 ? 'warning' : 'destructive'} />
+        <SummaryCard label={t('statistics.table.profit')} value={formatMoney(totals.profit, 'EUR')} variant={totals.profit >= 0 ? 'success' : 'destructive'} />
+        <SummaryCard label={t('statistics.summary.margin')} value={`%${formatNumber(totals.margin, 1)}`} variant={totals.margin >= 15 ? 'success' : totals.margin >= 5 ? 'warning' : 'destructive'} />
       </div>
 
       {/* Bar grafik: aylık ciro vs maliyet */}
@@ -131,11 +133,11 @@ export function MonthlyRevenueReport() {
           <TableHeader>
             <TableRow>
               <TableHead>Ay</TableHead>
-              <TableHead className="text-right">Sevkiyat</TableHead>
-              <TableHead className="text-right">Ciro</TableHead>
+              <TableHead className="text-right">{t('statistics.table.shipment')}</TableHead>
+              <TableHead className="text-right">{t('statistics.table.revenue')}</TableHead>
               <TableHead className="text-right">Maliyet</TableHead>
-              <TableHead className="text-right">Kâr</TableHead>
-              <TableHead className="text-right">Marj</TableHead>
+              <TableHead className="text-right">{t('statistics.table.profit')}</TableHead>
+              <TableHead className="text-right">{t('statistics.summary.margin')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

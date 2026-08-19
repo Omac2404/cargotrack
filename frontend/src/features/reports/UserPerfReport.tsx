@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from 'recharts'
@@ -27,6 +28,7 @@ const ROLE_LABELS: Record<string, { label: string; variant: 'default' | 'destruc
 }
 
 export function UserPerfReport() {
+  const { t } = useTranslation()
   const [year, setYear] = useState(CURRENT_YEAR)
   const { data, isLoading, error } = useUserPerformance(year)
 
@@ -44,7 +46,7 @@ export function UserPerfReport() {
     <div className="space-y-4">
       <Card className="p-3 flex flex-wrap items-end gap-3">
         <div className="space-y-1">
-          <Label className="text-[10px]">Yıl</Label>
+          <Label className="text-[10px]">{t('reports.year')}</Label>
           <Select value={String(year)} onValueChange={(v) => setYear(Number(v))}>
             <SelectTrigger className="h-8 w-[100px]"><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -95,11 +97,11 @@ export function UserPerfReport() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Kullanıcı</TableHead>
-              <TableHead>Rol</TableHead>
-              <TableHead className="text-right">Sevkiyat</TableHead>
-              <TableHead className="text-right">Toplam Ciro</TableHead>
-              <TableHead className="text-right">Toplam Kâr</TableHead>
+              <TableHead>{t('auth.roles.user')}</TableHead>
+              <TableHead>{t('auth.role')}</TableHead>
+              <TableHead className="text-right">{t('statistics.table.shipment')}</TableHead>
+              <TableHead className="text-right">{t('shipment.summary.revenue')}</TableHead>
+              <TableHead className="text-right">{t('statistics.summary.total_profit')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

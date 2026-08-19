@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -50,6 +51,7 @@ interface Props {
 export function AssignmentFormDialog({
   open, onOpenChange, assignment, defaultShipmentId, defaultQuantity, defaultWeight, defaultVehicleId,
 }: Props) {
+  const { t } = useTranslation()
   const isEdit = !!assignment
   const saveMut = useSaveAssignment()
 
@@ -164,14 +166,14 @@ export function AssignmentFormDialog({
         <DialogHeader>
           <DialogTitle>{isEdit ? 'Atamayı düzenle' : 'Yeni Atama'}</DialogTitle>
           <DialogDescription>
-            Bir araca bir sevkiyat ata. Kapasite ve mod uyumu otomatik kontrol edilir.
+            {t('ui.bir_araca_bir_sevkiyat_ata_kapasite_ve_mod_u')}
           </DialogDescription>
         </DialogHeader>
 
         <form id="assignment-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {/* Sevkiyat seç */}
           <div className="space-y-1.5">
-            <Label>Sevkiyat *</Label>
+            <Label>{t('ui.sevkiyat')}</Label>
             <Combobox
               value={shipmentId ? String(shipmentId) : ''}
               onChange={(v) => setValue('shipment_id', Number(v))}
@@ -181,8 +183,8 @@ export function AssignmentFormDialog({
                 label: `${s.shipment_no} [${SHIPMENT_MODE_LABEL[s.transport_type as string] || s.transport_type}]`,
                 description: [s.client_billing, s.departure_country && `${s.departure_country} → ${s.arrival_country}`].filter(Boolean).join(' · '),
               }))}
-              placeholder="Sevkiyat seçin..."
-              searchPlaceholder="Dosya no, müşteri ara..."
+              placeholder={t('ui.sevkiyat_secin')}
+              searchPlaceholder={t('ui.dosya_no_musteri_ara')}
               emptyMessage={allShipments.length === 0 ? 'Atanabilir sevkiyat yok' : 'Sonuç yok'}
               allowClear={false}
             />
@@ -193,17 +195,17 @@ export function AssignmentFormDialog({
           {selectedShipment && (
             <div className="p-3 rounded-md bg-muted/40 border text-xs space-y-1">
               <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Güzergah</span>
+                <span className="text-muted-foreground">{t('shipment.route')}</span>
                 <span>{selectedShipment.departure_country || '?'} → {selectedShipment.arrival_country || '?'}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Toplam Kap</span>
+                <span className="text-muted-foreground">{t('ui.toplam_kap')}</span>
                 <span className="font-medium">
                   {usage.qtyUsed} / {usage.qtyTotal} kullanılmış (kalan: <strong>{usage.qtyTotal - usage.qtyUsed}</strong>)
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Toplam Ağırlık</span>
+                <span className="text-muted-foreground">{t('ui.toplam_agirlik')}</span>
                 <span className="font-medium">
                   {formatNumber(usage.wgtUsed, 0)} / {formatNumber(usage.wgtTotal, 0)} kg
                 </span>
@@ -213,7 +215,7 @@ export function AssignmentFormDialog({
 
           {/* Araç seç */}
           <div className="space-y-1.5">
-            <Label>Araç *</Label>
+            <Label>{t('ui.arac')}</Label>
             <Combobox
               value={vehicleId ? String(vehicleId) : ''}
               onChange={(v) => setValue('vehicle_id', Number(v))}
@@ -223,8 +225,8 @@ export function AssignmentFormDialog({
                 label: `${v.plate} [${VEHICLE_MODE_LABEL[v.transport_type] || v.transport_type}]`,
                 description: `${v.vehicle_code} · ${formatNumber(v.capacity_kg, 0)} kg${v.driver_name ? ' · ' + v.driver_name : ''}`,
               }))}
-              placeholder="Araç seçin..."
-              searchPlaceholder="Plaka, kod, sürücü ara..."
+              placeholder={t('ui.arac_secin')}
+              searchPlaceholder={t('ui.plaka_kod_surucu_ara')}
               emptyMessage={allVehicles.length === 0 ? 'Araç tanımlı değil' : 'Sonuç yok'}
               allowClear={false}
             />
@@ -236,7 +238,7 @@ export function AssignmentFormDialog({
             <div className="p-3 rounded-md bg-destructive/10 border border-destructive/30 text-xs flex items-start gap-2">
               <AlertCircle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
               <div className="text-destructive">
-                <strong>Mod uyumsuzluğu:</strong> {SHIPMENT_MODE_LABEL[selectedShipment!.transport_type as string]} sevkiyatı sadece {SHIPMENT_MODE_LABEL[shipmentMode]} aracına atanabilir — seçili araç {VEHICLE_MODE_LABEL[selectedVehicle!.transport_type]}. Kaydetmeye çalışırsan reddedilir.
+                <strong>{t('ui.mod_uyumsuzlugu')}</strong> {SHIPMENT_MODE_LABEL[selectedShipment!.transport_type as string]} sevkiyatı sadece {SHIPMENT_MODE_LABEL[shipmentMode]} aracına atanabilir — seçili araç {VEHICLE_MODE_LABEL[selectedVehicle!.transport_type]}. Kaydetmeye çalışırsan reddedilir.
               </div>
             </div>
           )}
@@ -246,7 +248,7 @@ export function AssignmentFormDialog({
             <div className="p-3 rounded-md bg-muted/40 border text-xs space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground flex items-center gap-1">
-                  <Truck className="w-3.5 h-3.5" /> Araç kapasite kullanımı
+                  <Truck className="w-3.5 h-3.5" /> {t('ui.arac_kapasite_kullanimi')}
                 </span>
                 <span className="font-medium">
                   {formatNumber(vehicleUsage.wgtUsed + currentWgt, 0)} / {formatNumber(vehicleUsage.wgtTotal, 0)} kg
@@ -272,7 +274,7 @@ export function AssignmentFormDialog({
               {vehicleUsage.wgtTotal > 0 && (vehicleUsage.wgtUsed + currentWgt) > vehicleUsage.wgtTotal && (
                 <p className="text-destructive text-xs flex items-center gap-1">
                   <AlertCircle className="w-3 h-3" />
-                  Araç kapasitesi aşılacak — backend reddedecek
+                  {t('ui.arac_kapasitesi_asilacak_backend_reddedecek')}
                 </p>
               )}
             </div>
@@ -282,7 +284,7 @@ export function AssignmentFormDialog({
           <div className="grid grid-cols-2 gap-3 pt-2 border-t">
             <div className="space-y-1.5">
               <Label htmlFor="assigned_quantity" className="flex items-center gap-1">
-                <Package className="w-3.5 h-3.5" /> Atanan Kap *
+                <Package className="w-3.5 h-3.5" /> {t('ui.atanan_kap')}
               </Label>
               <Input
                 id="assigned_quantity"
@@ -291,12 +293,12 @@ export function AssignmentFormDialog({
                 {...register('assigned_quantity', { valueAsNumber: true })}
               />
               {usage.qtyTotal > 0 && (currentQty + usage.qtyUsed) > usage.qtyTotal && (
-                <p className="text-xs text-destructive">Sevkiyat kapasitesi aşılıyor</p>
+                <p className="text-xs text-destructive">{t('ui.sevkiyat_kapasitesi_asiliyor')}</p>
               )}
               {errors.assigned_quantity && <p className="text-xs text-destructive">{errors.assigned_quantity.message}</p>}
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="assigned_weight">Atanan Ağırlık (kg)</Label>
+              <Label htmlFor="assigned_weight">{t('ui.atanan_agirlik_kg')}</Label>
               <Input
                 id="assigned_weight"
                 type="number"
@@ -307,7 +309,7 @@ export function AssignmentFormDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="loading_date">Yükleme Tarihi</Label>
+            <Label htmlFor="loading_date">{t('assignment.loading_date')}</Label>
             <Input id="loading_date" type="date" {...register('loading_date')} />
           </div>
 
@@ -318,7 +320,7 @@ export function AssignmentFormDialog({
         </form>
 
         <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>İptal</Button>
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{t('common.cancel')}</Button>
           <Button type="submit" form="assignment-form" disabled={saveMut.isPending || modeIncompatible}>
             {saveMut.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
             {isEdit ? 'Güncelle' : 'Ata'}

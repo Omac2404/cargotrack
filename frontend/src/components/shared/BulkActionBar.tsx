@@ -1,4 +1,5 @@
 import { X } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 
 interface Props {
@@ -13,11 +14,12 @@ interface Props {
  *
  * @example
  *   <BulkActionBar count={sel.count} onClear={sel.clear}>
- *     <Button variant="destructive" onClick={handleBulkDelete}>Sil</Button>
- *     <Button onClick={handleBulkClose}>Kapat</Button>
+ *     <Button variant="destructive" onClick={handleBulkDelete}>{t('common.delete')}</Button>
+ *     <Button onClick={handleBulkClose}>{t('common.close')}</Button>
  *   </BulkActionBar>
  */
 export function BulkActionBar({ count, onClear, children }: Props) {
+  const { t } = useTranslation()
   if (count === 0) return null
 
   return (
@@ -33,7 +35,7 @@ export function BulkActionBar({ count, onClear, children }: Props) {
           size="icon"
           className="h-7 w-7 ml-1"
           onClick={onClear}
-          title="Seçimi temizle"
+          title={t('ui.secimi_temizle')}
         >
           <X className="w-3.5 h-3.5" />
         </Button>

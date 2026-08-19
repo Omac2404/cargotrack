@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Check, ChevronsUpDown, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -21,6 +22,7 @@ export function CurrencyCombobox({
   value, onChange, placeholder = 'Para birimi seçin...',
   allowClear = false, className, disabled = false,
 }: Props) {
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
 
   const selected = findCurrency(value)
@@ -75,9 +77,9 @@ export function CurrencyCombobox({
         avoidCollisions={false}
       >
         <Command shouldFilter={true}>
-          <CommandInput placeholder="Para birimi ara (kod, isim, ülke)..." />
+          <CommandInput placeholder={t('ui.para_birimi_ara_kod_isim_ulke')} />
           <CommandList className="max-h-[400px]">
-            <CommandEmpty>Para birimi bulunamadı</CommandEmpty>
+            <CommandEmpty>{t('ui.para_birimi_bulunamadi')}</CommandEmpty>
 
             <CommandGroup heading="Sık Kullanılan">
               {grouped.common.map((c) => (

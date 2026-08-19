@@ -48,7 +48,7 @@ export function AssignmentsListPage() {
     if (!deleteTarget) return
     deleteMut.mutate(deleteTarget.id, {
       onSuccess: () => {
-        toast.success('Atama silindi')
+        toast.success(t('ui.atama_silindi'))
         setDeleteTarget(null)
       },
       onError: (err: Error) => toast.error(err.message),

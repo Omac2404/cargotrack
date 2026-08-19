@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Plus, Trash2, Package, Calculator, ArrowUp, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -25,6 +26,7 @@ interface Props {
  * Otomatik toplam: adet, brüt ağırlık, hacim (m³), CBM.
  */
 export function CratesEditor({ value, onChange, onApplyTotals, currentQty, currentWeight }: Props) {
+  const { t } = useTranslation()
   const crates = useMemo<Crate[]>(() => {
     if (!value) return []
     try {
@@ -85,7 +87,7 @@ export function CratesEditor({ value, onChange, onApplyTotals, currentQty, curre
       <div className="flex items-center justify-between">
         <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
           <Package className="w-3.5 h-3.5" />
-          Kap Listesi (boyut + adet)
+          {t('ui.kap_listesi_boyut_adet')}
         </Label>
         {crates.length > 0 && (
           <div className="flex items-center gap-2 text-xs">
@@ -112,13 +114,13 @@ export function CratesEditor({ value, onChange, onApplyTotals, currentQty, curre
           <span className="flex-1 min-w-[220px]">
             {mismatch ? (
               <>
-                <strong className="text-warning">Kap listesi ile Yük bilgileri uyuşmuyor.</strong>{' '}
+                <strong className="text-warning">{t('ui.kap_listesi_ile_yuk_bilgileri_uyusmuyor')}</strong>{' '}
                 Listede <strong>{totals.totalQty} kap / {formatNumber(totals.totalWeight, 1)} kg</strong>,
                 formda <strong>{currentQty || 0} kap / {formatNumber(currentWeight || 0, 1)} kg</strong> yazıyor.
                 Araç ataması formdaki değerlere göre yapılır.
               </>
             ) : (
-              <>Kap listesi toplamları Yük alanlarıyla uyumlu.</>
+              <>{t('ui.kap_listesi_toplamlari_yuk_alanlariyla_uyuml')}</>
             )}
           </span>
           <Button
@@ -133,7 +135,7 @@ export function CratesEditor({ value, onChange, onApplyTotals, currentQty, curre
             })}
           >
             <ArrowUp className="w-3.5 h-3.5" />
-            Toplamları Yük alanlarına aktar
+            {t('ui.toplamlari_yuk_alanlarina_aktar')}
           </Button>
         </div>
       )}
@@ -144,12 +146,12 @@ export function CratesEditor({ value, onChange, onApplyTotals, currentQty, curre
           <table className="w-full text-xs">
             <thead className="bg-muted/40 border-b">
               <tr>
-                <th className="text-center px-2 py-1.5 w-[60px]">Adet</th>
+                <th className="text-center px-2 py-1.5 w-[60px]">{t('ui.adet')}</th>
                 <th className="text-center px-2 py-1.5">Boyut (cm)</th>
-                <th className="text-right px-2 py-1.5 w-[100px]">Birim Ağr (kg)</th>
-                <th className="text-right px-2 py-1.5 w-[100px]">Toplam (kg)</th>
-                <th className="text-right px-2 py-1.5 w-[90px]">Hacim (m³)</th>
-                <th className="text-left px-2 py-1.5">Açıklama</th>
+                <th className="text-right px-2 py-1.5 w-[100px]">{t('ui.birim_agr_kg')}</th>
+                <th className="text-right px-2 py-1.5 w-[100px]">{t('ui.toplam_kg')}</th>
+                <th className="text-right px-2 py-1.5 w-[90px]">{t('transport.vehicle_labels.volume')}</th>
+                <th className="text-left px-2 py-1.5">{t('ui.aciklama')}</th>
                 <th className="w-8"></th>
               </tr>
             </thead>
@@ -196,7 +198,7 @@ export function CratesEditor({ value, onChange, onApplyTotals, currentQty, curre
             <tfoot className="bg-muted/40 border-t-2">
               <tr>
                 <td className="px-2 py-1.5 text-center font-bold tabular-nums">{totals.totalQty}</td>
-                <td colSpan={2} className="px-2 py-1.5 text-right font-semibold text-muted-foreground text-[10px] uppercase">Toplam</td>
+                <td colSpan={2} className="px-2 py-1.5 text-right font-semibold text-muted-foreground text-[10px] uppercase">{t('common.total')}</td>
                 <td className="px-2 py-1.5 text-right font-bold tabular-nums text-success">{formatNumber(totals.totalWeight, 1)} kg</td>
                 <td className="px-2 py-1.5 text-right font-bold tabular-nums text-primary">{formatNumber(totals.totalVolume, 3)} m³</td>
                 <td colSpan={2}></td>
@@ -210,7 +212,7 @@ export function CratesEditor({ value, onChange, onApplyTotals, currentQty, curre
       <Card className="p-3 border-dashed bg-muted/30">
         <div className="grid grid-cols-2 md:grid-cols-7 gap-2 items-end">
           <div className="space-y-1">
-            <Label className="text-[10px]">Adet</Label>
+            <Label className="text-[10px]">{t('ui.adet')}</Label>
             <Input type="number" min="1" value={draft.qty || ''} onChange={(e) => setDraftField('qty', e.target.value)} className="h-8 text-center tabular-nums" />
           </div>
           <div className="space-y-1">
@@ -218,19 +220,19 @@ export function CratesEditor({ value, onChange, onApplyTotals, currentQty, curre
             <Input type="number" value={draft.length || ''} onChange={(e) => setDraftField('length', e.target.value)} className="h-8 text-right tabular-nums" />
           </div>
           <div className="space-y-1">
-            <Label className="text-[10px]">Genişlik (cm)</Label>
+            <Label className="text-[10px]">{t('ui.genislik_cm')}</Label>
             <Input type="number" value={draft.width || ''} onChange={(e) => setDraftField('width', e.target.value)} className="h-8 text-right tabular-nums" />
           </div>
           <div className="space-y-1">
-            <Label className="text-[10px]">Yükseklik (cm)</Label>
+            <Label className="text-[10px]">{t('ui.yukseklik_cm')}</Label>
             <Input type="number" value={draft.height || ''} onChange={(e) => setDraftField('height', e.target.value)} className="h-8 text-right tabular-nums" />
           </div>
           <div className="space-y-1">
-            <Label className="text-[10px]">Birim Ağırlık (kg)</Label>
+            <Label className="text-[10px]">{t('ui.birim_agirlik_kg')}</Label>
             <Input type="number" step="0.01" value={draft.weight || ''} onChange={(e) => setDraftField('weight', e.target.value)} className="h-8 text-right tabular-nums" />
           </div>
           <div className="space-y-1 col-span-2 md:col-span-1">
-            <Label className="text-[10px]">Açıklama</Label>
+            <Label className="text-[10px]">{t('ui.aciklama')}</Label>
             <Input value={draft.description || ''} onChange={(e) => setDraftField('description', e.target.value)} className="h-8" />
           </div>
           {/* Adet 0/boşken buton sessizce hiçbir şey yapmıyordu — artık devre dışı ve nedeni yazılı */}
@@ -243,7 +245,7 @@ export function CratesEditor({ value, onChange, onApplyTotals, currentQty, curre
             className="h-8"
           >
             <Plus className="w-3.5 h-3.5" />
-            Ekle
+            {t('common.add')}
           </Button>
         </div>
         {(draft.length && draft.width && draft.height) ? (

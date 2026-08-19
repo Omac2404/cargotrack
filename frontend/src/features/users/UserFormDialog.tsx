@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -34,6 +35,7 @@ interface Props {
 }
 
 export function UserFormDialog({ open, onOpenChange, user }: Props) {
+  const { t } = useTranslation()
   const isEdit = !!user
   const saveMut = useSaveUser()
 
@@ -98,7 +100,7 @@ export function UserFormDialog({ open, onOpenChange, user }: Props) {
         <form id="user-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {!isEdit && (
             <div className="space-y-1.5">
-              <Label htmlFor="username">Kullanıcı Adı *</Label>
+              <Label htmlFor="username">{t('ui.kullanici_adi')}</Label>
               <Input id="username" {...register('username')} autoComplete="off" />
               {errors.username && <p className="text-xs text-destructive">{errors.username.message}</p>}
             </div>
@@ -111,30 +113,30 @@ export function UserFormDialog({ open, onOpenChange, user }: Props) {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="email">E-posta</Label>
+            <Label htmlFor="email">{t('shipment.fields.email')}</Label>
             <Input id="email" type="email" {...register('email')} />
             {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label>Rol</Label>
+              <Label>{t('auth.role')}</Label>
               <Select value={watch('role')} onValueChange={(v) => setValue('role', v as UserRole)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="user">Kullanıcı</SelectItem>
-                  <SelectItem value="admin">Yönetici</SelectItem>
-                  <SelectItem value="super_admin">Süper Admin</SelectItem>
+                  <SelectItem value="user">{t('auth.roles.user')}</SelectItem>
+                  <SelectItem value="admin">{t('auth.roles.admin')}</SelectItem>
+                  <SelectItem value="super_admin">{t('auth.roles.super_admin')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label>Durum</Label>
+              <Label>{t('common.status')}</Label>
               <Select value={watch('status')} onValueChange={(v) => setValue('status', v as FormValues['status'])}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="active">Aktif</SelectItem>
-                  <SelectItem value="inactive">Pasif</SelectItem>
+                  <SelectItem value="active">{t('vehicle.status.active')}</SelectItem>
+                  <SelectItem value="inactive">{t('vehicle.status.inactive')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -155,7 +157,7 @@ export function UserFormDialog({ open, onOpenChange, user }: Props) {
         </form>
 
         <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>İptal</Button>
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{t('common.cancel')}</Button>
           <Button type="submit" form="user-form" disabled={saveMut.isPending}>
             {saveMut.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
             {isEdit ? 'Güncelle' : 'Oluştur'}

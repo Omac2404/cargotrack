@@ -458,14 +458,14 @@ export function ShipmentFormPage() {
                   <Button type="button" variant="outline" size="sm" onClick={() => setCoverOpen(true)} title={t('cover.title', { defaultValue: 'Dosya Kapağı' })}>
                     <FileBadge2 className="w-4 h-4" />
                   </Button>
-                  <Button type="button" variant="outline" size="sm" onClick={() => openPdf(getProformaUrl(Number(id)))} title="Proforma Fatura PDF">
+                  <Button type="button" variant="outline" size="sm" onClick={() => openPdf(getProformaUrl(Number(id)))} title={t('ui.proforma_fatura_pdf')}>
                     <FileCheck2 className="w-4 h-4" />
                   </Button>
-                  <Button type="button" variant="outline" size="sm" onClick={() => openPdf(getBarcodesUrl(Number(id)))} title="Barkod Yaprağı">
+                  <Button type="button" variant="outline" size="sm" onClick={() => openPdf(getBarcodesUrl(Number(id)))} title={t('ui.barkod_yapragi')}>
                     <Barcode className="w-4 h-4" />
                   </Button>
                   {config.key === 'storage' && (
-                    <Button type="button" variant="outline" size="sm" onClick={() => openPdf(getStorageReportUrl(Number(id)))} title="Depo Raporu PDF">
+                    <Button type="button" variant="outline" size="sm" onClick={() => openPdf(getStorageReportUrl(Number(id)))} title={t('ui.depo_raporu_pdf')}>
                       <FileSpreadsheet className="w-4 h-4" />
                     </Button>
                   )}
@@ -642,14 +642,14 @@ export function ShipmentFormPage() {
                 <div className="space-y-3">
                   {/* Gönderici */}
                   <div className="space-y-1.5">
-                    <Label>Gönderici</Label>
+                    <Label>{t('partner.types.sender')}</Label>
                     <div className="flex items-center gap-1">
                       <div className="flex-1">
                         <Combobox value={watch('sender') || ''} onChange={(v) => setValue('sender', v)}
-                          options={partnerOptionsByRole.sender} placeholder="Gönderici seçin..." searchPlaceholder="Şirket adı ara..." allowCustom />
+                          options={partnerOptionsByRole.sender} placeholder={t('ui.gonderici_secin')} searchPlaceholder={t('shipment.fields.company_search')} allowCustom />
                       </div>
                       <Button type="button" variant="outline" size="icon" className="h-9 w-9 shrink-0"
-                        title="Yeni gönderici ekle"
+                        title={t('ui.yeni_gonderici_ekle')}
                         onClick={() => setQuickAddType('sender')}>
                         <Plus className="w-4 h-4" />
                       </Button>
@@ -664,14 +664,14 @@ export function ShipmentFormPage() {
 
                   {/* Alıcı */}
                   <div className="space-y-1.5">
-                    <Label>Alıcı</Label>
+                    <Label>{t('partner.types.receiver')}</Label>
                     <div className="flex items-center gap-1">
                       <div className="flex-1">
                         <Combobox value={watch('receiver') || ''} onChange={(v) => setValue('receiver', v)}
-                          options={partnerOptionsByRole.receiver} placeholder="Alıcı seçin..." searchPlaceholder="Şirket adı ara..." allowCustom />
+                          options={partnerOptionsByRole.receiver} placeholder={t('ui.alici_secin')} searchPlaceholder={t('shipment.fields.company_search')} allowCustom />
                       </div>
                       <Button type="button" variant="outline" size="icon" className="h-9 w-9 shrink-0"
-                        title="Yeni alıcı ekle"
+                        title={t('ui.yeni_alici_ekle')}
                         onClick={() => setQuickAddType('receiver')}>
                         <Plus className="w-4 h-4" />
                       </Button>
@@ -686,14 +686,14 @@ export function ShipmentFormPage() {
 
                   {/* Acente */}
                   <div className="space-y-1.5">
-                    <Label>Acente</Label>
+                    <Label>{t('partner.types.agent')}</Label>
                     <div className="flex items-center gap-1">
                       <div className="flex-1">
                         <Combobox value={watch('agent') || ''} onChange={(v) => setValue('agent', v)}
-                          options={partnerOptionsByRole.agent} placeholder="Acente seçin..." searchPlaceholder="Şirket adı ara..." allowCustom />
+                          options={partnerOptionsByRole.agent} placeholder={t('ui.acente_secin')} searchPlaceholder={t('shipment.fields.company_search')} allowCustom />
                       </div>
                       <Button type="button" variant="outline" size="icon" className="h-9 w-9 shrink-0"
-                        title="Yeni acente ekle"
+                        title={t('ui.yeni_acente_ekle')}
                         onClick={() => setQuickAddType('agent')}>
                         <Plus className="w-4 h-4" />
                       </Button>
@@ -708,19 +708,19 @@ export function ShipmentFormPage() {
 
                   <div className="grid grid-cols-2 gap-3 pt-3 border-t">
                     <div className="space-y-1.5">
-                      <Label>Çıkış Ülkesi</Label>
+                      <Label>{t('ui.cikis_ulkesi')}</Label>
                       <CountryCombobox
                         value={watch('departure_country') || ''}
                         onChange={(v) => setValue('departure_country', v)}
-                        placeholder="Çıkış ülkesi..."
+                        placeholder={t('ui.cikis_ulkesi_2')}
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label>Varış Ülkesi</Label>
+                      <Label>{t('ui.varis_ulkesi')}</Label>
                       <CountryCombobox
                         value={watch('arrival_country') || ''}
                         onChange={(v) => setValue('arrival_country', v)}
-                        placeholder="Varış ülkesi..."
+                        placeholder={t('ui.varis_ulkesi_2')}
                       />
                     </div>
                   </div>
@@ -741,7 +741,7 @@ export function ShipmentFormPage() {
           <TabsContent value="cargo" className="mt-0">
             <Card className="p-5 space-y-4">
               <SectionTitle>{t('shipment.sections.cargo_info')}</SectionTitle>
-              <FieldArea label="Mal Tanımı" name="goods_description" register={register} errors={errors} />
+              <FieldArea label={t('ui.mal_tanimi')} name="goods_description" register={register} errors={errors} />
 
               {hasGoodsItems && (
                 <div className="rounded-md border border-primary/30 bg-primary/5 p-3 flex items-start gap-2 text-xs">
@@ -762,13 +762,13 @@ export function ShipmentFormPage() {
                     {hasGoodsItems && <span className="text-[10px] text-muted-foreground ml-1">(1. kalem)</span>}
                   </Label>
                   <div className="flex items-center gap-1">
-                    <Input id="hs_code" {...register('hs_code')} placeholder="örn. 8703.23.10" />
+                    <Input id="hs_code" {...register('hs_code')} placeholder={t('ui.orn_8703_23_10')} />
                     <Button
                       type="button"
                       variant="outline"
                       size="icon"
                       className="h-9 w-9 shrink-0"
-                      title="Fransız Gümrük HS Kodu Arama (RITA)"
+                      title={t('ui.fransiz_gumruk_hs_kodu_arama_rita')}
                       onClick={() => {
                         const today = new Date()
                         const d = String(today.getDate()).padStart(2, '0')
@@ -785,7 +785,7 @@ export function ShipmentFormPage() {
 
                 {/* Mal Değeri + currency suffix */}
                 <FieldWithSuffix
-                  label="Mal Değeri"
+                  label={t('ui.mal_degeri')}
                   name="goods_value"
                   register={register}
                   errors={errors}
@@ -796,15 +796,15 @@ export function ShipmentFormPage() {
                 />
 
                 {/* Ağırlıklar */}
-                <FieldWithSuffix label="Brüt Ağırlık" name="gross_weight" register={register} errors={errors} type="number" step="0.01" suffix="kg" readOnly={hasGoodsItems} />
-                <FieldWithSuffix label="Net Ağırlık"  name="net_weight"   register={register} errors={errors} type="number" step="0.01" suffix="kg" readOnly={hasGoodsItems} />
+                <FieldWithSuffix label={t('ui.brut_agirlik')} name="gross_weight" register={register} errors={errors} type="number" step="0.01" suffix="kg" readOnly={hasGoodsItems} />
+                <FieldWithSuffix label={t('ui.net_agirlik')}  name="net_weight"   register={register} errors={errors} type="number" step="0.01" suffix="kg" readOnly={hasGoodsItems} />
 
                 {/* Hacim + birim seçici (sadece UI; değer m³ olarak saklanır) */}
                 <VolumeField form={form} readOnly={hasGoodsItems} />
 
                 <Field label="Boyutlar" name="dimensions" register={register} errors={errors} placeholder="120x80x100 cm" />
-                <Field label="Kap Adedi" name="quantity" register={register} errors={errors} type="number" readOnly={hasGoodsItems} />
-                <Field label="Paket Sayısı" name="package_count" register={register} errors={errors} type="number" />
+                <Field label={t('ui.kap_adedi')} name="quantity" register={register} errors={errors} type="number" readOnly={hasGoodsItems} />
+                <Field label={t('ui.paket_sayisi')} name="package_count" register={register} errors={errors} type="number" />
               </div>
 
               {/* Paket Tipi — Combobox (UN R21 standart 377 kod) */}
@@ -813,10 +813,10 @@ export function ShipmentFormPage() {
                 <PackageTypeCombobox
                   value={watch('package_type') as string}
                   onChange={(v) => setValue('package_type', v, { shouldDirty: true })}
-                  placeholder="Ambalaj tipi seçin veya yazın (örn. 4G, Karton Kutu)..."
+                  placeholder={t('ui.ambalaj_tipi_secin_veya_yazin_orn_4g_karton_')}
                 />
                 <p className="text-[10px] text-muted-foreground">
-                  UN Recommendation 21 standart kodları (Fransız Gümrük). Listede yoksa kendi etiketinizi yazıp Enter'a basabilirsiniz.
+                  {t('ui.un_recommendation_21_standart_kodlari_fransi')}
                 </p>
               </div>
 
@@ -829,11 +829,11 @@ export function ShipmentFormPage() {
                 />
               </div>
 
-              <SectionTitle className="pt-4 border-t">Özel Koşullar</SectionTitle>
+              <SectionTitle className="pt-4 border-t">{t('shipment.sections.special_conditions')}</SectionTitle>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <CheckboxField label="Tehlikeli Madde (ADR)" name="dangerous_goods" form={form} />
-                <CheckboxField label="Sıcaklık Kontrollü" name="temperature_controlled" form={form} />
-                <CheckboxField label="Sigortalı" name="insurance" form={form} />
+                <CheckboxField label={t('ui.sicaklik_kontrollu')} name="temperature_controlled" form={form} />
+                <CheckboxField label={t('ui.sigortali')} name="insurance" form={form} />
                 {watch('dangerous_goods') ? (
                   <div className="space-y-1.5 md:col-span-3">
                     <Label>ADR / UN Kodu</Label>
@@ -845,14 +845,14 @@ export function ShipmentFormPage() {
                       }}
                     />
                     <p className="text-[10px] text-muted-foreground">
-                      Yaygın UN kodlarından seçin veya kendi kodunuzu yazın. Son kullanılanlar üstte işaretli (★) görünür.
+                      {t('ui.yaygin_un_kodlarindan_secin_veya_kendi_kodun')}
                     </p>
                   </div>
                 ) : null}
                 {watch('temperature_controlled') ? (
                   <>
-                    <FieldWithSuffix label="Min Sıcaklık" name="temperature_min" register={register} errors={errors} type="number" step="0.1" suffix="°C" />
-                    <FieldWithSuffix label="Max Sıcaklık" name="temperature_max" register={register} errors={errors} type="number" step="0.1" suffix="°C" />
+                    <FieldWithSuffix label={t('ui.min_sicaklik')} name="temperature_min" register={register} errors={errors} type="number" step="0.1" suffix="°C" />
+                    <FieldWithSuffix label={t('ui.max_sicaklik')} name="temperature_max" register={register} errors={errors} type="number" step="0.1" suffix="°C" />
                   </>
                 ) : null}
               </div>
@@ -895,11 +895,11 @@ export function ShipmentFormPage() {
               {/* Eski özet alanlar (geriye uyumluluk - üst seviye satış/maliyet) */}
               <details className="mt-4 pt-4 border-t">
                 <summary className="cursor-pointer text-xs font-semibold uppercase tracking-wider text-muted-foreground select-none">
-                  Eski Özet Alanlar (geriye uyumluluk)
+                  {t('ui.eski_ozet_alanlar_geriye_uyumluluk')}
                 </summary>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-3">
-                  <Field label="Toplam Alış (özet)" name="purchase_price" register={register} errors={errors} type="number" step="0.01" />
-                  <Field label="Toplam Satış (özet)" name="sale_price" register={register} errors={errors} type="number" step="0.01" />
+                  <Field label={t('ui.toplam_alis_ozet')} name="purchase_price" register={register} errors={errors} type="number" step="0.01" />
+                  <Field label={t('ui.toplam_satis_ozet')} name="sale_price" register={register} errors={errors} type="number" step="0.01" />
                   <ReadonlyField label="Net (otomatik)" value={
                     ((Number(watch('sale_price')) || 0) - (Number(watch('purchase_price')) || 0)).toFixed(2)
                   } currency={watch('currency_code') || 'EUR'} />
@@ -917,8 +917,7 @@ export function ShipmentFormPage() {
                 <div className="p-4 rounded-md bg-warning/10 border border-warning/30 text-sm flex items-start gap-2">
                   <AlertCircle className="w-4 h-4 text-warning shrink-0 mt-0.5" />
                   <div>
-                    <strong>Önce sevkiyatı kaydet</strong> — belge yüklemeleri için sevkiyat ID'si gerekli.
-                    Sağ üstteki "Kaydet" butonuna bas, sonra bu sekmeye dön.
+                    {t('ui.save_first_for_documents')}
                   </div>
                 </div>
               ) : (
@@ -933,7 +932,7 @@ export function ShipmentFormPage() {
                     {missingRequired.length === 0 ? (
                       <div className="flex items-center gap-2">
                         <Files className="w-4 h-4 text-success" />
-                        <span>Tüm zorunlu belgeler tamamlanmış 🎉</span>
+                        <span>{t('ui.tum_zorunlu_belgeler_tamamlanmis')}</span>
                       </div>
                     ) : (
                       <div className="flex items-start gap-2">
@@ -963,7 +962,7 @@ export function ShipmentFormPage() {
                     <Button asChild type="button" variant="outline" size="sm">
                       <Link to="/documents" target="_blank">
                         <ExternalLink className="w-3.5 h-3.5" />
-                        Belge Yönetim Sayfasını Aç
+                        {t('ui.belge_yonetim_sayfasini_ac')}
                       </Link>
                     </Button>
                   </div>
@@ -983,22 +982,22 @@ export function ShipmentFormPage() {
                 <SectionTitle>{t('shipment.sections.warehouse_info')}</SectionTitle>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <Label>Depo</Label>
+                    <Label>{t('statistics.table.warehouse')}</Label>
                     <Combobox
                       value={watch('warehouse') || ''}
                       onChange={(v) => setValue('warehouse', v)}
                       options={warehouseOptions}
-                      placeholder="Depo seçin..."
-                      searchPlaceholder="Depo ara..."
+                      placeholder={t('ui.depo_secin')}
+                      searchPlaceholder={t('ui.depo_ara')}
                       allowCustom
                     />
                   </div>
-                  <Field label="Depo Müşterisi" name="depo_musteri" register={register} errors={errors} />
-                  <Field label="Giriş Tarihi" name="entry_date" register={register} errors={errors} type="date" />
-                  <Field label="Çıkış Tarihi" name="exit_date" register={register} errors={errors} type="date" />
-                  <Field label="Toplam Kap" name="depo_kap_sayisi" register={register} errors={errors} type="number" />
+                  <Field label={t('ui.depo_musterisi')} name="depo_musteri" register={register} errors={errors} />
+                  <Field label={t('ui.giris_tarihi')} name="entry_date" register={register} errors={errors} type="date" />
+                  <Field label={t('ui.cikis_tarihi')} name="exit_date" register={register} errors={errors} type="date" />
+                  <Field label={t('ui.toplam_kap')} name="depo_kap_sayisi" register={register} errors={errors} type="number" />
                   <div className="space-y-1.5">
-                    <Label>Ücret Tipi</Label>
+                    <Label>{t('ui.ucret_tipi')}</Label>
                     <Select value={watch('depo_ucret_tipi') || 'gun'} onValueChange={(v) => setValue('depo_ucret_tipi', v)}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
@@ -1009,9 +1008,9 @@ export function ShipmentFormPage() {
                 </div>
 
                 <div className="grid grid-cols-3 gap-4 pt-4 border-t">
-                  <Field label="Günlük Ücret" name="depo_gun_ucret" register={register} errors={errors} type="number" step="0.01" />
-                  <Field label="Haftalık Ücret" name="depo_hafta_ucret" register={register} errors={errors} type="number" step="0.01" />
-                  <Field label="Aylık Ücret" name="depo_ay_ucret" register={register} errors={errors} type="number" step="0.01" />
+                  <Field label={t('ui.gunluk_ucret')} name="depo_gun_ucret" register={register} errors={errors} type="number" step="0.01" />
+                  <Field label={t('ui.haftalik_ucret')} name="depo_hafta_ucret" register={register} errors={errors} type="number" step="0.01" />
+                  <Field label={t('ui.aylik_ucret')} name="depo_ay_ucret" register={register} errors={errors} type="number" step="0.01" />
                 </div>
               </Card>
 
@@ -1051,7 +1050,7 @@ export function ShipmentFormPage() {
                   <div className="flex items-start gap-2 text-sm">
                     <AlertCircle className="w-4 h-4 text-warning shrink-0 mt-0.5" />
                     <div>
-                      <strong>Önce sevkiyatı kaydet</strong> — atama yapmak için sevkiyat oluşturulmuş olmalı.
+                      {t('ui.save_first_for_dispatch')}
                     </div>
                   </div>
                 </Card>
@@ -1061,22 +1060,22 @@ export function ShipmentFormPage() {
                   <Card className="p-4 bg-gradient-to-br from-primary/5 to-success/5 border-primary/20">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
                       <div>
-                        <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Toplam Adet</div>
+                        <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">{t('ui.toplam_adet')}</div>
                         <div className="text-2xl font-bold">{dispatchSummary.totalQty}</div>
                         <div className="text-[10px] text-muted-foreground">kap</div>
                       </div>
                       <div>
-                        <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Atanmış</div>
+                        <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">{t('ui.atanmis')}</div>
                         <div className="text-2xl font-bold text-success">{dispatchSummary.assignedQty}</div>
                         <div className="text-[10px] text-muted-foreground">kap</div>
                       </div>
                       <div>
-                        <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Atanmamış</div>
+                        <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">{t('ui.atanmamis')}</div>
                         <div className="text-2xl font-bold text-warning">{dispatchSummary.unassignedQty}</div>
                         <div className="text-[10px] text-muted-foreground">kap</div>
                       </div>
                       <div>
-                        <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">İlerleme</div>
+                        <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">{t('ui.ilerleme')}</div>
                         <div className="text-2xl font-bold text-primary">{dispatchSummary.progress}%</div>
                         <div className="mt-1 h-1.5 bg-background rounded-full overflow-hidden">
                           <div className="h-full bg-gradient-to-r from-primary to-success" style={{ width: `${dispatchSummary.progress}%` }} />
@@ -1091,13 +1090,13 @@ export function ShipmentFormPage() {
                       <Button asChild type="button" size="sm" variant="outline">
                         <Link to="/assignments" target="_blank">
                           <ExternalLink className="w-3.5 h-3.5" />
-                          Atama Sayfasını Aç
+                          {t('ui.atama_sayfasini_ac')}
                         </Link>
                       </Button>
                     </div>
                     {assignments.length === 0 ? (
                       <div className="text-center py-8 text-sm text-muted-foreground italic">
-                        Henüz atama yapılmamış
+                        {t('ui.henuz_atama_yapilmamis')}
                       </div>
                     ) : (
                       <div className="space-y-2">
@@ -1158,7 +1157,7 @@ export function ShipmentFormPage() {
                 <div className="flex items-start gap-2 text-sm">
                   <AlertCircle className="w-4 h-4 text-warning shrink-0 mt-0.5" />
                   <div>
-                    <strong>Önce sevkiyatı kaydet</strong> — geçmiş kaydı sevkiyat oluşturulduktan sonra başlar.
+                    {t('ui.save_first_for_history')}
                   </div>
                 </div>
               </Card>
@@ -1364,6 +1363,7 @@ function TransitStorageCard({
   form: ReturnType<typeof useForm<ShipmentFormValues>>
   warehouseTypeFromDb?: string | null
 }) {
+  const { t } = useTranslation()
   const { watch, setValue } = form
   const storageDataStr = watch('storage_data') as string | undefined
 
@@ -1398,17 +1398,17 @@ function TransitStorageCard({
 
   return (
     <Card className="p-5 space-y-4">
-      <SectionTitle>Transit / Geçici Depo Bilgileri</SectionTitle>
+      <SectionTitle>{t('ui.transit_gecici_depo_bilgileri')}</SectionTitle>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="space-y-1.5">
-          <Label>Depo Tipi (Gümrük Kodu)</Label>
+          <Label>{t('ui.depo_tipi_gumruk_kodu')}</Label>
           <Select
             value={manualType || '__inherit__'}
             onValueChange={(v) => updateSd({ warehouse_type_code: v === '__inherit__' ? null : v })}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Seçiniz..." />
+              <SelectValue placeholder={t('shipment.select_placeholder')} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="__inherit__">
@@ -1437,12 +1437,12 @@ function TransitStorageCard({
             id="transit_doc_no"
             value={(storageData.transit_doc_no as string) || ''}
             onChange={(e) => updateSd({ transit_doc_no: e.target.value })}
-            placeholder="örn. T1-MRN-2026..."
+            placeholder={t('ui.orn_t1_mrn_2026')}
           />
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="transit_expiry">Transit Son Geçerlilik Tarihi</Label>
+          <Label htmlFor="transit_expiry">{t('ui.transit_son_gecerlilik_tarihi')}</Label>
           <Input
             id="transit_expiry"
             type="date"
@@ -1457,7 +1457,7 @@ function TransitStorageCard({
         <div className="p-3 rounded-md bg-destructive/10 border border-destructive/40 flex items-start gap-2">
           <AlertCircle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
           <div className="text-xs">
-            <div className="font-semibold text-destructive">Transit süresi DOLDU!</div>
+            <div className="font-semibold text-destructive">{t('ui.transit_suresi_doldu')}</div>
             <div className="text-muted-foreground">
               Son tarih {formatDateTr(expiryAlert.expDate)} — {Math.abs(expiryAlert.daysLeft)} gün gecikme
             </div>
@@ -1468,7 +1468,7 @@ function TransitStorageCard({
         <div className="p-3 rounded-md bg-warning/10 border border-warning/40 flex items-start gap-2">
           <AlertCircle className="w-4 h-4 text-warning shrink-0 mt-0.5" />
           <div className="text-xs">
-            <div className="font-semibold text-warning">Transit süresi yakında doluyor!</div>
+            <div className="font-semibold text-warning">{t('ui.transit_suresi_yakinda_doluyor')}</div>
             <div className="text-muted-foreground">
               {expiryAlert.daysLeft === 0
                 ? 'Bugün son gün'

@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'sonner'
 import { useEffect, lazy, Suspense } from 'react'
@@ -42,6 +43,7 @@ function PageLoader() {
 }
 
 function AppRoutes() {
+  const { t } = useTranslation()
   const logout = useAuth((s) => s.logout)
   const cmdK = useCommandPalette()
 
@@ -84,7 +86,7 @@ function AppRoutes() {
           <Route path="/reports" element={<Suspense fallback={<PageLoader />}><ReportsPage /></Suspense>} />
           <Route path="/archive" element={<Suspense fallback={<PageLoader />}><ArchivePage /></Suspense>} />
           <Route path="/guide" element={<Suspense fallback={<PageLoader />}><UserGuidePage /></Suspense>} />
-          <Route path="/settings" element={<ComingSoon title="Ayarlar" phase="Sonraki sürüm" />} />
+          <Route path="/settings" element={<ComingSoon title={t('nav.settings')} phase="Sonraki sürüm" />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

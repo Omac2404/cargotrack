@@ -157,11 +157,11 @@ export function VehicleFormPage() {
               {hasErrors && (
                 <span className="hidden md:flex items-center gap-1 text-xs text-destructive">
                   <AlertCircle className="w-3.5 h-3.5" />
-                  Eksik / hatalı alanlar var
+                  {t('shipment.errors_present')}
                 </span>
               )}
               <Button asChild type="button" variant="outline" size="sm">
-                <Link to="/vehicles">İptal</Link>
+                <Link to="/vehicles">{t('common.cancel')}</Link>
               </Button>
               <Button type="submit" size="sm" disabled={saveMut.isPending}>
                 {saveMut.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
@@ -173,9 +173,9 @@ export function VehicleFormPage() {
           {/* Sekmeler */}
           <div className="overflow-x-auto px-6 pb-2">
             <TabsList className="inline-flex h-9 w-auto">
-              <TabsTrigger value="info"><FileText className="w-3.5 h-3.5" /> Araç Bilgileri</TabsTrigger>
+              <TabsTrigger value="info"><FileText className="w-3.5 h-3.5" /> {t('vehicle.vehicle_info')}</TabsTrigger>
               <TabsTrigger value="load" disabled={!isEdit}>
-                <Package className="w-3.5 h-3.5" /> Yük Havuzu
+                <Package className="w-3.5 h-3.5" /> {t('vehicle.load_pool')}
               </TabsTrigger>
             </TabsList>
           </div>
@@ -186,10 +186,10 @@ export function VehicleFormPage() {
           {/* === ARAÇ BİLGİLERİ === */}
           <TabsContent value="info" className="mt-0">
             <Card className="p-5 space-y-4">
-              <SectionTitle>Tip ve Ekipman</SectionTitle>
+              <SectionTitle>{t('ui.tip_ve_ekipman')}</SectionTitle>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-1.5">
-                  <Label>Taşıma Tipi *</Label>
+                  <Label>{t('ui.tasima_tipi')}</Label>
                   <Select
                     value={currentMode}
                     onValueChange={(v) => handleModeChange(v as VehicleTransport)}
@@ -197,12 +197,12 @@ export function VehicleFormPage() {
                   >
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="road">Karayolu</SelectItem>
-                      <SelectItem value="sea">Denizyolu</SelectItem>
-                      <SelectItem value="air">Havayolu</SelectItem>
+                      <SelectItem value="road">{t('nav.road')}</SelectItem>
+                      <SelectItem value="sea">{t('nav.maritime')}</SelectItem>
+                      <SelectItem value="air">{t('nav.air')}</SelectItem>
                     </SelectContent>
                   </Select>
-                  {isEdit && <p className="text-[10px] text-muted-foreground">Düzenleme sırasında değiştirilemez</p>}
+                  {isEdit && <p className="text-[10px] text-muted-foreground">{t('ui.duzenleme_sirasinda_degistirilemez')}</p>}
                 </div>
                 <div className="space-y-1.5 md:col-span-2">
                   <Label>Ekipman Tipi *</Label>
@@ -219,7 +219,7 @@ export function VehicleFormPage() {
             </Card>
 
             <Card className="p-5 mt-4 space-y-4">
-              <SectionTitle>Plaka ve Kapasite</SectionTitle>
+              <SectionTitle>{t('ui.plaka_ve_kapasite')}</SectionTitle>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label htmlFor="plate">
@@ -230,7 +230,7 @@ export function VehicleFormPage() {
                 </div>
                 {currentMode === 'road' && (
                   <div className="space-y-1.5">
-                    <Label htmlFor="trailer_plate">Dorse Plakası</Label>
+                    <Label htmlFor="trailer_plate">{t('vehicle.trailer_plate')}</Label>
                     <Input id="trailer_plate" {...register('trailer_plate')} />
                   </div>
                 )}
@@ -238,21 +238,21 @@ export function VehicleFormPage() {
 
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <div className="space-y-1.5">
-                  <Label htmlFor="capacity_kg">Kapasite (kg)</Label>
+                  <Label htmlFor="capacity_kg">{t('transport.vehicle_labels.capacity')}</Label>
                   <Input id="capacity_kg" type="number" step="0.01" {...register('capacity_kg')} />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="volume_m3">Hacim (m³)</Label>
+                  <Label htmlFor="volume_m3">{t('transport.vehicle_labels.volume')}</Label>
                   <Input id="volume_m3" type="number" step="0.01" {...register('volume_m3')} />
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Durum</Label>
+                  <Label>{t('common.status')}</Label>
                   <Select value={watch('status')} onValueChange={(v) => setValue('status', v as FormValues['status'])}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="active">Aktif</SelectItem>
-                      <SelectItem value="inactive">Pasif</SelectItem>
-                      <SelectItem value="maintenance">Bakımda</SelectItem>
+                      <SelectItem value="active">{t('vehicle.status.active')}</SelectItem>
+                      <SelectItem value="inactive">{t('vehicle.status.inactive')}</SelectItem>
+                      <SelectItem value="maintenance">{t('vehicle.status.maintenance')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -262,8 +262,8 @@ export function VehicleFormPage() {
             <Card className="p-5 mt-4 space-y-4">
               <SectionTitle>Marka / Tescil</SectionTitle>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Field label="Marka / Model" name="brand_model" register={register} errors={errors} />
-                <Field label="Tescil / Kayıt Tarihi" name="registration_date" register={register} errors={errors} type="date" />
+                <Field label={t('vehicle.brand_model')} name="brand_model" register={register} errors={errors} />
+                <Field label={t('vehicle.registration_date')} name="registration_date" register={register} errors={errors} type="date" />
               </div>
             </Card>
 
@@ -272,21 +272,21 @@ export function VehicleFormPage() {
                 <SectionTitle>{currentMode === 'sea' ? 'Kaptan' : 'Sürücü'}</SectionTitle>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Field label={currentMode === 'sea' ? 'Kaptan' : 'Sürücü Adı'} name="driver_name" register={register} errors={errors} />
-                  <Field label="Telefon" name="driver_phone" register={register} errors={errors} />
+                  <Field label={t('shipment.fields.phone')} name="driver_phone" register={register} errors={errors} />
                 </div>
               </Card>
             )}
 
             {currentMode === 'road' && (
               <Card className="p-5 mt-4 space-y-3">
-                <SectionTitle>Özel Koşullar</SectionTitle>
+                <SectionTitle>{t('shipment.sections.special_conditions')}</SectionTitle>
                 <div className="flex items-center gap-2 h-9">
                   <Checkbox
                     id="adr_certified"
                     checked={watch('adr_certified')}
                     onCheckedChange={(c) => setValue('adr_certified', !!c)}
                   />
-                  <Label htmlFor="adr_certified" className="cursor-pointer">ADR (Tehlikeli Madde) Sertifikalı</Label>
+                  <Label htmlFor="adr_certified" className="cursor-pointer">{t('ui.adr_tehlikeli_madde_sertifikali')}</Label>
                 </div>
               </Card>
             )}
@@ -308,7 +308,7 @@ export function VehicleFormPage() {
                 <div className="flex items-start gap-2 text-sm">
                   <AlertCircle className="w-4 h-4 text-warning shrink-0 mt-0.5" />
                   <div>
-                    <strong>Önce aracı kaydet</strong> — yük havuzu, araç kaydedildikten sonra kullanılabilir.
+                    {t('ui.save_first_for_vehicle_load')}
                   </div>
                 </div>
               </Card>
@@ -350,12 +350,13 @@ function Field({ label, name, register, errors, ...rest }: FieldProps) {
 }
 
 function TabSaveBar({ isEdit, isPending, hasErrors }: { isEdit: boolean; isPending: boolean; hasErrors: boolean }) {
+  const { t } = useTranslation()
   return (
     <div className="mt-4 pt-4 border-t flex items-center justify-end gap-2">
       {hasErrors && (
         <span className="hidden md:flex items-center gap-1 text-xs text-destructive mr-auto">
           <AlertCircle className="w-3.5 h-3.5" />
-          Eksik / hatalı alanlar var
+          {t('shipment.errors_present')}
         </span>
       )}
       <Button type="submit" size="sm" disabled={isPending}>

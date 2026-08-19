@@ -1,4 +1,5 @@
 import { type ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { ArrowUp, ArrowDown, Minus } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { cn, formatMoney, formatNumber } from '@/lib/utils'
@@ -14,6 +15,7 @@ interface Props {
 }
 
 export function StatCard({ label, value, icon, sub, trend, currency = 'EUR', variant = 'default' }: Props) {
+  const { t } = useTranslation()
   const variantClasses = {
     default: 'text-foreground',
     primary: 'text-primary',
@@ -47,7 +49,7 @@ export function StatCard({ label, value, icon, sub, trend, currency = 'EUR', var
       </div>
     )
   } else if (trend && trend.previous === 0 && trend.current > 0) {
-    trendNode = <div className="text-[10px] text-success font-medium">YENİ</div>
+    trendNode = <div className="text-[10px] text-success font-medium">{t('ui.yeni')}</div>
   }
 
   return (

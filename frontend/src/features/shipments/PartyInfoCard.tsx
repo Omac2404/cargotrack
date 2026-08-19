@@ -1,4 +1,5 @@
 import { ExternalLink, MapPin, Phone, Mail, User, FileText, Globe } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
 import type { Partner } from '@/types/api'
 
@@ -13,6 +14,7 @@ interface Props {
  * Combobox seçiminden sonra altında render edilir.
  */
 export function PartyInfoCard({ partner, showCustomerExtras = false }: Props) {
+  const { t } = useTranslation()
   if (!partner) return null
 
   const hasAddress = partner.physical_address || partner.city || partner.country
@@ -87,7 +89,7 @@ export function PartyInfoCard({ partner, showCustomerExtras = false }: Props) {
           {partner.mersis_number && (
             <span className="inline-flex items-center gap-1 text-muted-foreground">
               <FileText className="w-3 h-3" />
-              <span className="font-semibold">MERSİS:</span>
+              <span className="font-semibold">{t('ui.mersis_2')}</span>
               <span className="font-mono">{partner.mersis_number}</span>
             </span>
           )}
@@ -99,7 +101,7 @@ export function PartyInfoCard({ partner, showCustomerExtras = false }: Props) {
         <div className="flex items-start gap-1.5 pt-1 border-t border-dashed">
           <MapPin className="w-3 h-3 mt-0.5 shrink-0 text-muted-foreground" />
           <div>
-            <span className="font-semibold text-muted-foreground">Fatura Adresi: </span>
+            <span className="font-semibold text-muted-foreground">{t('ui.fatura_adresi')} </span>
             <span className="text-muted-foreground">{partner.billing_address}</span>
           </div>
         </div>

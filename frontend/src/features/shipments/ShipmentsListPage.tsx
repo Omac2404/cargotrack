@@ -275,7 +275,7 @@ export function ShipmentsListPage() {
                   <Checkbox
                     checked={sel.allSelected || (sel.someSelected ? 'indeterminate' : false)}
                     onCheckedChange={() => sel.toggleAll()}
-                    aria-label="Tümünü seç"
+                    aria-label={t('ui.tumunu_sec')}
                   />
                 </TableHead>
                 <SortableHeader field="shipment_no" current={sortField} dir={sortDir} onClick={handleSort}>
@@ -292,13 +292,13 @@ export function ShipmentsListPage() {
                 {(config.key === 'maritime') && (
                   <>
                     <TableHead>Vessel / Voyage</TableHead>
-                    <TableHead>B/L No</TableHead>
+                    <TableHead>{t('transport.columns.bl_no')}</TableHead>
                   </>
                 )}
                 {(config.key === 'air') && (
                   <>
                     <TableHead>Flight</TableHead>
-                    <TableHead>AWB No</TableHead>
+                    <TableHead>{t('transport.columns.awb_no')}</TableHead>
                   </>
                 )}
                 <TableHead className="text-right">{t('shipment.weight_pkg')}</TableHead>
@@ -375,7 +375,7 @@ export function ShipmentsListPage() {
                     <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-end gap-1">
                         <Button asChild variant="ghost" size="icon" className="h-7 w-7">
-                          <Link to={`/shipments/${config.slug}/${s.id}/edit`} title="Düzenle">
+                          <Link to={`/shipments/${config.slug}/${s.id}/edit`} title={t('common.edit')}>
                             <Pencil className="w-3.5 h-3.5" />
                           </Link>
                         </Button>
@@ -384,7 +384,7 @@ export function ShipmentsListPage() {
                           size="icon"
                           className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
                           onClick={() => setDeleteTarget(s)}
-                          title="Sil"
+                          title={t('common.delete')}
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </Button>

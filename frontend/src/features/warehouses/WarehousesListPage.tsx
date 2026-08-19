@@ -233,7 +233,7 @@ export function WarehousesListPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleteMut.isPending}>İptal</AlertDialogCancel>
+            <AlertDialogCancel disabled={deleteMut.isPending}>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={(e) => { e.preventDefault(); handleDelete() }}
               disabled={deleteMut.isPending}

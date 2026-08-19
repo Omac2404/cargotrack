@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Trophy, ExternalLink } from 'lucide-react'
 import { Card } from '@/components/ui/card'
@@ -22,6 +23,7 @@ const CURRENT_YEAR = new Date().getFullYear()
 const YEARS = Array.from({ length: 5 }, (_, i) => CURRENT_YEAR - i)
 
 export function CustomerRankingReport() {
+  const { t } = useTranslation()
   const [year, setYear] = useState(CURRENT_YEAR)
   const [limit, setLimit] = useState(20)
 
@@ -39,7 +41,7 @@ export function CustomerRankingReport() {
     <div className="space-y-4">
       <Card className="p-3 flex flex-wrap items-end gap-3">
         <div className="space-y-1">
-          <Label className="text-[10px]">Yıl</Label>
+          <Label className="text-[10px]">{t('reports.year')}</Label>
           <Select value={String(year)} onValueChange={(v) => setYear(Number(v))}>
             <SelectTrigger className="h-8 w-[100px]"><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -48,14 +50,14 @@ export function CustomerRankingReport() {
           </Select>
         </div>
         <div className="space-y-1">
-          <Label className="text-[10px]">Top</Label>
+          <Label className="text-[10px]">{t('reports.top_n')}</Label>
           <Select value={String(limit)} onValueChange={(v) => setLimit(Number(v))}>
             <SelectTrigger className="h-8 w-[100px]"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="10">İlk 10</SelectItem>
-              <SelectItem value="20">İlk 20</SelectItem>
-              <SelectItem value="50">İlk 50</SelectItem>
-              <SelectItem value="100">İlk 100</SelectItem>
+              <SelectItem value="10">{t('ui.ilk_10')}</SelectItem>
+              <SelectItem value="20">{t('ui.ilk_20')}</SelectItem>
+              <SelectItem value="50">{t('ui.ilk_50')}</SelectItem>
+              <SelectItem value="100">{t('ui.ilk_100')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -82,12 +84,12 @@ export function CustomerRankingReport() {
           <TableHeader>
             <TableRow>
               <TableHead className="w-[40px]">#</TableHead>
-              <TableHead>Müşteri</TableHead>
-              <TableHead className="text-right">Sevkiyat</TableHead>
-              <TableHead className="text-right">Ciro</TableHead>
+              <TableHead>{t('shipment.client')}</TableHead>
+              <TableHead className="text-right">{t('statistics.table.shipment')}</TableHead>
+              <TableHead className="text-right">{t('statistics.table.revenue')}</TableHead>
               <TableHead className="text-right">Maliyet</TableHead>
-              <TableHead className="text-right">Kâr</TableHead>
-              <TableHead className="text-right">Marj</TableHead>
+              <TableHead className="text-right">{t('statistics.table.profit')}</TableHead>
+              <TableHead className="text-right">{t('statistics.summary.margin')}</TableHead>
               <TableHead className="text-right">Bekleyen</TableHead>
               <TableHead className="w-[40px]"></TableHead>
             </TableRow>
@@ -120,7 +122,7 @@ export function CustomerRankingReport() {
                   </TableCell>
                   <TableCell>
                     {partner && (
-                      <Button asChild variant="ghost" size="icon" className="h-7 w-7" title="Partner detayı">
+                      <Button asChild variant="ghost" size="icon" className="h-7 w-7" title={t('ui.partner_detayi')}>
                         <Link to={`/partners/${partner.id}`}>
                           <ExternalLink className="w-3.5 h-3.5" />
                         </Link>
@@ -133,7 +135,7 @@ export function CustomerRankingReport() {
             {data.customers.length === 0 && (
               <TableRow>
                 <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
-                  Bu yıl için müşteri verisi yok.
+                  {t('ui.bu_yil_icin_musteri_verisi_yok')}
                 </TableCell>
               </TableRow>
             )}

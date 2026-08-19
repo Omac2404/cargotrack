@@ -142,16 +142,16 @@ export function StatisticsPage() {
             >
               <SelectTrigger className="h-8 w-[140px]"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="__all__">Tüm Modlar</SelectItem>
-                <SelectItem value="road">Karayolu</SelectItem>
-                <SelectItem value="maritime">Denizyolu</SelectItem>
-                <SelectItem value="air">Havayolu</SelectItem>
-                <SelectItem value="storage">Depolama</SelectItem>
+                <SelectItem value="__all__">{t('reports.all_modes')}</SelectItem>
+                <SelectItem value="road">{t('nav.road')}</SelectItem>
+                <SelectItem value="maritime">{t('nav.maritime')}</SelectItem>
+                <SelectItem value="air">{t('nav.air')}</SelectItem>
+                <SelectItem value="storage">{t('nav.storage')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-1">
-            <Label className="text-[10px]">Para Birimi</Label>
+            <Label className="text-[10px]">{t('shipment.fields.currency')}</Label>
             <CurrencyCombobox
               value={filters.currency || 'EUR'}
               onChange={(v) => setFilters((f) => ({ ...f, currency: v }))}
@@ -232,28 +232,28 @@ export function StatisticsPage() {
             />
 
             <StatCard
-              label="Ödenmemiş"
+              label={t('ui.odenmemis')}
               value={formatMoney(ov!.unpaid_total, filters.currency)}
               icon={<Receipt className="w-3.5 h-3.5" />}
               variant={ov!.overdue_count > 0 ? 'destructive' : 'default'}
               sub={`${ov!.unpaid_count} fatura · ${ov!.overdue_count} gecikmiş`}
             />
             <StatCard
-              label="Belge Eksik"
+              label={t('ui.belge_eksik')}
               value={formatNumber(ov!.missing_doc_shipments, 0)}
               icon={<FileX className="w-3.5 h-3.5" />}
               variant={ov!.missing_doc_shipments > 0 ? 'warning' : 'default'}
               sub="sevkiyat"
             />
             <StatCard
-              label="Yeni Müşteri"
+              label={t('ui.yeni_musteri')}
               value={formatNumber(ov!.new_customers, 0)}
               icon={<Users className="w-3.5 h-3.5" />}
               variant="primary"
               sub="dönem içinde ilk kez"
             />
             <StatCard
-              label="Toplam Ağırlık"
+              label={t('ui.toplam_agirlik')}
               value={`${formatNumber(ov!.total_weight / 1000, 1)} ton`}
               icon={<Wallet className="w-3.5 h-3.5" />}
               sub={`${formatNumber(ov!.total_quantity, 0)} kap`}
@@ -314,7 +314,7 @@ export function StatisticsPage() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm">{t('statistics.charts.mode_distribution')}</CardTitle>
-                <CardDescription>Ciroya göre</CardDescription>
+                <CardDescription>{t('ui.ciroya_gore')}</CardDescription>
               </CardHeader>
               <CardContent>
                 {data.modes.breakdown.length === 0 ? (
@@ -356,7 +356,7 @@ export function StatisticsPage() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm">{t('statistics.charts.currency_distribution')}</CardTitle>
-                <CardDescription>Tüm sevkiyatlar (filtreden bağımsız)</CardDescription>
+                <CardDescription>{t('ui.tum_sevkiyatlar_filtreden_bagimsiz')}</CardDescription>
               </CardHeader>
               <CardContent>
                 {data.financial.currency_breakdown.length === 0 ? (
@@ -405,13 +405,13 @@ export function StatisticsPage() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm flex items-center gap-2">
-                  <FileText className="w-3.5 h-3.5" /> Belge Eksiklikleri
+                  <FileText className="w-3.5 h-3.5" /> {t('ui.belge_eksiklikleri')}
                 </CardTitle>
-                <CardDescription>En çok eksik olan belgeler</CardDescription>
+                <CardDescription>{t('ui.en_cok_eksik_olan_belgeler')}</CardDescription>
               </CardHeader>
               <CardContent>
                 {Object.keys(data.operations.doc_missing_top).length === 0 ? (
-                  <div className="text-center py-6 text-xs text-muted-foreground">Eksik belge yok 🎉</div>
+                  <div className="text-center py-6 text-xs text-muted-foreground">{t('ui.eksik_belge_yok')}</div>
                 ) : (
                   <div className="space-y-1.5">
                     {Object.entries(data.operations.doc_missing_top).map(([k, v]) => (
@@ -450,7 +450,7 @@ export function StatisticsPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-success">⭐ Top 5 Kârlı Sevkiyat</CardTitle>
+                <CardTitle className="text-sm text-success">{t('ui.top_5_karli_sevkiyat')}</CardTitle>
               </CardHeader>
               <CardContent className="p-0">
                 <ShipmentProfitTable items={data.financial.top_profit} />
@@ -459,7 +459,7 @@ export function StatisticsPage() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm text-warning flex items-center gap-1">
-                  <AlertTriangle className="w-3.5 h-3.5" /> Top 5 Düşük Marj
+                  <AlertTriangle className="w-3.5 h-3.5" /> {t('ui.top_5_dusuk_marj')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0">
@@ -477,17 +477,17 @@ export function StatisticsPage() {
             </CardHeader>
             <CardContent className="p-0">
               {data.financial.unpaid_invoices.length === 0 ? (
-                <div className="text-center py-6 text-xs text-muted-foreground">Tüm faturalar ödenmiş 💰</div>
+                <div className="text-center py-6 text-xs text-muted-foreground">{t('ui.tum_faturalar_odenmis')}</div>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Sevkiyat</TableHead>
-                      <TableHead>Müşteri</TableHead>
-                      <TableHead>Fatura No</TableHead>
-                      <TableHead>Tarih</TableHead>
-                      <TableHead className="text-right">Tutar</TableHead>
-                      <TableHead className="text-right">Yaş</TableHead>
+                      <TableHead>{t('statistics.table.shipment')}</TableHead>
+                      <TableHead>{t('shipment.client')}</TableHead>
+                      <TableHead>{t('statistics.table.invoice_no')}</TableHead>
+                      <TableHead>{t('common.date')}</TableHead>
+                      <TableHead className="text-right">{t('statistics.table.amount')}</TableHead>
+                      <TableHead className="text-right">{t('statistics.table.age')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -518,22 +518,22 @@ export function StatisticsPage() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm flex items-center gap-2">
-                  <Truck className="w-3.5 h-3.5" /> Araç Performansı
+                  <Truck className="w-3.5 h-3.5" /> {t('ui.arac_performansi')}
                 </CardTitle>
-                <CardDescription>Dönem içindeki atamalara göre</CardDescription>
+                <CardDescription>{t('ui.donem_icindeki_atamalara_gore')}</CardDescription>
               </CardHeader>
               <CardContent className="p-0">
                 {data.operations.vehicle_performance.length === 0 ? (
-                  <div className="text-center py-6 text-xs text-muted-foreground">Veri yok</div>
+                  <div className="text-center py-6 text-xs text-muted-foreground">{t('common.no_data')}</div>
                 ) : (
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Araç</TableHead>
-                        <TableHead>Sürücü</TableHead>
-                        <TableHead className="text-right">Atama</TableHead>
-                        <TableHead className="text-right">Kap</TableHead>
-                        <TableHead className="text-right">Ağırlık</TableHead>
+                        <TableHead>{t('statistics.table.vehicle')}</TableHead>
+                        <TableHead>{t('vehicle.driver')}</TableHead>
+                        <TableHead className="text-right">{t('statistics.table.assignment')}</TableHead>
+                        <TableHead className="text-right">{t('statistics.table.package')}</TableHead>
+                        <TableHead className="text-right">{t('statistics.table.weight')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -555,20 +555,20 @@ export function StatisticsPage() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm flex items-center gap-2">
-                  <WhIcon className="w-3.5 h-3.5" /> Depo Yükü
+                  <WhIcon className="w-3.5 h-3.5" /> {t('ui.depo_yuku')}
                 </CardTitle>
-                <CardDescription>Aktif depo sevkiyatları</CardDescription>
+                <CardDescription>{t('ui.aktif_depo_sevkiyatlari')}</CardDescription>
               </CardHeader>
               <CardContent className="p-0">
                 {data.operations.warehouse_load.length === 0 ? (
-                  <div className="text-center py-6 text-xs text-muted-foreground">Depo yok</div>
+                  <div className="text-center py-6 text-xs text-muted-foreground">{t('ui.depo_yok')}</div>
                 ) : (
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Depo</TableHead>
-                        <TableHead>Tip</TableHead>
-                        <TableHead className="text-right">Aktif Sevkiyat</TableHead>
+                        <TableHead>{t('statistics.table.warehouse')}</TableHead>
+                        <TableHead>{t('partner.type')}</TableHead>
+                        <TableHead className="text-right">{t('statistics.table.active_shipments')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -590,20 +590,20 @@ export function StatisticsPage() {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm flex items-center gap-2">
-                <MapPin className="w-3.5 h-3.5" /> Top 10 Güzergah
+                <MapPin className="w-3.5 h-3.5" /> {t('ui.top_10_guzergah')}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
               {data.operations.top_routes.length === 0 ? (
-                <div className="text-center py-6 text-xs text-muted-foreground">Veri yok</div>
+                <div className="text-center py-6 text-xs text-muted-foreground">{t('common.no_data')}</div>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Güzergah</TableHead>
-                      <TableHead className="text-right">Sevkiyat</TableHead>
-                      <TableHead className="text-right">Ciro</TableHead>
-                      <TableHead className="text-right">Ort. Marj</TableHead>
+                      <TableHead>{t('shipment.route')}</TableHead>
+                      <TableHead className="text-right">{t('statistics.table.shipment')}</TableHead>
+                      <TableHead className="text-right">{t('statistics.table.revenue')}</TableHead>
+                      <TableHead className="text-right">{t('statistics.table.avg_margin')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -627,9 +627,10 @@ export function StatisticsPage() {
 }
 
 function EmptyChart() {
+  const { t } = useTranslation()
   return (
     <div className="h-[200px] flex items-center justify-center text-xs text-muted-foreground">
-      Bu dönem için veri yok
+      {t('ui.bu_donem_icin_veri_yok')}
     </div>
   )
 }
@@ -637,16 +638,17 @@ function EmptyChart() {
 function CustomerTable({
   items, currency, field,
 }: { items: { client_billing: string; shipment_count: number; revenue: number | string; profit: number | string }[]; currency: string; field: 'revenue' | 'profit' }) {
+  const { t } = useTranslation()
   if (items.length === 0) {
-    return <div className="text-center py-6 text-xs text-muted-foreground">Müşteri verisi yok</div>
+    return <div className="text-center py-6 text-xs text-muted-foreground">{t('ui.musteri_verisi_yok')}</div>
   }
   return (
     <Table>
       <TableHeader>
         <TableRow>
           <TableHead>#</TableHead>
-          <TableHead>Müşteri</TableHead>
-          <TableHead className="text-right">Sevkiyat</TableHead>
+          <TableHead>{t('shipment.client')}</TableHead>
+          <TableHead className="text-right">{t('statistics.table.shipment')}</TableHead>
           <TableHead className="text-right">{field === 'revenue' ? 'Ciro' : 'Kâr'}</TableHead>
         </TableRow>
       </TableHeader>
@@ -665,17 +667,18 @@ function CustomerTable({
 }
 
 function ShipmentProfitTable({ items }: { items: { shipment_no: string; client_billing: string; profit: number | string; margin: number | string; currency_code: string }[] }) {
+  const { t } = useTranslation()
   if (items.length === 0) {
-    return <div className="text-center py-6 text-xs text-muted-foreground">Veri yok</div>
+    return <div className="text-center py-6 text-xs text-muted-foreground">{t('common.no_data')}</div>
   }
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Dosya</TableHead>
-          <TableHead>Müşteri</TableHead>
-          <TableHead className="text-right">Kâr</TableHead>
-          <TableHead className="text-right">Marj</TableHead>
+          <TableHead>{t('statistics.table.file')}</TableHead>
+          <TableHead>{t('shipment.client')}</TableHead>
+          <TableHead className="text-right">{t('statistics.table.profit')}</TableHead>
+          <TableHead className="text-right">{t('statistics.summary.margin')}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

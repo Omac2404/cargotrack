@@ -1,4 +1,5 @@
 import { Component, type ReactNode, type ErrorInfo } from 'react'
+import i18n from '@/i18n'
 import { AlertOctagon, RefreshCcw, Home } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -50,9 +51,9 @@ export class ErrorBoundary extends Component<Props, State> {
                 <AlertOctagon className="w-5 h-5" />
               </div>
               <div className="space-y-1 flex-1">
-                <h2 className="text-lg font-semibold">Beklenmeyen bir hata oluştu</h2>
+                <h2 className="text-lg font-semibold">{i18n.t('ui.beklenmeyen_bir_hata_olustu')}</h2>
                 <p className="text-sm text-muted-foreground">
-                  Uygulama bir sorunla karşılaştı. Sayfayı yeniden yükleyebilir veya ana sayfaya dönebilirsin.
+                  {i18n.t('ui.uygulama_bir_sorunla_karsilasti_sayfayi_yeni')}
                 </p>
               </div>
             </div>
@@ -70,7 +71,7 @@ export class ErrorBoundary extends Component<Props, State> {
             <div className="flex gap-2 pt-1">
               <Button onClick={this.handleReload} className="flex-1">
                 <RefreshCcw className="w-4 h-4" />
-                Sayfayı Yenile
+                {i18n.t('ui.sayfayi_yenile')}
               </Button>
               <Button onClick={this.handleHome} variant="outline">
                 <Home className="w-4 h-4" />

@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Combobox } from './Combobox'
 import {
   COMMON_ADR_CODES, ADR_CLASS_LABELS, getRecentAdrCodes, findAdrCode,
@@ -22,6 +23,7 @@ export function ADRCodeCombobox({
   value, onChange, placeholder = 'UN1202, UN3480 ...',
   disabled = false, className,
 }: Props) {
+  const { t } = useTranslation()
   const options = useMemo(() => {
     const recents = getRecentAdrCodes()
     const recentSet = new Set(recents)
@@ -66,7 +68,7 @@ export function ADRCodeCombobox({
       onChange={onChange}
       options={options}
       placeholder={placeholder}
-      searchPlaceholder="UN kodu veya madde ismi ara..."
+      searchPlaceholder={t('ui.un_kodu_veya_madde_ismi_ara')}
       emptyMessage="Listede yok — kendi kodunuzu yazıp Enter'a basın"
       disabled={disabled}
       className={className}

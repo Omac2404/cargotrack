@@ -1,4 +1,5 @@
 import { useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { useMutation } from '@tanstack/react-query'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -62,6 +63,7 @@ function calcStrength(password: string, username?: string): { score: number; tip
 }
 
 export function ProfilePage() {
+  const { t } = useTranslation()
   const user = useAuth((s) => s.user)
   const role = user ? ROLE_LABELS[user.role] : null
 
@@ -78,7 +80,7 @@ export function ProfilePage() {
     mutationFn: (d: { current_password: string; new_password: string }) =>
       api.post<{ message: string }>('/api/auth/change-password', d),
     onSuccess: async () => {
-      toast.success('Şifre güncellendi')
+      toast.success(t('ui.sifre_guncellendi'))
       reset()
       // /me'i tekrar çağırıp must_change_password=false'u store'a yansıt
       try {
@@ -99,8 +101,8 @@ export function ProfilePage() {
           <UserIcon className="w-5 h-5" />
         </div>
         <div>
-          <h1 className="text-xl font-bold tracking-tight">Profil</h1>
-          <p className="text-xs text-muted-foreground">Hesap bilgileriniz ve şifre yönetimi</p>
+          <h1 className="text-xl font-bold tracking-tight">{t('auth.profile')}</h1>
+          <p className="text-xs text-muted-foreground">{t('ui.hesap_bilgileriniz_ve_sifre_yonetimi')}</p>
         </div>
       </div>
 
@@ -109,10 +111,9 @@ export function ProfilePage() {
         <div className="p-4 rounded-lg border-2 border-destructive bg-destructive/10 flex items-start gap-3">
           <AlertTriangle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
           <div className="text-sm">
-            <div className="font-semibold text-destructive">Şifre değişimi zorunlu</div>
+            <div className="font-semibold text-destructive">{t('ui.sifre_degisimi_zorunlu')}</div>
             <div className="text-muted-foreground mt-1">
-              Sisteme varsayılan/geçici bir şifre ile giriş yaptınız. Güvenlik nedeniyle
-              <strong className="text-foreground"> başka bir sayfaya gidemezsiniz</strong> — önce aşağıdaki formdan yeni şifrenizi belirleyin.
+              {t('ui.must_change_password_body')}
             </div>
           </div>
         </div>
@@ -144,10 +145,10 @@ export function ProfilePage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t">
-            <InfoRow label="E-posta" value={user?.email || '—'} />
-            <InfoRow label="Rol" value={role?.label || user?.role} />
-            <InfoRow label="Durum" value={user?.status === 'active' ? 'Aktif' : 'Pasif'} />
-            <InfoRow label="Son Giriş" value={user?.last_login ? formatDate(user.last_login, true) : '—'} />
+            <InfoRow label={t('shipment.fields.email')} value={user?.email || '—'} />
+            <InfoRow label={t('auth.role')} value={role?.label || user?.role} />
+            <InfoRow label={t('common.status')} value={user?.status === 'active' ? 'Aktif' : 'Pasif'} />
+            <InfoRow label={t('users.last_login')} value={user?.last_login ? formatDate(user.last_login, true) : '—'} />
           </div>
 
           <div className="p-3 rounded-md bg-muted/30 border text-xs flex items-start gap-2 text-muted-foreground">
@@ -165,7 +166,7 @@ export function ProfilePage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <KeyRound className="w-4 h-4" />
-            Şifre Değiştir
+            {t('auth.change_password')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -174,7 +175,7 @@ export function ProfilePage() {
             new_password: v.new_password,
           }))} className="space-y-4 max-w-sm">
             <div className="space-y-1.5">
-              <Label htmlFor="current_password">Mevcut Şifre</Label>
+              <Label htmlFor="current_password">{t('ui.mevcut_sifre')}</Label>
               <Input
                 id="current_password"
                 type="password"
@@ -187,7 +188,7 @@ export function ProfilePage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="new_password">Yeni Şifre</Label>
+              <Label htmlFor="new_password">{t('ui.yeni_sifre')}</Label>
               <Input
                 id="new_password"
                 type="password"
@@ -240,7 +241,7 @@ export function ProfilePage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="confirm_password">Yeni Şifre (Tekrar)</Label>
+              <Label htmlFor="confirm_password">{t('ui.yeni_sifre_tekrar')}</Label>
               <Input
                 id="confirm_password"
                 type="password"

@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { AlertTriangle, ExternalLink } from 'lucide-react'
 import {
   PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend,
@@ -31,6 +32,7 @@ const BUCKET_VARIANTS: Record<string, 'success' | 'default' | 'warning' | 'destr
 }
 
 export function AgingReport() {
+  const { t } = useTranslation()
   const { data, isLoading, error } = useAging()
 
   if (isLoading) return <ReportLoading />
@@ -51,7 +53,7 @@ export function AgingReport() {
     <div className="space-y-4">
       <Card className="p-3 flex flex-wrap items-end gap-3">
         <div className="text-sm">
-          <span className="text-muted-foreground">Toplam bekleyen: </span>
+          <span className="text-muted-foreground">{t('ui.toplam_bekleyen')} </span>
           <strong className="text-destructive text-base">{formatMoney(data.total_unpaid, 'EUR')}</strong>
           <span className="text-muted-foreground ml-2">({data.total_count} fatura)</span>
         </div>
@@ -92,10 +94,10 @@ export function AgingReport() {
 
         <Card className="p-4">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-            Dağılım (€)
+            {t('ui.dagilim')}
           </h3>
           {pieData.length === 0 ? (
-            <div className="text-center text-muted-foreground py-8 text-sm">Veri yok</div>
+            <div className="text-center text-muted-foreground py-8 text-sm">{t('common.no_data')}</div>
           ) : (
             <ResponsiveContainer width="100%" height={200}>
               <PieChart>
@@ -125,12 +127,12 @@ export function AgingReport() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Sevkiyat</TableHead>
-                  <TableHead>Müşteri</TableHead>
-                  <TableHead>Fatura No</TableHead>
-                  <TableHead>Fatura Tarihi</TableHead>
-                  <TableHead className="text-right">Tutar</TableHead>
-                  <TableHead className="text-right">Gün</TableHead>
+                  <TableHead>{t('statistics.table.shipment')}</TableHead>
+                  <TableHead>{t('shipment.client')}</TableHead>
+                  <TableHead>{t('statistics.table.invoice_no')}</TableHead>
+                  <TableHead>{t('ui.fatura_tarihi')}</TableHead>
+                  <TableHead className="text-right">{t('statistics.table.amount')}</TableHead>
+                  <TableHead className="text-right">{t('ui.gun')}</TableHead>
                   <TableHead className="w-[40px]"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -163,8 +165,8 @@ export function AgingReport() {
       {data.total_count === 0 && (
         <Card className="p-12 text-center">
           <AlertTriangle className="w-10 h-10 mx-auto text-success/40 mb-2" />
-          <div className="font-semibold text-success">Bekleyen alacak yok 🎉</div>
-          <div className="text-xs text-muted-foreground">Tüm faturalar ödenmiş veya henüz faturalı sevkiyat yok.</div>
+          <div className="font-semibold text-success">{t('ui.bekleyen_alacak_yok')}</div>
+          <div className="text-xs text-muted-foreground">{t('ui.tum_faturalar_odenmis_veya_henuz_faturali_se')}</div>
         </Card>
       )}
     </div>

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Package, Loader2, AlertCircle, Inbox, ExternalLink, Calendar, Plus } from 'lucide-react'
 import { Card } from '@/components/ui/card'
@@ -24,6 +25,7 @@ interface Props {
 }
 
 export function VehicleLoadPanel({ vehicleId }: Props) {
+  const { t } = useTranslation()
   const { data, isLoading, error } = useVehicleLoad(vehicleId)
   const [addOpen, setAddOpen] = useState(false)
 
@@ -57,17 +59,17 @@ export function VehicleLoadPanel({ vehicleId }: Props) {
       <Card className="p-4">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3">
           <Stat
-            label="Atama Sayısı"
+            label={t('ui.atama_sayisi')}
             value={String(summary.assignment_count)}
             sub={summary.assignment_count === 0 ? 'Henüz yük yok' : 'sevkiyat'}
           />
           <Stat
-            label="Toplam Kap"
+            label={t('ui.toplam_kap')}
             value={formatNumber(summary.total_quantity, 0)}
             sub="kap"
           />
           <Stat
-            label="Toplam Ağırlık"
+            label={t('ui.toplam_agirlik')}
             value={formatNumber(summary.total_weight, 0)}
             sub={`/ ${formatNumber(vehicle.capacity_kg, 0)} kg`}
           />
@@ -83,7 +85,7 @@ export function VehicleLoadPanel({ vehicleId }: Props) {
         {vehicle.capacity_kg > 0 && (
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">Kapasite Kullanımı</span>
+              <span className="text-muted-foreground">{t('ui.kapasite_kullanimi')}</span>
               <span className={cn('font-semibold tabular-nums', overCapacity && 'text-destructive')}>
                 %{summary.load_percent.toFixed(1)}
                 {overCapacity && ' (aşıldı!)'}
@@ -111,26 +113,26 @@ export function VehicleLoadPanel({ vehicleId }: Props) {
             onClick={() => setAddOpen(true)}
           >
             <Plus className="w-3.5 h-3.5" />
-            Bu Araca Yük Ekle
+            {t('ui.bu_araca_yuk_ekle')}
           </Button>
         </div>
 
         {assignments.length === 0 ? (
           <div className="p-12 text-center text-muted-foreground">
             <Inbox className="w-10 h-10 mx-auto mb-2 opacity-50" />
-            <div className="text-sm">Bu araca henüz yük atanmamış.</div>
+            <div className="text-sm">{t('ui.bu_araca_henuz_yuk_atanmamis')}</div>
             <div className="text-xs mt-1">
-              Aynı araca birden fazla sevkiyat yükleyebilirsin — her sevkiyat için bir atama ekle.
+              {t('ui.ayni_araca_birden_fazla_sevkiyat_yukleyebili')}
             </div>
             <div className="flex items-center justify-center gap-2 mt-3">
               <Button size="sm" onClick={() => setAddOpen(true)}>
                 <Plus className="w-3.5 h-3.5" />
-                Bu Araca Yük Ekle
+                {t('ui.bu_araca_yuk_ekle')}
               </Button>
               <Button asChild variant="outline" size="sm">
                 <Link to="/assignments">
                   <ExternalLink className="w-3.5 h-3.5" />
-                  Yük havuzunu aç
+                  {t('ui.yuk_havuzunu_ac')}
                 </Link>
               </Button>
             </div>
@@ -139,13 +141,13 @@ export function VehicleLoadPanel({ vehicleId }: Props) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Sevkiyat No</TableHead>
-                <TableHead>Müşteri</TableHead>
-                <TableHead>Güzergah</TableHead>
-                <TableHead>Yükleme</TableHead>
-                <TableHead className="text-right">Atanan Kap</TableHead>
-                <TableHead className="text-right">Atanan Ağırlık</TableHead>
-                <TableHead>Durum</TableHead>
+                <TableHead>{t('shipment.shipment_no')}</TableHead>
+                <TableHead>{t('shipment.client')}</TableHead>
+                <TableHead>{t('shipment.route')}</TableHead>
+                <TableHead>{t('audit.actions.upload')}</TableHead>
+                <TableHead className="text-right">{t('assignment.assigned_quantity')}</TableHead>
+                <TableHead className="text-right">{t('assignment.assigned_weight')}</TableHead>
+                <TableHead>{t('common.status')}</TableHead>
                 <TableHead className="w-[60px] text-right">Aç</TableHead>
               </TableRow>
             </TableHeader>
@@ -184,7 +186,7 @@ export function VehicleLoadPanel({ vehicleId }: Props) {
                     <TableCell className="text-right">
                       {editLink && (
                         <Button asChild variant="ghost" size="icon" className="h-7 w-7">
-                          <Link to={editLink} title="Sevkiyatı aç">
+                          <Link to={editLink} title={t('ui.sevkiyati_ac')}>
                             <ExternalLink className="w-3.5 h-3.5" />
                           </Link>
                         </Button>

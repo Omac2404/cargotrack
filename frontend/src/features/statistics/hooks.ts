@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import i18n from '@/i18n'
 import { api, getToken } from '@/lib/api'
 
 export interface StatsFilters {
@@ -196,7 +197,7 @@ export async function exportStatsExcel(filters: StatsFilters) {
     },
     body: JSON.stringify(filters),
   })
-  if (!resp.ok) throw new Error('Excel oluşturulamadı: HTTP ' + resp.status)
+  if (!resp.ok) throw new Error(i18n.t('ui.excel_olusturulamadi_http') + resp.status)
   const blob = await resp.blob()
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')

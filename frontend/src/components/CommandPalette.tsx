@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import {
   Truck, Ship, Plane, Package, Building2, Warehouse, ArrowRightLeft, FileText,
@@ -25,6 +26,7 @@ interface Props {
 }
 
 export function CommandPalette({ open, onOpenChange }: Props) {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const hasRole = useAuth((s) => s.hasRole)
   const logout = useAuth((s) => s.logout)
@@ -67,9 +69,9 @@ export function CommandPalette({ open, onOpenChange }: Props) {
 
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
-      <CommandInput placeholder="Komut yazın veya ara..." />
+      <CommandInput placeholder={t('ui.komut_yazin_veya_ara')} />
       <CommandList>
-        <CommandEmpty>Sonuç bulunamadı</CommandEmpty>
+        <CommandEmpty>{t('ui.sonuc_bulunamadi')}</CommandEmpty>
 
         <CommandGroup heading="Gezinme">
           {navigation.map((item) => (

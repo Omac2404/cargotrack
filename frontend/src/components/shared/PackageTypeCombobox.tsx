@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Combobox } from './Combobox'
 import {
   PACKAGE_TYPES,
@@ -27,6 +28,7 @@ export function PackageTypeCombobox({
   value, onChange, placeholder = 'Ambalaj tipi seçin...',
   className, disabled = false, filterCategories, allowCustom = true,
 }: Props) {
+  const { t } = useTranslation()
   const options = useMemo(() => {
     const filtered = filterCategories
       ? PACKAGE_TYPES.filter((p) => filterCategories.includes(p.category))
@@ -52,8 +54,8 @@ export function PackageTypeCombobox({
       onChange={handleChange}
       options={options}
       placeholder={placeholder}
-      searchPlaceholder="Kod veya isim ara (örn: 4G, karton, varil, çuval)..."
-      emptyMessage="Ambalaj tipi bulunamadı"
+      searchPlaceholder={t('ui.kod_veya_isim_ara_orn_4g_karton_varil_cuval')}
+      emptyMessage={t('ui.ambalaj_tipi_bulunamadi')}
       className={className}
       disabled={disabled}
       allowCustom={allowCustom}

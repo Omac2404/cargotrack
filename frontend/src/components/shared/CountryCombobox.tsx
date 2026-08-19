@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Check, ChevronsUpDown, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -21,6 +22,7 @@ export function CountryCombobox({
   value, onChange, placeholder = 'Ülke seçin...',
   allowClear = true, className, disabled = false,
 }: Props) {
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
 
@@ -67,7 +69,7 @@ export function CountryCombobox({
       >
         <Command shouldFilter={true}>
           <CommandInput
-            placeholder="Ülke ara..."
+            placeholder={t('ui.ulke_ara')}
             value={search}
             onValueChange={setSearch}
           />
@@ -82,7 +84,7 @@ export function CountryCombobox({
                   }}
                   className="w-full text-left px-2 py-1.5 text-sm hover:bg-accent rounded"
                 >
-                  "<strong>{search}</strong>" değerini kullan
+                  {t('ui.use_typed_value', { value: search })}
                 </button>
               ) : (
                 'Ülke bulunamadı'

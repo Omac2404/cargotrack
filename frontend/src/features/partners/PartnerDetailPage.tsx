@@ -1,4 +1,5 @@
 import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   ArrowLeft, Building2, Pencil, Phone, Mail, MapPin, FileText, Globe,
   Loader2, AlertCircle, Inbox, TrendingUp, TrendingDown, Coins,
@@ -38,6 +39,7 @@ const MODE_LABELS: Record<string, string> = {
 
 
 export function PartnerDetailPage() {
+  const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [editOpen, setEditOpen] = useState(false)
@@ -81,7 +83,7 @@ export function PartnerDetailPage() {
         </div>
         <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
           <Pencil className="w-4 h-4" />
-          Düzenle
+          {t('common.edit')}
         </Button>
       </div>
 
@@ -90,26 +92,26 @@ export function PartnerDetailPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <StatCard
             icon={<Receipt className="w-4 h-4" />}
-            label="Toplam Sevkiyat"
+            label={t('partner.detail.total_shipments')}
             value={String(summary.count)}
             sub="kayıt"
           />
           <StatCard
             icon={<TrendingUp className="w-4 h-4" />}
-            label="Toplam Ciro"
+            label={t('shipment.summary.revenue')}
             value={formatMoney(summary.total_sale, 'EUR')}
             variant="success"
           />
           <StatCard
             icon={<Coins className="w-4 h-4" />}
-            label="Brüt Kâr"
+            label={t('partner.detail.gross_profit')}
             value={formatMoney(summary.total_profit, 'EUR')}
             sub={`%${formatNumber(margin, 1)} marj`}
             variant={summary.total_profit > 0 ? 'success' : 'destructive'}
           />
           <StatCard
             icon={<Clock className="w-4 h-4" />}
-            label="Bekleyen Ödeme"
+            label={t('partner.detail.pending_payment')}
             value={String(summary.unpaid_count)}
             sub={`${summary.paid_count} ödendi`}
             variant={summary.unpaid_count > 0 ? 'warning' : 'success'}
@@ -120,7 +122,7 @@ export function PartnerDetailPage() {
       <Tabs defaultValue="info" className="w-full">
         <TabsList>
           <TabsTrigger value="info">
-            <Building2 className="w-3.5 h-3.5" /> Bilgiler
+            <Building2 className="w-3.5 h-3.5" /> {t('partner.detail.info')}
           </TabsTrigger>
           <TabsTrigger value="shipments">
             <Receipt className="w-3.5 h-3.5" /> Sevkiyatlar ({shipments.length})
@@ -132,37 +134,37 @@ export function PartnerDetailPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <Card className="p-5 space-y-3">
               <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                İletişim
+                {t('partner.contact')}
               </h3>
-              <InfoRow icon={<Phone className="w-4 h-4" />} label="Telefon" value={partner.contact_phone} link={partner.contact_phone ? `tel:${partner.contact_phone}` : undefined} />
-              <InfoRow icon={<Mail className="w-4 h-4" />} label="E-posta" value={partner.contact_email} link={partner.contact_email ? `mailto:${partner.contact_email}` : undefined} />
-              <InfoRow icon={<Building2 className="w-4 h-4" />} label="İletişim Kişi" value={partner.contact_person} />
+              <InfoRow icon={<Phone className="w-4 h-4" />} label={t('shipment.fields.phone')} value={partner.contact_phone} link={partner.contact_phone ? `tel:${partner.contact_phone}` : undefined} />
+              <InfoRow icon={<Mail className="w-4 h-4" />} label={t('shipment.fields.email')} value={partner.contact_email} link={partner.contact_email ? `mailto:${partner.contact_email}` : undefined} />
+              <InfoRow icon={<Building2 className="w-4 h-4" />} label={t('shipment.fields.contact_person')} value={partner.contact_person} />
             </Card>
 
             <Card className="p-5 space-y-3">
               <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Adres
+                {t('partner.address')}
               </h3>
               <InfoRow icon={<MapPin className="w-4 h-4" />} label="Fiziksel Adres" value={partner.physical_address} />
-              <InfoRow icon={<MapPin className="w-4 h-4" />} label="Posta Kodu" value={partner.postal_code} />
-              <InfoRow icon={<MapPin className="w-4 h-4" />} label="Şehir / Ülke" value={[partner.city, partner.country].filter(Boolean).join(' / ')} />
+              <InfoRow icon={<MapPin className="w-4 h-4" />} label={t('partner.postal_code')} value={partner.postal_code} />
+              <InfoRow icon={<MapPin className="w-4 h-4" />} label={t('ui.sehir_ulke')} value={[partner.city, partner.country].filter(Boolean).join(' / ')} />
             </Card>
 
             <Card className="p-5 space-y-3">
               <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Gümrük / Vergi
+                {t('partner.detail.customs_section')}
               </h3>
-              <InfoRow icon={<FileText className="w-4 h-4" />} label="Vergi Numarası" value={partner.tax_number} mono />
-              <InfoRow icon={<Globe className="w-4 h-4" />} label="EORI Numarası" value={partner.eori_number} mono />
-              <InfoRow icon={<FileText className="w-4 h-4" />} label="MERSİS Numarası" value={partner.mersis_number} mono />
+              <InfoRow icon={<FileText className="w-4 h-4" />} label={t('partner.tax_number')} value={partner.tax_number} mono />
+              <InfoRow icon={<Globe className="w-4 h-4" />} label={t('partner.eori_number')} value={partner.eori_number} mono />
+              <InfoRow icon={<FileText className="w-4 h-4" />} label={t('partner.mersis_number')} value={partner.mersis_number} mono />
             </Card>
 
             <Card className="p-5 space-y-3">
               <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Faturalama
+                {t('shipment.tabs.invoice')}
               </h3>
-              <InfoRow icon={<MapPin className="w-4 h-4" />} label="Fatura Adresi" value={partner.billing_address} />
-              <InfoRow icon={<Mail className="w-4 h-4" />} label="Fatura E-posta" value={partner.billing_email} link={partner.billing_email ? `mailto:${partner.billing_email}` : undefined} />
+              <InfoRow icon={<MapPin className="w-4 h-4" />} label={t('partner.billing_address')} value={partner.billing_address} />
+              <InfoRow icon={<Mail className="w-4 h-4" />} label={t('ui.fatura_e_posta')} value={partner.billing_email} link={partner.billing_email ? `mailto:${partner.billing_email}` : undefined} />
             </Card>
           </div>
         </TabsContent>
@@ -209,21 +211,21 @@ export function PartnerDetailPage() {
             ) : shipments.length === 0 ? (
               <div className="p-12 text-center text-muted-foreground">
                 <Inbox className="w-10 h-10 mx-auto mb-2 opacity-50" />
-                <div className="text-sm">Bu partner henüz hiçbir sevkiyatta yer almamış.</div>
+                <div className="text-sm">{t('partner.detail.no_shipments')}</div>
               </div>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Sevkiyat No</TableHead>
-                    <TableHead>Mod</TableHead>
-                    <TableHead>Tarih</TableHead>
-                    <TableHead>Güzergah</TableHead>
-                    <TableHead>Rol</TableHead>
-                    <TableHead className="text-right">Satış</TableHead>
-                    <TableHead className="text-right">Kâr</TableHead>
-                    <TableHead>Durum</TableHead>
-                    <TableHead>Fatura</TableHead>
+                    <TableHead>{t('shipment.shipment_no')}</TableHead>
+                    <TableHead>{t('reports.mode')}</TableHead>
+                    <TableHead>{t('common.date')}</TableHead>
+                    <TableHead>{t('shipment.route')}</TableHead>
+                    <TableHead>{t('auth.role')}</TableHead>
+                    <TableHead className="text-right">{t('shipment.sale')}</TableHead>
+                    <TableHead className="text-right">{t('statistics.table.profit')}</TableHead>
+                    <TableHead>{t('common.status')}</TableHead>
+                    <TableHead>{t('ui.fatura')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

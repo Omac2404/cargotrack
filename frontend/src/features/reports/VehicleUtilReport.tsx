@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Card } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
@@ -25,6 +26,7 @@ function defaultDates() {
 const MODE_LABELS: Record<string, string> = { road: 'Karayolu', sea: 'Denizyolu', air: 'Havayolu' }
 
 export function VehicleUtilReport() {
+  const { t } = useTranslation()
   const [{ start, end }, setRange] = useState(defaultDates())
   const { data, isLoading, error } = useVehicleUtilization(start, end)
 
@@ -36,11 +38,11 @@ export function VehicleUtilReport() {
     <div className="space-y-4">
       <Card className="p-3 flex flex-wrap items-end gap-3">
         <div className="space-y-1">
-          <Label className="text-[10px]">Başlangıç</Label>
+          <Label className="text-[10px]">{t('reports.start')}</Label>
           <Input type="date" value={start} onChange={(e) => setRange((r) => ({ ...r, start: e.target.value }))} className="h-8 w-[160px]" />
         </div>
         <div className="space-y-1">
-          <Label className="text-[10px]">Bitiş</Label>
+          <Label className="text-[10px]">{t('reports.end')}</Label>
           <Input type="date" value={end} onChange={(e) => setRange((r) => ({ ...r, end: e.target.value }))} className="h-8 w-[160px]" />
         </div>
         <div className="text-xs text-muted-foreground">
@@ -69,12 +71,12 @@ export function VehicleUtilReport() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Araç</TableHead>
-              <TableHead>Mod</TableHead>
-              <TableHead className="text-right">Kapasite</TableHead>
-              <TableHead className="text-right">Atama</TableHead>
-              <TableHead className="text-right">Toplam Kap</TableHead>
-              <TableHead className="text-right">Toplam Ağırlık</TableHead>
+              <TableHead>{t('statistics.table.vehicle')}</TableHead>
+              <TableHead>{t('reports.mode')}</TableHead>
+              <TableHead className="text-right">{t('vehicle.capacity')}</TableHead>
+              <TableHead className="text-right">{t('statistics.table.assignment')}</TableHead>
+              <TableHead className="text-right">{t('ui.toplam_kap')}</TableHead>
+              <TableHead className="text-right">{t('ui.toplam_agirlik')}</TableHead>
               <TableHead className="w-[180px]">Ortalama Doluluk</TableHead>
             </TableRow>
           </TableHeader>
@@ -104,7 +106,7 @@ export function VehicleUtilReport() {
                         </div>
                       </div>
                     ) : (
-                      <span className="text-xs text-muted-foreground italic">Atama yok</span>
+                      <span className="text-xs text-muted-foreground italic">{t('ui.atama_yok')}</span>
                     )}
                   </TableCell>
                 </TableRow>

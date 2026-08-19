@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Plus, X, MapPin } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -42,6 +43,7 @@ const FIELD_LABELS: Record<PartyKey, { label: string; addressKey: 'delivery_addr
  * Partner kaydını değiştirmez; sadece bu sevkiyat için.
  */
 export function PartySecondaryFields({ partyKey, data, onChange }: Props) {
+  const { t } = useTranslation()
   const cfg = FIELD_LABELS[partyKey]
   const hasAny = Object.values(data).some((v) => v && String(v).trim())
   const [open, setOpen] = useState(hasAny)
@@ -65,7 +67,7 @@ export function PartySecondaryFields({ partyKey, data, onChange }: Props) {
         onClick={() => setOpen(true)}
       >
         <Plus className="w-3 h-3" />
-        Bu sevkiyata özel ek bilgi ekle
+        {t('ui.bu_sevkiyata_ozel_ek_bilgi_ekle')}
       </Button>
     )
   }
@@ -76,13 +78,13 @@ export function PartySecondaryFields({ partyKey, data, onChange }: Props) {
         <div className="text-xs font-semibold text-primary uppercase tracking-wider">
           {cfg.label} — Sevkiyata Özel Ek Bilgi
         </div>
-        <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={clearAll} title="Temizle ve kapat">
+        <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={clearAll} title={t('ui.temizle_ve_kapat')}>
           <X className="w-3.5 h-3.5" />
         </Button>
       </div>
 
       <p className="text-[10px] text-muted-foreground">
-        Bu alanlar sadece bu sevkiyat için geçerlidir; partner kaydını değiştirmez.
+        {t('ui.bu_alanlar_sadece_bu_sevkiyat_icin_gecerlidi')}
       </p>
 
       <div className="space-y-1.5">
@@ -101,7 +103,7 @@ export function PartySecondaryFields({ partyKey, data, onChange }: Props) {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
         <div className="space-y-1.5">
-          <Label className="text-xs">İletişim Kişi</Label>
+          <Label className="text-xs">{t('shipment.fields.contact_person')}</Label>
           <Input
             value={data.contact || ''}
             onChange={(e) => update({ contact: e.target.value })}
@@ -109,7 +111,7 @@ export function PartySecondaryFields({ partyKey, data, onChange }: Props) {
           />
         </div>
         <div className="space-y-1.5">
-          <Label className="text-xs">Telefon</Label>
+          <Label className="text-xs">{t('shipment.fields.phone')}</Label>
           <Input
             value={data.phone || ''}
             onChange={(e) => update({ phone: e.target.value })}
@@ -117,7 +119,7 @@ export function PartySecondaryFields({ partyKey, data, onChange }: Props) {
           />
         </div>
         <div className="space-y-1.5">
-          <Label className="text-xs">E-posta</Label>
+          <Label className="text-xs">{t('shipment.fields.email')}</Label>
           <Input
             type="email"
             value={data.email || ''}

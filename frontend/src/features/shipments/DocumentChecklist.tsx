@@ -80,7 +80,7 @@ export function DocumentChecklist({ shipmentId, docList, documentsData, onStageC
       { shipmentId, docKey: key },
       {
         onSuccess: () => {
-          toast.success('Belge silindi')
+          toast.success(t('ui.belge_silindi'))
           qc.invalidateQueries({ queryKey: shipmentKey(shipmentId) })
         },
         onError: (err: Error) => toast.error(err.message),
@@ -144,14 +144,14 @@ export function DocumentChecklist({ shipmentId, docList, documentsData, onStageC
                   active={stage === 'uploaded'}
                   onClick={() => updateStageMut.mutate({ docKey: item.key, stage: 'uploaded' })}
                   color="warning"
-                  title="Yüklü"
+                  title={t('ui.yuklu')}
                   disabled={!hasFile}
                 />
                 <StageButton
                   active={stage === 'approved'}
                   onClick={() => updateStageMut.mutate({ docKey: item.key, stage: 'approved' })}
                   color="success"
-                  title="Onaylı"
+                  title={t('ui.onayli')}
                   disabled={!hasFile}
                 />
               </div>
@@ -162,17 +162,17 @@ export function DocumentChecklist({ shipmentId, docList, documentsData, onStageC
                   <>
                     <Button type="button" variant="ghost" size="icon" className="h-7 w-7"
                             onClick={() => setPreviewKey({ key: item.key, label: t(item.label) })}
-                            title="Önizle / Versiyonlar">
+                            title={t('ui.onizle_versiyonlar')}>
                       <Eye className="w-3.5 h-3.5" />
                     </Button>
                     <Button type="button" variant="ghost" size="icon" className="h-7 w-7"
                             onClick={() => handleDownload(item.key, doc!.filename || item.key)}
-                            title="İndir">
+                            title={t('ui.indir')}>
                       <Download className="w-3.5 h-3.5" />
                     </Button>
                     <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-destructive"
                             onClick={() => handleDelete(item.key)}
-                            title="Sil">
+                            title={t('common.delete')}>
                       <Trash2 className="w-3.5 h-3.5" />
                     </Button>
                   </>

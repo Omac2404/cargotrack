@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { Download, History, RotateCcw, X, Loader2, FileText } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -41,6 +42,7 @@ function fileExt(filename?: string | null): string {
 }
 
 export function DocumentPreviewDialog({ shipmentId, docKey, docLabel, open, onOpenChange }: Props) {
+  const { t } = useTranslation()
   const [selectedVersion, setSelectedVersion] = useState(0) // 0 = current
   const qc = useQueryClient()
 
@@ -80,7 +82,7 @@ export function DocumentPreviewDialog({ shipmentId, docKey, docLabel, open, onOp
             <FileText className="w-5 h-5" />
             {docLabel}
             {selectedVersion === 0 ? (
-              <Badge variant="success">Güncel</Badge>
+              <Badge variant="success">{t('ui.guncel_2')}</Badge>
             ) : (
               <Badge variant="warning">Versiyon {selectedVersion}</Badge>
             )}
@@ -102,7 +104,7 @@ export function DocumentPreviewDialog({ shipmentId, docKey, docLabel, open, onOp
             ) : !filename ? (
               <div className="text-center text-muted-foreground p-6">
                 <FileText className="w-12 h-12 mx-auto mb-2 opacity-40" />
-                Belge bulunamadı
+                {t('ui.belge_bulunamadi')}
               </div>
             ) : ext === PDF_EXT ? (
               <iframe src={previewUrl} className="w-full h-full" title={filename} />
@@ -139,7 +141,7 @@ export function DocumentPreviewDialog({ shipmentId, docKey, docLabel, open, onOp
                   onClick={() => setSelectedVersion(0)}
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <Badge variant="success" className="text-[10px]">GÜNCEL</Badge>
+                    <Badge variant="success" className="text-[10px]">{t('ui.guncel')}</Badge>
                   </div>
                   <div className="text-xs font-mono truncate mt-1">{meta.current.filename}</div>
                   <div className="text-[10px] text-muted-foreground mt-0.5">
@@ -178,7 +180,7 @@ export function DocumentPreviewDialog({ shipmentId, docKey, docLabel, open, onOp
 
               {meta && meta.versions.length === 0 && (
                 <div className="p-3 text-center text-xs text-muted-foreground italic">
-                  Henüz eski versiyon yok
+                  {t('ui.henuz_eski_versiyon_yok')}
                 </div>
               )}
             </div>
@@ -203,13 +205,13 @@ export function DocumentPreviewDialog({ shipmentId, docKey, docLabel, open, onOp
             <Button asChild variant="outline" size="sm">
               <a href={downloadUrl} download={filename}>
                 <Download className="w-3.5 h-3.5" />
-                İndir
+                {t('ui.indir')}
               </a>
             </Button>
           )}
           <Button type="button" variant="ghost" size="sm" onClick={() => onOpenChange(false)}>
             <X className="w-3.5 h-3.5" />
-            Kapat
+            {t('common.close')}
           </Button>
         </div>
       </DialogContent>

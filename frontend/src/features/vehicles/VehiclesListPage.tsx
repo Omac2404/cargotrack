@@ -205,7 +205,7 @@ export function VehiclesListPage() {
                       {(() => {
                         const sum = summaryMap[v.id]
                         if (!sum || !sum.assignment_count) {
-                          return <span className="text-xs text-muted-foreground italic">Boş</span>
+                          return <span className="text-xs text-muted-foreground italic">{t('history.empty_value')}</span>
                         }
                         const pct = Math.min(100, sum.load_percent || 0)
                         const color = pct > 100 ? 'bg-destructive' : pct > 90 ? 'bg-warning' : pct > 50 ? 'bg-success' : 'bg-primary'
@@ -257,14 +257,14 @@ export function VehiclesListPage() {
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Aracı sil?</AlertDialogTitle>
+            <AlertDialogTitle>{t('ui.araci_sil')}</AlertDialogTitle>
             <AlertDialogDescription>
               <strong className="font-mono text-foreground">{deleteTarget?.plate}</strong> ({deleteTarget?.vehicle_code}) silinecek.
               Aracın atamaları varsa silme reddedilecektir.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleteMut.isPending}>İptal</AlertDialogCancel>
+            <AlertDialogCancel disabled={deleteMut.isPending}>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={(e) => { e.preventDefault(); handleDelete() }}
               disabled={deleteMut.isPending}

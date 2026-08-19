@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import {
   Package, Search, Loader2, Inbox, AlertCircle, FileSpreadsheet, Calendar,
@@ -21,6 +22,7 @@ import { formatDate, formatNumber } from '@/lib/utils'
 import type { Shipment } from '@/types/api'
 
 export function StorageOrdersPage() {
+  const { t } = useTranslation()
   const [statusFilter, setStatusFilter] = useState<'active' | 'closed' | 'all'>('active')
   const [search, setSearch] = useState('')
 
@@ -45,17 +47,17 @@ export function StorageOrdersPage() {
             <Package className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="text-xl font-bold tracking-tight">Depolama Siparişleri</h1>
-            <p className="text-xs text-muted-foreground">Aktif depo sevkiyatları + transit süre uyarıları</p>
+            <h1 className="text-xl font-bold tracking-tight">{t('ui.depolama_siparisleri')}</h1>
+            <p className="text-xs text-muted-foreground">{t('ui.aktif_depo_sevkiyatlari_transit_sure_uyarila')}</p>
           </div>
         </div>
       </div>
 
       <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as 'active' | 'closed' | 'all')}>
         <TabsList>
-          <TabsTrigger value="active">Aktif</TabsTrigger>
-          <TabsTrigger value="closed">Kapalı</TabsTrigger>
-          <TabsTrigger value="all">Tümü</TabsTrigger>
+          <TabsTrigger value="active">{t('vehicle.status.active')}</TabsTrigger>
+          <TabsTrigger value="closed">{t('shipment.status.closed')}</TabsTrigger>
+          <TabsTrigger value="all">{t('common.all')}</TabsTrigger>
         </TabsList>
       </Tabs>
 
@@ -63,7 +65,7 @@ export function StorageOrdersPage() {
         <div className="relative flex-1 min-w-[240px]">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Dosya, müşteri, depo ara..."
+            placeholder={t('ui.dosya_musteri_depo_ara')}
             className="pl-8 h-8"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -85,20 +87,20 @@ export function StorageOrdersPage() {
         ) : filtered.length === 0 ? (
           <div className="p-12 text-center text-muted-foreground">
             <Inbox className="w-10 h-10 mx-auto mb-2 opacity-50" />
-            Sonuç yok
+            {t('ui.sonuc_yok')}
           </div>
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Dosya No</TableHead>
-                <TableHead>Müşteri</TableHead>
-                <TableHead>Depo</TableHead>
-                <TableHead>Giriş / Çıkış</TableHead>
-                <TableHead className="text-right">Kap</TableHead>
-                <TableHead>Durum</TableHead>
+                <TableHead>{t('shipment.file_no')}</TableHead>
+                <TableHead>{t('shipment.client')}</TableHead>
+                <TableHead>{t('statistics.table.warehouse')}</TableHead>
+                <TableHead>{t('ui.giris_cikis')}</TableHead>
+                <TableHead className="text-right">{t('statistics.table.package')}</TableHead>
+                <TableHead>{t('common.status')}</TableHead>
                 <TableHead>Transit</TableHead>
-                <TableHead className="w-[100px] text-right">İşlem</TableHead>
+                <TableHead className="w-[100px] text-right">{t('audit.action')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -147,7 +149,7 @@ export function StorageOrdersPage() {
                     </TableCell>
                     <TableCell className="text-right">
                       <Button variant="ghost" size="icon" className="h-7 w-7"
-                              onClick={() => openPdf(getStorageReportUrl(s.id))} title="Depo Raporu PDF">
+                              onClick={() => openPdf(getStorageReportUrl(s.id))} title={t('ui.depo_raporu_pdf')}>
                         <FileSpreadsheet className="w-3.5 h-3.5" />
                       </Button>
                     </TableCell>

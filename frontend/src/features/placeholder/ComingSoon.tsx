@@ -1,4 +1,5 @@
 import { useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Card, CardContent } from '@/components/ui/card'
 import { Construction } from 'lucide-react'
 
@@ -8,13 +9,14 @@ interface Props {
 }
 
 export function ComingSoon({ title, phase }: Props) {
+  const { t } = useTranslation()
   const params = useParams()
   return (
     <div className="space-y-6 max-w-3xl">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Bu bölüm henüz hazır değil.
+          {t('ui.bu_bolum_henuz_hazir_degil')}
         </p>
       </div>
       <Card className="border-dashed">
@@ -23,7 +25,7 @@ export function ComingSoon({ title, phase }: Props) {
             <Construction className="w-6 h-6" />
           </div>
           <div className="space-y-1">
-            <h3 className="font-semibold">Yapım aşamasında</h3>
+            <h3 className="font-semibold">{t('ui.yapim_asamasinda')}</h3>
             <p className="text-sm text-muted-foreground max-w-sm">
               {phase ? `${phase} kapsamında geliştirilecek.` : 'Yakında.'}
             </p>

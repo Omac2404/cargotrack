@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import {
   Loader2, AlertCircle, Inbox, Plus, Truck, Ship, Plane, Search, ExternalLink, Package,
@@ -38,6 +39,7 @@ const STATUS_FILTERS: Array<{ value: LoadPoolStatus; label: string; description:
 ]
 
 export function LoadPoolPanel() {
+  const { t } = useTranslation()
   const [status, setStatus] = useState<LoadPoolStatus>('partial')
   const [transportType, setTransportType] = useState<string>('')
   const [search, setSearch] = useState('')
@@ -62,11 +64,11 @@ export function LoadPoolPanel() {
           <div className="text-xl font-bold">{total}</div>
         </div>
         <div>
-          <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Hiç Atanmamış</div>
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{t('ui.hic_atanmamis')}</div>
           <div className="text-xl font-bold text-destructive">{totalUnassigned}</div>
         </div>
         <div>
-          <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Kısmen Atanmış</div>
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{t('ui.kismen_atanmis')}</div>
           <div className="text-xl font-bold text-warning">{totalPartial}</div>
         </div>
         <div>
@@ -78,7 +80,7 @@ export function LoadPoolPanel() {
       {/* Filtreler */}
       <Card className="p-3 flex flex-wrap items-end gap-3">
         <div className="space-y-1">
-          <Label className="text-[10px]">Durum</Label>
+          <Label className="text-[10px]">{t('common.status')}</Label>
           <Select value={status} onValueChange={(v) => setStatus(v as LoadPoolStatus)}>
             <SelectTrigger className="h-8 w-[200px]"><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -94,25 +96,25 @@ export function LoadPoolPanel() {
           </Select>
         </div>
         <div className="space-y-1">
-          <Label className="text-[10px]">Taşıma Modu</Label>
+          <Label className="text-[10px]">{t('ui.tasima_modu')}</Label>
           <Select value={transportType || '__all__'} onValueChange={(v) => setTransportType(v === '__all__' ? '' : v)}>
             <SelectTrigger className="h-8 w-[160px]"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="__all__">Tümü</SelectItem>
-              <SelectItem value="road">Karayolu</SelectItem>
-              <SelectItem value="maritime">Denizyolu</SelectItem>
-              <SelectItem value="air">Havayolu</SelectItem>
-              <SelectItem value="import">İthalat</SelectItem>
-              <SelectItem value="export">İhracat</SelectItem>
+              <SelectItem value="__all__">{t('common.all')}</SelectItem>
+              <SelectItem value="road">{t('nav.road')}</SelectItem>
+              <SelectItem value="maritime">{t('nav.maritime')}</SelectItem>
+              <SelectItem value="air">{t('nav.air')}</SelectItem>
+              <SelectItem value="import">{t('transport.modes.import')}</SelectItem>
+              <SelectItem value="export">{t('transport.modes.export')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
         <div className="relative flex-1 min-w-[240px]">
-          <Label className="text-[10px]">Ara</Label>
+          <Label className="text-[10px]">{t('common.search')}</Label>
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Sevkiyat No veya Müşteri..."
+              placeholder={t('ui.sevkiyat_no_veya_musteri')}
               className="pl-8 h-8"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -148,15 +150,15 @@ export function LoadPoolPanel() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Sevkiyat</TableHead>
-                <TableHead>Müşteri / Güzergah</TableHead>
-                <TableHead className="text-right">Toplam Kap</TableHead>
+                <TableHead>{t('statistics.table.shipment')}</TableHead>
+                <TableHead>{t('ui.musteri_guzergah')}</TableHead>
+                <TableHead className="text-right">{t('ui.toplam_kap')}</TableHead>
                 <TableHead className="text-right">Atanan</TableHead>
                 <TableHead className="text-right">Kalan</TableHead>
-                <TableHead className="text-right">Toplam Ağırlık</TableHead>
-                <TableHead className="text-right">Kalan Ağırlık</TableHead>
-                <TableHead>Durum</TableHead>
-                <TableHead className="w-[180px] text-right">İşlem</TableHead>
+                <TableHead className="text-right">{t('ui.toplam_agirlik')}</TableHead>
+                <TableHead className="text-right">{t('ui.kalan_agirlik')}</TableHead>
+                <TableHead>{t('common.status')}</TableHead>
+                <TableHead className="w-[180px] text-right">{t('audit.action')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -210,21 +212,21 @@ export function LoadPoolPanel() {
                     </TableCell>
                     <TableCell>
                       {item.needs_cargo_info ? (
-                        <Badge variant="warning" title="Yük sekmesinde Kap Adedi girilmemiş">
-                          Kap adedi eksik
+                        <Badge variant="warning" title={t('ui.yuk_sekmesinde_kap_adedi_girilmemis')}>
+                          {t('ui.kap_adedi_eksik')}
                         </Badge>
                       ) : item.is_unassigned ? (
-                        <Badge variant="destructive">Hiç atanmamış</Badge>
+                        <Badge variant="destructive">{t('ui.hic_atanmamis_2')}</Badge>
                       ) : item.is_fully_assigned ? (
-                        <Badge variant="success">Tamamen atanmış</Badge>
+                        <Badge variant="success">{t('ui.tamamen_atanmis')}</Badge>
                       ) : (
-                        <Badge variant="warning">Kısmen</Badge>
+                        <Badge variant="warning">{t('ui.kismen')}</Badge>
                       )}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
                         {editLink && (
-                          <Button asChild variant="ghost" size="icon" className="h-7 w-7" title="Sevkiyatı aç">
+                          <Button asChild variant="ghost" size="icon" className="h-7 w-7" title={t('ui.sevkiyati_ac')}>
                             <Link to={editLink}>
                               <ExternalLink className="w-3.5 h-3.5" />
                             </Link>
@@ -235,7 +237,7 @@ export function LoadPoolPanel() {
                           <Button asChild size="sm" variant="outline" className="h-7">
                             <Link to={`${editLink}#cargo`}>
                               <AlertCircle className="w-3.5 h-3.5" />
-                              Kap Adedi Gir
+                              {t('ui.kap_adedi_gir')}
                             </Link>
                           </Button>
                         ) : (
@@ -247,7 +249,7 @@ export function LoadPoolPanel() {
                             disabled={item.is_fully_assigned}
                           >
                             <Plus className="w-3.5 h-3.5" />
-                            Atama Yap
+                            {t('ui.atama_yap')}
                           </Button>
                         )}
                       </div>
@@ -265,12 +267,12 @@ export function LoadPoolPanel() {
         <Package className="w-3.5 h-3.5 mt-0.5 shrink-0" />
         <span>
           <Link to="/guide" className="text-primary hover:underline font-medium">
-            Adım adım anlatım için: Nasıl Kullanılır → Araç Atama
+            {t('ui.adim_adim_anlatim_icin_nasil_kullanilir_arac')}
           </Link>
           <br />
-          <strong>Bir araca birden fazla yük:</strong> Aynı TIR'ı birden çok sevkiyatta seçmen yeterli —
+          <strong>{t('ui.bir_araca_birden_fazla_yuk')}</strong> Aynı TIR'ı birden çok sevkiyatta seçmen yeterli —
           her satırda "Atama Yap" deyip aynı aracı seç, kapasite göstergesi dolarak ilerler.
-          <strong> Bir yükü birden fazla araca bölmek:</strong> Aynı sevkiyat için birkaç kez atama yap,
+          <strong> {t('ui.bir_yuku_birden_fazla_araca_bolmek')}</strong> Aynı sevkiyat için birkaç kez atama yap,
           her seferinde farklı araç ve kısmi kap/ağırlık gir; "Kalan" sütunu sıfırlanana kadar devam et.
           Kalan kap/ağırlık forma otomatik gelir, düzenleyebilirsin.
           Kapalı sevkiyatlar ve depolama işlemleri burada listelenmez.

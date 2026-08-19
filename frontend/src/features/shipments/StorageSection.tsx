@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Plus, Trash2, AlertTriangle, Package, Clock, ArrowUpCircle, ArrowDownCircle,
   TrendingUp, TrendingDown, Coins, Info,
@@ -52,6 +53,7 @@ export function StorageSection({
   warehouseTypeCode, storageDataStr, onChangeStorageData,
   stockLogStr, onChangeStockLog,
 }: Props) {
+  const { t } = useTranslation()
   const sym = currencySymbol(currency)
 
   // Storage cost otomatik hesap
@@ -126,7 +128,7 @@ export function StorageSection({
             <div className="font-semibold text-sm">{transitAlert.message}</div>
             {transitAlert.expiry_date && (
               <div className="text-xs text-muted-foreground mt-1">
-                Son geçerlilik: <strong>{formatDate(transitAlert.expiry_date)}</strong>
+                {t('ui.son_gecerlilik')} <strong>{formatDate(transitAlert.expiry_date)}</strong>
               </div>
             )}
           </div>
@@ -155,9 +157,9 @@ export function StorageSection({
           </Badge>
         </div>
         <div className="grid grid-cols-3 gap-3 mb-3">
-          <CostCard label="Günlük" total={storageCost.daily_total} active={pricingType === 'gun'} sym={sym} />
-          <CostCard label="Haftalık" total={storageCost.weekly_total} active={pricingType === 'hafta'} sym={sym} />
-          <CostCard label="Aylık" total={storageCost.monthly_total} active={pricingType === 'ay'} sym={sym} />
+          <CostCard label={t('shipment.storage_pricing.daily')} total={storageCost.daily_total} active={pricingType === 'gun'} sym={sym} />
+          <CostCard label={t('shipment.storage_pricing.weekly')} total={storageCost.weekly_total} active={pricingType === 'hafta'} sym={sym} />
+          <CostCard label={t('shipment.storage_pricing.monthly')} total={storageCost.monthly_total} active={pricingType === 'ay'} sym={sym} />
         </div>
         {storageCost.formula && (
           <div className="text-xs text-muted-foreground italic flex items-center gap-1.5">
@@ -170,7 +172,7 @@ export function StorageSection({
       <Card className="p-4">
         <div className="flex items-center justify-between mb-3">
           <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Elleçleme Kalemleri + KDV
+            {t('ui.ellecleme_kalemleri_kdv')}
           </span>
           <Badge variant="outline">Para birimi: {currency}</Badge>
         </div>
@@ -179,7 +181,7 @@ export function StorageSection({
             <thead className="bg-muted/40 border-b">
               <tr>
                 <th className="text-left px-3 py-2 text-[10px] font-semibold uppercase text-muted-foreground">
-                  Kalem
+                  {t('fin.ui.item')}
                 </th>
                 <th className="text-right px-2 py-2 text-[10px] font-semibold uppercase text-success">
                   Satış ({sym})
@@ -208,7 +210,7 @@ export function StorageSection({
             </tbody>
             <tfoot className="bg-muted/40 border-t-2">
               <tr>
-                <td className="px-3 py-2 text-xs font-semibold uppercase text-muted-foreground">Toplam</td>
+                <td className="px-3 py-2 text-xs font-semibold uppercase text-muted-foreground">{t('common.total')}</td>
                 <td className="px-2 py-2 text-right tabular-nums font-semibold text-success">
                   {formatMoney(handlingTotals.totalSales, currency)}
                 </td>
@@ -229,10 +231,10 @@ export function StorageSection({
 
       {/* Genel toplam */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-        <TotalsBox icon={<TrendingUp className="w-3.5 h-3.5" />} label="Depo + Elleçleme Satış" value={formatMoney(grandTotalSales, currency)} variant="success" />
-        <TotalsBox icon={<TrendingDown className="w-3.5 h-3.5" />} label="Toplam Maliyet" value={formatMoney(grandTotalCost, currency)} variant="destructive" />
-        <TotalsBox icon={<Coins className="w-3.5 h-3.5" />} label="Brüt Kâr" value={formatMoney(grandProfit, currency)} variant="primary" />
-        <TotalsBox label="Stok (Kap)" value={String(stockSummary.currentStock)} variant={stockSummary.currentStock > 0 ? 'warning' : 'success'} />
+        <TotalsBox icon={<TrendingUp className="w-3.5 h-3.5" />} label={t('ui.depo_ellecleme_satis')} value={formatMoney(grandTotalSales, currency)} variant="success" />
+        <TotalsBox icon={<TrendingDown className="w-3.5 h-3.5" />} label={t('fin.ui.total_cost')} value={formatMoney(grandTotalCost, currency)} variant="destructive" />
+        <TotalsBox icon={<Coins className="w-3.5 h-3.5" />} label={t('partner.detail.gross_profit')} value={formatMoney(grandProfit, currency)} variant="primary" />
+        <TotalsBox label={t('ui.stok_kap')} value={String(stockSummary.currentStock)} variant={stockSummary.currentStock > 0 ? 'warning' : 'success'} />
       </div>
 
       {/* Stok Log */}
@@ -262,6 +264,7 @@ export function StorageSection({
 
 // === Storage cost kartı ===
 function CostCard({ label, total, active, sym }: { label: string; total: number; active: boolean; sym: string }) {
+  const { t } = useTranslation()
   return (
     <div className={cn(
       'rounded-md border p-2.5 text-center',
@@ -271,7 +274,7 @@ function CostCard({ label, total, active, sym }: { label: string; total: number;
       <div className={cn('text-base font-bold tabular-nums mt-0.5', active && 'text-primary')}>
         {total > 0 ? `${sym}${total.toFixed(2)}` : '—'}
       </div>
-      {active && <div className="text-[9px] text-primary font-medium mt-0.5">SEÇİLİ</div>}
+      {active && <div className="text-[9px] text-primary font-medium mt-0.5">{t('ui.secili')}</div>}
     </div>
   )
 }
@@ -361,6 +364,7 @@ function VatSimplePicker({
 
 // === Stok log editor ===
 function StockLogEditor({ log, onChange }: { log: StockMovement[]; onChange: (next: StockMovement[]) => void }) {
+  const { t } = useTranslation()
   const [entryDate, setEntryDate] = useState('')
   const [exitDate, setExitDate] = useState('')
   const [inQty, setInQty] = useState('')
@@ -407,7 +411,7 @@ function StockLogEditor({ log, onChange }: { log: StockMovement[]; onChange: (ne
   }
 
   const remove = (idx: number) => {
-    if (!confirm('Bu hareketi silmek istiyor musun?')) return
+    if (!confirm(t('ui.bu_hareketi_silmek_istiyor_musun'))) return
     onChange(log.filter((_, i) => i !== idx))
   }
 
@@ -416,19 +420,19 @@ function StockLogEditor({ log, onChange }: { log: StockMovement[]; onChange: (ne
       {/* Hareket ekleme formu */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-2 p-3 rounded-md bg-muted/30 border border-dashed">
         <div className="space-y-1">
-          <Label className="text-[10px] text-success">Giriş Tarihi</Label>
+          <Label className="text-[10px] text-success">{t('ui.giris_tarihi')}</Label>
           <Input type="date" value={entryDate} onChange={(e) => setEntryDate(e.target.value)} className="h-8 text-xs" />
         </div>
         <div className="space-y-1">
-          <Label className="text-[10px] text-destructive">Çıkış Tarihi</Label>
+          <Label className="text-[10px] text-destructive">{t('ui.cikis_tarihi')}</Label>
           <Input type="date" value={exitDate} onChange={(e) => setExitDate(e.target.value)} className="h-8 text-xs" placeholder="—" />
         </div>
         <div className="space-y-1">
-          <Label className="text-[10px] text-success">Giriş Kap</Label>
+          <Label className="text-[10px] text-success">{t('ui.giris_kap')}</Label>
           <Input type="number" min="0" value={inQty} onChange={(e) => setInQty(e.target.value)} className="h-8 text-right tabular-nums" />
         </div>
         <div className="space-y-1">
-          <Label className="text-[10px] text-destructive">Çıkış Kap</Label>
+          <Label className="text-[10px] text-destructive">{t('ui.cikis_kap')}</Label>
           <Input type="number" min="0" value={outQty} onChange={(e) => setOutQty(e.target.value)} className="h-8 text-right tabular-nums" />
         </div>
         <div className="space-y-1 col-span-2 md:col-span-1">
@@ -438,7 +442,7 @@ function StockLogEditor({ log, onChange }: { log: StockMovement[]; onChange: (ne
         <div className="flex items-end">
           <Button type="button" size="sm" onClick={addMovement} className="h-8 w-full">
             <Plus className="w-3.5 h-3.5" />
-            Ekle
+            {t('common.add')}
           </Button>
         </div>
       </div>
@@ -446,18 +450,18 @@ function StockLogEditor({ log, onChange }: { log: StockMovement[]; onChange: (ne
       {/* Hareket tablosu */}
       {log.length === 0 ? (
         <div className="text-center text-xs text-muted-foreground italic py-6 border-2 border-dashed rounded">
-          Henüz stok hareketi yok
+          {t('ui.henuz_stok_hareketi_yok')}
         </div>
       ) : (
         <div className="overflow-x-auto rounded border">
           <table className="w-full text-xs">
             <thead className="bg-muted/40 border-b">
               <tr>
-                <th className="text-left px-2 py-1.5 text-success font-semibold">Giriş</th>
-                <th className="text-left px-2 py-1.5 text-destructive font-semibold">Çıkış</th>
+                <th className="text-left px-2 py-1.5 text-success font-semibold">{t('audit.actions.login')}</th>
+                <th className="text-left px-2 py-1.5 text-destructive font-semibold">{t('audit.actions.logout')}</th>
                 <th className="text-center px-2 py-1.5 text-teal-600 font-semibold">Bekleme</th>
-                <th className="text-center px-2 py-1.5 text-success font-semibold">Giriş Kap</th>
-                <th className="text-center px-2 py-1.5 text-destructive font-semibold">Çıkış Kap</th>
+                <th className="text-center px-2 py-1.5 text-success font-semibold">{t('ui.giris_kap')}</th>
+                <th className="text-center px-2 py-1.5 text-destructive font-semibold">{t('ui.cikis_kap')}</th>
                 <th className="text-center px-2 py-1.5 text-primary font-semibold">Bakiye</th>
                 <th className="text-left px-2 py-1.5 text-muted-foreground font-semibold">Not</th>
                 <th className="w-8"></th>

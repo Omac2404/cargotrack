@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
@@ -19,6 +20,7 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>
 
 export function LoginPage() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
   const loginStore = useAuth((s) => s.login)
@@ -62,24 +64,24 @@ export function LoginPage() {
           <div className="space-y-6 max-w-md">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur border border-white/20 text-xs">
               <Lock className="w-3 h-3" />
-              Güvenli & Şifreli Bağlantı
+              {t('ui.guvenli_sifreli_baglanti')}
             </div>
             <h1 className="text-4xl font-bold leading-tight tracking-tight">
-              Lojistik operasyonlarınız<br />
-              <span className="font-light opacity-80">tek panel altında</span>
+              {t('ui.lojistik_operasyonlariniz')}<br />
+              <span className="font-light opacity-80">{t('ui.login_hero_sub')}</span>
             </h1>
             <p className="text-white/70 leading-relaxed">
-              Sevkiyatlar, müşteriler, depolar ve araçlar — tüm operasyonu gerçek zamanlı yönetin.
+              {t('ui.sevkiyatlar_musteriler_depolar_ve_araclar_tu')}
             </p>
             <div className="grid grid-cols-3 gap-3 pt-4">
-              <FeatureCard icon={<Truck className="w-4 h-4" />} label="Karayolu" />
-              <FeatureCard icon={<Ship className="w-4 h-4" />} label="Denizyolu" />
-              <FeatureCard icon={<Plane className="w-4 h-4" />} label="Havayolu" />
+              <FeatureCard icon={<Truck className="w-4 h-4" />} label={t('nav.road')} />
+              <FeatureCard icon={<Ship className="w-4 h-4" />} label={t('nav.maritime')} />
+              <FeatureCard icon={<Plane className="w-4 h-4" />} label={t('nav.air')} />
             </div>
           </div>
 
           <div className="text-xs text-white/40">
-            © 2026 Webreta — Tüm hakları saklıdır
+            {t('ui.2026_webreta_tum_haklari_saklidir')}
           </div>
         </div>
       </div>
@@ -92,13 +94,13 @@ export function LoginPage() {
           </div>
 
           <div className="space-y-1.5">
-            <h2 className="text-2xl font-bold tracking-tight">Hoş geldiniz</h2>
-            <p className="text-sm text-muted-foreground">Hesabınıza giriş yaparak devam edin.</p>
+            <h2 className="text-2xl font-bold tracking-tight">{t('ui.hos_geldiniz')}</h2>
+            <p className="text-sm text-muted-foreground">{t('ui.hesabiniza_giris_yaparak_devam_edin')}</p>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="username">Kullanıcı Adı</Label>
+              <Label htmlFor="username">{t('auth.username')}</Label>
               <div className="relative">
                 <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
@@ -116,7 +118,7 @@ export function LoginPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="password">Şifre</Label>
+              <Label htmlFor="password">{t('auth.password')}</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
@@ -147,7 +149,7 @@ export function LoginPage() {
           </form>
 
           <div className="text-center text-xs text-muted-foreground pt-4 border-t">
-            <span className="font-medium text-foreground">WEBRETA</span> tarafından geliştirilmektedir
+            {t('ui.developed_by', { name: 'WEBRETA' })}
           </div>
         </div>
       </div>

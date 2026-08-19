@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -41,6 +42,7 @@ interface Props {
 }
 
 export function WarehouseFormDialog({ open, onOpenChange, warehouse }: Props) {
+  const { t } = useTranslation()
   const isEdit = !!warehouse
   const saveMut = useSaveWarehouse()
 
@@ -98,14 +100,14 @@ export function WarehouseFormDialog({ open, onOpenChange, warehouse }: Props) {
 
         <form id="warehouse-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="name">Depo Adı *</Label>
+            <Label htmlFor="name">{t('ui.depo_adi')}</Label>
             <Input id="name" {...register('name')} />
             {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label>Depo Tipi *</Label>
+              <Label>{t('ui.depo_tipi')}</Label>
               <Select value={watch('type_code')} onValueChange={(v) => setValue('type_code', v as FormValues['type_code'])}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -118,33 +120,33 @@ export function WarehouseFormDialog({ open, onOpenChange, warehouse }: Props) {
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label>Durum</Label>
+              <Label>{t('common.status')}</Label>
               <Select value={watch('status')} onValueChange={(v) => setValue('status', v as FormValues['status'])}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="active">Aktif</SelectItem>
-                  <SelectItem value="inactive">Pasif</SelectItem>
+                  <SelectItem value="active">{t('vehicle.status.active')}</SelectItem>
+                  <SelectItem value="inactive">{t('vehicle.status.inactive')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="address">Adres</Label>
+            <Label htmlFor="address">{t('partner.address')}</Label>
             <Textarea id="address" rows={2} {...register('address')} />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="postal_code">Posta Kodu</Label>
+              <Label htmlFor="postal_code">{t('partner.postal_code')}</Label>
               <Input id="postal_code" {...register('postal_code')} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="city">Şehir</Label>
+              <Label htmlFor="city">{t('partner.city')}</Label>
               <Input id="city" {...register('city')} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="country">Ülke</Label>
+              <Label htmlFor="country">{t('partner.country')}</Label>
               <Input id="country" {...register('country')} />
             </div>
           </div>
@@ -155,15 +157,15 @@ export function WarehouseFormDialog({ open, onOpenChange, warehouse }: Props) {
               <Input id="capacity_info" placeholder="1000 m² / 5000 palet" {...register('capacity_info')} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="responsible_person">Sorumlu Kişi</Label>
+              <Label htmlFor="responsible_person">{t('ui.sorumlu_kisi')}</Label>
               <Input id="responsible_person" {...register('responsible_person')} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="contact_phone">Telefon</Label>
+              <Label htmlFor="contact_phone">{t('shipment.fields.phone')}</Label>
               <Input id="contact_phone" {...register('contact_phone')} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="contact_email">E-posta</Label>
+              <Label htmlFor="contact_email">{t('shipment.fields.email')}</Label>
               <Input id="contact_email" type="email" {...register('contact_email')} />
               {errors.contact_email && <p className="text-xs text-destructive">{errors.contact_email.message}</p>}
             </div>
@@ -176,7 +178,7 @@ export function WarehouseFormDialog({ open, onOpenChange, warehouse }: Props) {
         </form>
 
         <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>İptal</Button>
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{t('common.cancel')}</Button>
           <Button type="submit" form="warehouse-form" disabled={saveMut.isPending}>
             {saveMut.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
             {isEdit ? 'Güncelle' : 'Kaydet'}

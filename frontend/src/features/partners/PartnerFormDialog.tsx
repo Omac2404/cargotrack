@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useForm, type UseFormRegister, type FieldErrors } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -47,6 +48,7 @@ interface Props {
 }
 
 export function PartnerFormDialog({ open, onOpenChange, partner, defaultType = 'customer' }: Props) {
+  const { t } = useTranslation()
   const isEdit = !!partner
   const saveMut = useSavePartner()
 
@@ -147,37 +149,37 @@ export function PartnerFormDialog({ open, onOpenChange, partner, defaultType = '
             </div>
           </div>
 
-          <Section>Şirket</Section>
-          <Field label="Şirket Adı *" name="company_name" register={register} errors={errors} required />
+          <Section>{t('ui.sirket')}</Section>
+          <Field label={t('ui.sirket_adi')} name="company_name" register={register} errors={errors} required />
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <Field label="Şehir" name="city" register={register} errors={errors} />
-            <Field label="Posta Kodu" name="postal_code" register={register} errors={errors} />
-            <Field label="Ülke" name="country" register={register} errors={errors} className="md:col-span-2" />
+            <Field label={t('partner.city')} name="city" register={register} errors={errors} />
+            <Field label={t('partner.postal_code')} name="postal_code" register={register} errors={errors} />
+            <Field label={t('partner.country')} name="country" register={register} errors={errors} className="md:col-span-2" />
           </div>
           <FieldArea label="Fiziksel Adres" name="physical_address" register={register} errors={errors} />
 
-          <Section>Vergi / Tanıtıcı</Section>
+          <Section>{t('ui.vergi_tanitici')}</Section>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <Field label="Vergi No" name="tax_number" register={register} errors={errors} />
-            <Field label="MERSİS" name="mersis_number" register={register} errors={errors} />
+            <Field label={t('ui.vergi_no')} name="tax_number" register={register} errors={errors} />
+            <Field label={t('ui.mersis')} name="mersis_number" register={register} errors={errors} />
             <Field label="EORI" name="eori_number" register={register} errors={errors} />
           </div>
 
-          <Section>İletişim</Section>
+          <Section>{t('partner.contact')}</Section>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <Field label="İletişim Kişi" name="contact_person" register={register} errors={errors} />
-            <Field label="Telefon" name="contact_phone" register={register} errors={errors} />
-            <Field label="E-posta" name="contact_email" register={register} errors={errors} type="email" />
+            <Field label={t('shipment.fields.contact_person')} name="contact_person" register={register} errors={errors} />
+            <Field label={t('shipment.fields.phone')} name="contact_phone" register={register} errors={errors} />
+            <Field label={t('shipment.fields.email')} name="contact_email" register={register} errors={errors} type="email" />
           </div>
 
-          <Section>Faturalama</Section>
+          <Section>{t('shipment.tabs.invoice')}</Section>
           <FieldArea label="Faturalama Adresi" name="billing_address" register={register} errors={errors} />
-          <Field label="Fatura E-postası" name="billing_email" register={register} errors={errors} type="email" />
+          <Field label={t('partner.billing_email')} name="billing_email" register={register} errors={errors} type="email" />
         </form>
 
         <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>İptal</Button>
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{t('common.cancel')}</Button>
           <Button type="submit" form="partner-form" disabled={saveMut.isPending}>
             {saveMut.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
             {isEdit ? 'Güncelle' : 'Kaydet'}
