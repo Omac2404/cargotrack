@@ -62,6 +62,8 @@ COPY app.js ./
 COPY src/ ./src/
 COPY db/ ./db/
 COPY scripts/ ./scripts/
+# Antet görseli (proforma faturanın entête'i) — PDF üretiminde okunur
+COPY assets/ ./assets/
 COPY ecosystem.config.js ./
 
 # Cargotrack SPA → /app/public/ (express.static '/panel' altında servet edecek)

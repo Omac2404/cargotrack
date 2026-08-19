@@ -5,15 +5,23 @@
  * kod değiştirmeye gerek kalmaz — EasyPanel'de env düzenleyip yeniden başlatmak yeter.
  * Boş bırakılan satırlar PDF'te hiç basılmaz, yer kaplamaz.
  */
+const path = require('path');
+
 const COMPANY = {
   name: process.env.COMPANY_NAME || 'INTER TRANS MMS',
   tagline: process.env.COMPANY_TAGLINE || 'MULTI MODAL SERVICES',
-  address: process.env.COMPANY_ADDRESS || '',
-  postalCity: process.env.COMPANY_POSTAL_CITY || '',
-  country: process.env.COMPANY_COUNTRY || '',
-  phone: process.env.COMPANY_PHONE || '',
-  email: process.env.COMPANY_EMAIL || '',
-  web: process.env.COMPANY_WEB || '',
+  address: process.env.COMPANY_ADDRESS || '5 Avenue du Beaumontoir',
+  postalCity: process.env.COMPANY_POSTAL_CITY || '95380 Louvres',
+  country: process.env.COMPANY_COUNTRY || 'France',
+  phone: process.env.COMPANY_PHONE || '01 34 04 10 10',
+  email: process.env.COMPANY_EMAIL || 'factures@intertransmms.com',
+  web: process.env.COMPANY_WEB || 'www.intertransmms.com',
+  /**
+   * Antet görseli (logo + ünvan + adres bloğu). Varsa PDF'e resim olarak basılır,
+   * yoksa yukarıdaki metin alanlarından antet kurulur.
+   */
+  letterheadPath: process.env.COMPANY_LETTERHEAD
+    || path.join(__dirname, '..', '..', 'assets', 'letterhead.png'),
   /** TVA intracommunautaire / KDV numarası */
   vatNumber: process.env.COMPANY_VAT || '',
   /** SIRET / SIREN / vergi kimlik no */

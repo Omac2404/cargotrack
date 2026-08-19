@@ -144,6 +144,7 @@ const FIN_LABELS_FR = {
   ith_frais_t1: 'Frais de T1',
   ith_forfait_dedouanement: 'Forfait dédouanement',
   ith_frais_bad: 'Frais de BAD',
+  ith_stop_douane: 'Stop douane',
 
   sigorta: 'Assurance',
   diger: 'Divers',
@@ -179,6 +180,30 @@ const COUNTRY_FR = {
   'Kazakistan': 'Kazakhstan', 'Özbekistan': 'Ouzbékistan', 'Türkmenistan': 'Turkménistan',
 };
 const countryFr = (name) => COUNTRY_FR[String(name || '').trim()] || name || '—';
+
+/**
+ * Antet görseli — bir kez çözümlenir. Dosya yoksa metin antede düşülür.
+ * PNG başlığından oran okunur ki yükseklik sabit varsayılmasın.
+ */
+const letterheadFile = (() => {
+  try {
+    return fs.existsSync(COMPANY.letterheadPath) ? COMPANY.letterheadPath : null;
+  } catch { return null; }
+})();
+
+const letterheadRatio = (() => {
+  if (!letterheadFile) return 1;
+  try {
+    const head = fs.readFileSync(letterheadFile).subarray(0, 33);
+    if (head.subarray(1, 4).toString() !== 'PNG') return 1;
+    const w = head.readUInt32BE(16), h = head.readUInt32BE(20);
+    return w > 0 ? h / w : 1;
+  } catch { return 1; }
+})();
+
+if (!letterheadFile) {
+  console.warn(`[pdf] Antet görseli bulunamadı (${COMPANY.letterheadPath}) — metin antet kullanılacak.`);
+}
 
 /** Fransız biçiminde sayı: 1 895,00 */
 function formatFr(n, decimals = 2) {
@@ -237,6 +262,7 @@ const FIN_LABELS = {
   ith_frais_t1: 'Frais de T1 (T1 Transit Masrafı)',
   ith_forfait_dedouanement: 'Forfait Dédouanement (Gümrükleme Ücreti)',
   ith_frais_bad: 'Frais de BAD (Teslim Emri Masrafı)',
+  ith_stop_douane: 'Stop Douane (Gümrük Durdurma)',
 
   sigorta: 'Sigorta',
   diger: 'Diğer',
@@ -571,41 +597,50 @@ router.get('/proforma/:shipmentId', verifyTokenFlexible, async (req, res) => {
     const cur = ship.currency_code || 'EUR';
     const symbol = CURRENCY_SYMBOL[cur] || cur;
 
-    // === ANTET (entête) — sol: şirket kimliği, sağ: belge başlığı ===
-    const addrLines = addressLines();
+    // === ANTET (entête) — sol: şirket antedi, sağ: belge başlığı ===
+    // Antet görseli (logo + ünvan + adres) varsa resim olarak basılır; görselin
+    // içinde adres/telefon/e-posta zaten yazılı olduğu için metin bloğu tekrar
+    // edilmez. Görsel yoksa aynı bilgiler metin olarak yazılır.
     const idLines = identityLines();
+    let headY = 42;
 
-    doc.fontSize(16).font(F.bold).fillColor(COLORS.text)
-       .text(COMPANY.name, 40, 42, { width: 300 });
-    let headY = 62;
-    if (COMPANY.tagline) {
-      doc.fontSize(7).font(F.regular).fillColor(COLORS.textMuted)
-         .text(COMPANY.tagline, 40, headY, { width: 300, characterSpacing: 1.5 });
-      headY += 12;
-    }
-    doc.fontSize(8).font(F.regular).fillColor(COLORS.textMuted);
-    for (const line of addrLines) {
-      doc.text(line, 40, headY, { width: 300, ellipsis: true, lineBreak: false });
-      headY += 10;
-    }
-    if (idLines.length > 0) {
-      headY += 2;
-      doc.fontSize(7).fillColor(COLORS.textLight);
-      for (const line of idLines) {
+    if (letterheadFile) {
+      const LETTERHEAD_W = 150;
+      doc.image(letterheadFile, 40, 36, { width: LETTERHEAD_W });
+      headY = 36 + Math.round(LETTERHEAD_W * letterheadRatio) + 6;
+    } else {
+      doc.fontSize(16).font(F.bold).fillColor(COLORS.text)
+         .text(COMPANY.name, 40, headY, { width: 300 });
+      headY += 20;
+      if (COMPANY.tagline) {
+        doc.fontSize(7).font(F.regular).fillColor(COLORS.textMuted)
+           .text(COMPANY.tagline, 40, headY, { width: 300, characterSpacing: 1.5 });
+        headY += 12;
+      }
+      doc.fontSize(8).font(F.regular).fillColor(COLORS.textMuted);
+      for (const line of addressLines()) {
         doc.text(line, 40, headY, { width: 300, ellipsis: true, lineBreak: false });
-        headY += 9;
+        headY += 10;
       }
     }
 
-    // Sağ üst: belge başlığı
+    // Sağ üst: belge başlığı + (varsa) vergi kimlik satırları
     doc.fontSize(24).font(F.bold).fillColor(COLORS.primary)
        .text('FACTURE PROFORMA', 300, 44, { width: W - 340, align: 'right' });
     doc.fontSize(7.5).font(F.regular).fillColor(COLORS.textMuted)
        .text('Ce document est fourni à titre informatif et ne constitue pas une facture officielle.',
              300, 74, { width: W - 340, align: 'right' });
+    let rightY = 96;
+    if (idLines.length > 0) {
+      doc.fontSize(7.5).fillColor(COLORS.textLight);
+      for (const line of idLines) {
+        doc.text(line, 300, rightY, { width: W - 340, align: 'right', lineBreak: false });
+        rightY += 10;
+      }
+    }
 
-    // Antet ayırıcı çizgisi
-    const ruleY = Math.max(headY + 6, 100);
+    // Antet ayırıcı çizgisi — iki bloktan uzun olanın altına
+    const ruleY = Math.max(headY + 6, rightY + 6, 100);
     doc.moveTo(40, ruleY).lineTo(W - 40, ruleY)
        .lineWidth(1.5).strokeColor(COLORS.primary).stroke();
 

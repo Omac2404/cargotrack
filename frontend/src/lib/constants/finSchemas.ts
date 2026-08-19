@@ -19,6 +19,7 @@ const IMPORT_CLEARANCE_ITEMS: FinItem[] = [
   { group: 'İthalat Vergileri', key: 'ith_frais_t1', label: 'Frais de T1 (T1 Transit Masrafı)' },
   { group: 'İthalat Vergileri', key: 'ith_forfait_dedouanement', label: 'Forfait Dédouanement (Gümrükleme Ücreti)' },
   { group: 'İthalat Vergileri', key: 'ith_frais_bad', label: 'Frais de BAD (Teslim Emri Masrafı)' },
+  { group: 'İthalat Vergileri', key: 'ith_stop_douane', label: 'Stop Douane (Gümrük Durdurma)' },
 ]
 
 const ROAD_SCHEMA: FinItem[] = [
