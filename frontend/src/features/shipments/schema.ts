@@ -33,11 +33,32 @@ const jsonField = z
     return typeof v === 'string' ? v : JSON.stringify(v)
   })
 
+/**
+ * Sabit seçenekli alanlar (statü, mod, para birimi) için toleranslı dönüşüm.
+ *
+ * Bunlar `z.enum(...)` ile katı doğrulanıyordu: değer bir şekilde boş ya da
+ * beklenmedik bir hale gelirse ("Durum: Invalid input") KAYIT TAMAMEN
+ * bloklanıyor, kullanıcı statü ve Incoterm'i tekrar tekrar giriyordu.
+ * Bir açılır listenin kaydı engellemesi doğru değil: geçerliyse aynen geçer,
+ * değilse sessizce varsayılana düşer.
+ */
+function optionField<T extends readonly [string, ...string[]]>(options: T, fallback: T[number]) {
+  return z
+    .string()
+    .optional()
+    .transform((v) =>
+      (v && (options as readonly string[]).includes(v) ? v : fallback) as T[number]
+    )
+}
+
+const TRANSPORT_TYPES = ['road', 'maritime', 'air', 'storage', 'import', 'export'] as const
+const SHIPMENT_STATUSES = ['draft', 'in_progress', 'to_invoice', 'closed'] as const
+
 export const shipmentSchema = z.object({
   id: z.union([z.number(), z.string()]).optional(),
 
-  transport_type: z.enum(['road', 'maritime', 'air', 'storage', 'import', 'export']),
-  status: z.enum(['draft', 'in_progress', 'to_invoice', 'closed']).default('draft'),
+  transport_type: optionField(TRANSPORT_TYPES, 'road'),
+  status: optionField(SHIPMENT_STATUSES, 'draft'),
   created_date: optString,
   responsible_user: optString,
   client_reference: optString,
@@ -86,7 +107,8 @@ export const shipmentSchema = z.object({
   transport_handling: numericString,
   insurance_cost: numericString,
   other_costs: numericString,
-  currency_code: z.string().default('EUR'),
+  // Para birimi de kaydı bloklamamalı: boş/gecersizse EUR'ya duser
+  currency_code: z.string().optional().transform((v) => (v && v.trim() ? v : 'EUR')),
 
   // Depo (storage / depo bağlantısı için)
   warehouse: optString,

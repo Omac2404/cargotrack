@@ -921,7 +921,8 @@
     "save_first_for_dispatch": "Önce sevkiyatı kaydet — atama yapmak için sevkiyat oluşturulmuş olmalı.",
     "save_first_for_history": "Önce sevkiyatı kaydet — geçmiş kaydı sevkiyat oluşturulduktan sonra başlar.",
     "save_first_for_vehicle_load": "Önce aracı kaydet — yük havuzu, araç kaydedildikten sonra kullanılabilir.",
-    "ldm_label": "MP (Yükleme Metresi)"
+    "ldm_label": "MP (Yükleme Metresi)",
+    "saved_stay": "Değişiklikler kaydedildi"
   },
   "invoice": {
     "invoice_no": "Fatura No",

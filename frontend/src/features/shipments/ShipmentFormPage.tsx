@@ -370,13 +370,16 @@ export function ShipmentFormPage() {
     if (payload.payment_type === '__none__') payload.payment_type = ''
     saveMut.mutate(payload, {
       onSuccess: (data) => {
-        toast.success(isEdit ? 'Güncellendi' : `Oluşturuldu: ${data.shipment_no || ''}`)
         if (!isEdit && data.id) {
           // Yeni kayıttan sonra edit moduna geçir (belgeler/atamalar kullanılabilir olsun)
+          toast.success(`${t('common.success')}: ${data.shipment_no || ''}`)
           navigate(`/shipments/${config.slug}/${data.id}/edit`)
-        } else {
-          navigate(`/shipments/${config.slug}`)
+          return
         }
+        // Güncellemede DOSYADAN ÇIKILMAZ. Önceden listeye dönülüyordu; kullanıcı
+        // her sekmeyi kaydettiğinde dosyadan atılıp baştan açmak zorunda kalıyordu.
+        toast.success(t('ui.saved_stay'))
+        reset(undefined, { keepValues: true, keepDirty: false, keepErrors: false })
       },
       onError: (err: Error) => toast.error(err.message),
     })

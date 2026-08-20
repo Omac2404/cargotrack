@@ -921,7 +921,8 @@
     "save_first_for_dispatch": "Enregistrez d’abord l’expédition — elle doit exister pour pouvoir être affectée.",
     "save_first_for_history": "Enregistrez d’abord l’expédition — l’historique commence après sa création.",
     "save_first_for_vehicle_load": "Enregistrez d’abord le véhicule — le pool de marchandises est disponible une fois le véhicule enregistré.",
-    "ldm_label": "MP (mètre plancher)"
+    "ldm_label": "MP (mètre plancher)",
+    "saved_stay": "Modifications enregistrées"
   },
   "invoice": {
     "invoice_no": "N° de facture",

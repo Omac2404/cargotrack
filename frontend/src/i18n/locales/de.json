@@ -921,7 +921,8 @@
     "save_first_for_dispatch": "Speichern Sie zuerst die Sendung — sie muss existieren, bevor sie zugewiesen werden kann.",
     "save_first_for_history": "Speichern Sie zuerst die Sendung — der Verlauf beginnt nach dem Anlegen.",
     "save_first_for_vehicle_load": "Speichern Sie zuerst das Fahrzeug — der Ladungspool ist nach dem Speichern verfügbar.",
-    "ldm_label": "LDM (Lademeter)"
+    "ldm_label": "LDM (Lademeter)",
+    "saved_stay": "Änderungen gespeichert"
   },
   "invoice": {
     "invoice_no": "Rechnungsnr.",

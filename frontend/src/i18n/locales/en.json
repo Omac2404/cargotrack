@@ -921,7 +921,8 @@
     "save_first_for_dispatch": "Save the shipment first — it must exist before it can be assigned.",
     "save_first_for_history": "Save the shipment first — history starts once the shipment is created.",
     "save_first_for_vehicle_load": "Save the vehicle first — the load pool becomes available once the vehicle is saved.",
-    "ldm_label": "LDM (loading metre)"
+    "ldm_label": "LDM (loading metre)",
+    "saved_stay": "Changes saved"
   },
   "invoice": {
     "invoice_no": "Invoice No",
