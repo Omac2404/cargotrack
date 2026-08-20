@@ -920,7 +920,8 @@
     "save_first_for_documents": "Save the shipment first — an ID is required to upload documents. Click \"Save\" at the top right, then come back to this tab.",
     "save_first_for_dispatch": "Save the shipment first — it must exist before it can be assigned.",
     "save_first_for_history": "Save the shipment first — history starts once the shipment is created.",
-    "save_first_for_vehicle_load": "Save the vehicle first — the load pool becomes available once the vehicle is saved."
+    "save_first_for_vehicle_load": "Save the vehicle first — the load pool becomes available once the vehicle is saved.",
+    "ldm_label": "LDM (loading metre)"
   },
   "invoice": {
     "invoice_no": "Invoice No",

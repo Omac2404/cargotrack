@@ -209,9 +209,15 @@ export function ShipmentFormPage() {
   const loadedIdRef = useRef<string | null>(null)
   useEffect(() => {
     if (!existing) return
-    const isFirstLoadForThisRecord = loadedIdRef.current !== String(existing.id)
-    // Kullanıcının kaydedilmemiş değişikliği varsa üzerine yazma
-    if (!isFirstLoadForThisRecord && form.formState.isDirty) return
+    // SADECE kaydın ilk yüklenişinde forma yaz.
+    //
+    // React Query pencere odağında / invalidate sonrasında arka planda yeniden
+    // veri çekiyor. Burada koşulsuz reset yapılırsa kullanıcının ekranda yaptığı
+    // ama henüz kaydetmediği seçimler sunucudaki eski değerlerle geri alınıyordu
+    // — statü "Taslak"a dönüyor, Incoterm siliniyordu. Belge durumu gibi
+    // sunucu tarafı bilgiler zaten formdan değil `existing`ten okunuyor,
+    // dolayısıyla formu tazelemeye gerek yok.
+    if (loadedIdRef.current === String(existing.id)) return
 
     const values: Partial<ShipmentFormValues> = {}
     for (const k of Object.keys(existing) as Array<keyof typeof existing>) {
@@ -224,9 +230,6 @@ export function ShipmentFormPage() {
     }
     reset(values as ShipmentFormValues)
     loadedIdRef.current = String(existing.id)
-    // form.formState.isDirty kasıtlı olarak bağımlılıkta değil: dirty olunca
-    // effect'in yeniden çalışıp reset tetiklemesini istemiyoruz.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [existing, reset])
 
   // Belge durumu (varsa) — Belgeler tab'ında özetleme için
@@ -523,7 +526,7 @@ export function ShipmentFormPage() {
 
                 <div className="space-y-1.5">
                   <Label>{t('common.status')}</Label>
-                  <Select value={watch('status') || 'draft'} onValueChange={(v) => setValue('status', v as ShipmentFormValues['status'])}>
+                  <Select value={watch('status') || 'draft'} onValueChange={(v) => setValue('status', v as ShipmentFormValues['status'], { shouldDirty: true })}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {STATUSES.map((s) => <SelectItem key={s.value} value={s.value}>{t(s.label)}</SelectItem>)}
@@ -535,13 +538,13 @@ export function ShipmentFormPage() {
                   <Label>{t('shipment.fields.currency')}</Label>
                   <CurrencyCombobox
                     value={watch('currency_code') || 'EUR'}
-                    onChange={(v) => setValue('currency_code', v)}
+                    onChange={(v) => setValue('currency_code', v, { shouldDirty: true })}
                   />
                 </div>
 
                 <div className="space-y-1.5">
                   <Label>{t('shipment.fields.incoterm')}</Label>
-                  <Select value={watch('incoterm') || '__none__'} onValueChange={(v) => setValue('incoterm', v === '__none__' ? '' : v)}>
+                  <Select value={watch('incoterm') || '__none__'} onValueChange={(v) => setValue('incoterm', v === '__none__' ? '' : v, { shouldDirty: true })}>
                     <SelectTrigger><SelectValue placeholder={t('shipment.select_placeholder')} /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="__none__">{t('shipment.not_specified')}</SelectItem>
@@ -609,7 +612,7 @@ export function ShipmentFormPage() {
                     <Label>{t('shipment.fields.client_billing')}</Label>
                     <div className="flex items-center gap-1">
                       <div className="flex-1">
-                        <Combobox value={watch('client_billing') || ''} onChange={(v) => setValue('client_billing', v)}
+                        <Combobox value={watch('client_billing') || ''} onChange={(v) => setValue('client_billing', v, { shouldDirty: true })}
                           options={partnerOptionsByRole.customer} placeholder={t('shipment.fields.select_customer')}
                           searchPlaceholder={t('shipment.fields.company_search')} allowCustom />
                       </div>
@@ -645,7 +648,7 @@ export function ShipmentFormPage() {
                     <Label>{t('partner.types.sender')}</Label>
                     <div className="flex items-center gap-1">
                       <div className="flex-1">
-                        <Combobox value={watch('sender') || ''} onChange={(v) => setValue('sender', v)}
+                        <Combobox value={watch('sender') || ''} onChange={(v) => setValue('sender', v, { shouldDirty: true })}
                           options={partnerOptionsByRole.sender} placeholder={t('ui.gonderici_secin')} searchPlaceholder={t('shipment.fields.company_search')} allowCustom />
                       </div>
                       <Button type="button" variant="outline" size="icon" className="h-9 w-9 shrink-0"
@@ -667,7 +670,7 @@ export function ShipmentFormPage() {
                     <Label>{t('partner.types.receiver')}</Label>
                     <div className="flex items-center gap-1">
                       <div className="flex-1">
-                        <Combobox value={watch('receiver') || ''} onChange={(v) => setValue('receiver', v)}
+                        <Combobox value={watch('receiver') || ''} onChange={(v) => setValue('receiver', v, { shouldDirty: true })}
                           options={partnerOptionsByRole.receiver} placeholder={t('ui.alici_secin')} searchPlaceholder={t('shipment.fields.company_search')} allowCustom />
                       </div>
                       <Button type="button" variant="outline" size="icon" className="h-9 w-9 shrink-0"
@@ -689,7 +692,7 @@ export function ShipmentFormPage() {
                     <Label>{t('partner.types.agent')}</Label>
                     <div className="flex items-center gap-1">
                       <div className="flex-1">
-                        <Combobox value={watch('agent') || ''} onChange={(v) => setValue('agent', v)}
+                        <Combobox value={watch('agent') || ''} onChange={(v) => setValue('agent', v, { shouldDirty: true })}
                           options={partnerOptionsByRole.agent} placeholder={t('ui.acente_secin')} searchPlaceholder={t('shipment.fields.company_search')} allowCustom />
                       </div>
                       <Button type="button" variant="outline" size="icon" className="h-9 w-9 shrink-0"
@@ -711,7 +714,7 @@ export function ShipmentFormPage() {
                       <Label>{t('ui.cikis_ulkesi')}</Label>
                       <CountryCombobox
                         value={watch('departure_country') || ''}
-                        onChange={(v) => setValue('departure_country', v)}
+                        onChange={(v) => setValue('departure_country', v, { shouldDirty: true })}
                         placeholder={t('ui.cikis_ulkesi_2')}
                       />
                     </div>
@@ -719,7 +722,7 @@ export function ShipmentFormPage() {
                       <Label>{t('ui.varis_ulkesi')}</Label>
                       <CountryCombobox
                         value={watch('arrival_country') || ''}
-                        onChange={(v) => setValue('arrival_country', v)}
+                        onChange={(v) => setValue('arrival_country', v, { shouldDirty: true })}
                         placeholder={t('ui.varis_ulkesi_2')}
                       />
                     </div>
@@ -801,6 +804,26 @@ export function ShipmentFormPage() {
 
                 {/* Hacim + birim seçici (sadece UI; değer m³ olarak saklanır) */}
                 <VolumeField form={form} readOnly={hasGoodsItems} />
+
+                {/* MP (mètre plancher / yükleme metresi) — bilgi amaçlı.
+                    m³'e çevrilmez: 1 MP ↔ m³ karşılığı dorse yüksekliğine göre
+                    değiştiği için otomatik dönüşüm yanlış sonuç üretir. */}
+                <div className="space-y-1.5">
+                  <Label htmlFor="ldm">{t('ui.ldm_label')}</Label>
+                  <div className="relative">
+                    <Input
+                      id="ldm"
+                      type="number"
+                      step="0.1"
+                      className="pr-12"
+                      value={String(modeData.ldm ?? '')}
+                      onChange={(e) => setModeField('ldm', e.target.value === '' ? '' : Number(e.target.value))}
+                    />
+                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none font-medium">
+                      MP
+                    </span>
+                  </div>
+                </div>
 
                 <Field label="Boyutlar" name="dimensions" register={register} errors={errors} placeholder="120x80x100 cm" />
                 <Field label={t('ui.kap_adedi')} name="quantity" register={register} errors={errors} type="number" readOnly={hasGoodsItems} />
@@ -985,7 +1008,7 @@ export function ShipmentFormPage() {
                     <Label>{t('statistics.table.warehouse')}</Label>
                     <Combobox
                       value={watch('warehouse') || ''}
-                      onChange={(v) => setValue('warehouse', v)}
+                      onChange={(v) => setValue('warehouse', v, { shouldDirty: true })}
                       options={warehouseOptions}
                       placeholder={t('ui.depo_secin')}
                       searchPlaceholder={t('ui.depo_ara')}
@@ -998,7 +1021,7 @@ export function ShipmentFormPage() {
                   <Field label={t('ui.toplam_kap')} name="depo_kap_sayisi" register={register} errors={errors} type="number" />
                   <div className="space-y-1.5">
                     <Label>{t('ui.ucret_tipi')}</Label>
-                    <Select value={watch('depo_ucret_tipi') || 'gun'} onValueChange={(v) => setValue('depo_ucret_tipi', v)}>
+                    <Select value={watch('depo_ucret_tipi') || 'gun'} onValueChange={(v) => setValue('depo_ucret_tipi', v, { shouldDirty: true })}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {STORAGE_PRICING.map((p) => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
@@ -1134,7 +1157,7 @@ export function ShipmentFormPage() {
                 <Field label={t('invoice.invoice_amount', { defaultValue: 'Fatura Tutarı' })} name="invoice_amount" register={register} errors={errors} type="number" step="0.01" />
                 <div className="space-y-1.5">
                   <Label>{t('shipment.fields.payment_type')}</Label>
-                  <Select value={watch('payment_type') || '__none__'} onValueChange={(v) => setValue('payment_type', v === '__none__' ? '' : v)}>
+                  <Select value={watch('payment_type') || '__none__'} onValueChange={(v) => setValue('payment_type', v === '__none__' ? '' : v, { shouldDirty: true })}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {PAYMENT_TYPES.map((p) => <SelectItem key={p.value} value={p.value}>{t(p.label)}</SelectItem>)}
@@ -1506,7 +1529,7 @@ function CheckboxField({ label, name, form }: { label: string; name: keyof Shipm
       <Checkbox
         id={name as string}
         checked={checked}
-        onCheckedChange={(c) => form.setValue(name as never, (c ? 1 : 0) as never)}
+        onCheckedChange={(c) => form.setValue(name as never, (c ? 1 : 0) as never, { shouldDirty: true })}
       />
       <Label htmlFor={name as string} className="cursor-pointer">{label}</Label>
     </div>

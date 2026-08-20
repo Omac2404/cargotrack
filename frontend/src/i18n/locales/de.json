@@ -920,7 +920,8 @@
     "save_first_for_documents": "Speichern Sie zuerst die Sendung — für den Upload von Dokumenten wird eine ID benötigt. Klicken Sie oben rechts auf „Speichern\" und kehren Sie dann zu diesem Reiter zurück.",
     "save_first_for_dispatch": "Speichern Sie zuerst die Sendung — sie muss existieren, bevor sie zugewiesen werden kann.",
     "save_first_for_history": "Speichern Sie zuerst die Sendung — der Verlauf beginnt nach dem Anlegen.",
-    "save_first_for_vehicle_load": "Speichern Sie zuerst das Fahrzeug — der Ladungspool ist nach dem Speichern verfügbar."
+    "save_first_for_vehicle_load": "Speichern Sie zuerst das Fahrzeug — der Ladungspool ist nach dem Speichern verfügbar.",
+    "ldm_label": "LDM (Lademeter)"
   },
   "invoice": {
     "invoice_no": "Rechnungsnr.",

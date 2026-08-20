@@ -319,6 +319,28 @@ function parseGoodsItems(raw) {
   } catch { return []; }
 }
 
+/**
+ * Sevkiyatin toplam satis tutari.
+ *
+ * Kullanicilar tutari Finansal sekmesindeki kalemlere giriyor (financial_data);
+ * eski `sale_price` kolonu genelde bos kaliyor. Kapakta yalnizca o kolona
+ * bakildigi icin "PRIX DE VENTE 0,00" gorunuyordu. Once kalemlerin toplami,
+ * yoksa eski ozet alan kullanilir.
+ */
+function totalSaleAmount(ship) {
+  const fin = parseJsonField(ship.financial_data);
+  let total = 0;
+  for (const [key, entry] of Object.entries(fin)) {
+    if (!entry || typeof entry !== 'object') continue;
+    const income = parseFloat(entry.income || 0);
+    if (!income) continue;
+    const vatRate = resolveVatRate(entry.income_vat, NO_VAT_KEYS.has(key) || DEBOURS_KEYS.has(key));
+    total += income + income * (vatRate / 100);
+  }
+  if (total > 0) return total;
+  return parseFloat(ship.sale_price || 0) || 0;
+}
+
 // ============================================================
 // Dosya kapağı alanları
 // ============================================================
@@ -388,12 +410,14 @@ async function buildCoverFields(ship) {
     facture_client: ship.invoice_no || '',
     facture_fournisseur: '',
     reference: ship.client_reference || ship.shipment_no || '',
-    prix_vente: ship.sale_price ? `${formatTr(ship.sale_price)} ${ship.currency_code || 'EUR'}` : '',
+    prix_vente: (() => { const v = totalSaleAmount(ship); return v ? `${formatTr(v)} ${ship.currency_code || 'EUR'}` : ''; })(),
     douane_export: ship.departure_country || '',
     date: formatDateTr(ship.created_date || ship.created_at),
     poids: ship.gross_weight ? `${formatTr(ship.gross_weight, 0)} kg` : '',
     colisage: ship.quantity ? `${ship.quantity} kap` : '',
-    dimensions: ship.dimensions || '',
+    // Boyut + (varsa) MP / mètre plancher — kapakta ayrı satır yok, birleştirilir
+    dimensions: [ship.dimensions, modeData.ldm ? `${modeData.ldm} MP` : '']
+      .filter(Boolean).join(' · '),
     transporteur,
     plaque,
     douane_import: ship.arrival_country || '',
@@ -615,7 +639,7 @@ async function renderFileCover(req, res) {
       ['FACTURE N° CLIENT', ship.invoice_no || ''],
       ['FACTURE N° FOURNISSEUR', ''],
       ['RÉFÉRENCE', ship.client_reference || ship.shipment_no],
-      ['PRIX DE VENTE', ship.sale_price ? `${formatTr(ship.sale_price)} ${ship.currency_code || 'EUR'}` : ''],
+      ['PRIX DE VENTE', (() => { const v = totalSaleAmount(ship); return v ? `${formatTr(v)} ${ship.currency_code || 'EUR'}` : ''; })()],
       ['DOUANE EXPORT', ship.departure_country || ''],
     ];
     const rightFields = [
