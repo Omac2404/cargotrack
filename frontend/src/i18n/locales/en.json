@@ -235,6 +235,16 @@
       "gross_profit": "Gross Profit",
       "pending_payment": "Pending Payment",
       "no_shipments": "This partner has not been involved in any shipment yet."
+    },
+    "new_hint": "Create a customer, sender, receiver or agent record.",
+    "main_role": "Main Role",
+    "extra_roles": "Additional Roles (optional)",
+    "physical_address": "Physical Address",
+    "updated": "Partner updated",
+    "created": "Partner created",
+    "err": {
+      "company_required": "Company name is required",
+      "invalid_email": "Invalid e-mail address"
     }
   },
   "vehicle": {
@@ -922,7 +932,9 @@
     "save_first_for_history": "Save the shipment first — history starts once the shipment is created.",
     "save_first_for_vehicle_load": "Save the vehicle first — the load pool becomes available once the vehicle is saved.",
     "ldm_label": "LDM (loading metre)",
-    "saved_stay": "Changes saved"
+    "saved_stay": "Changes saved",
+    "odendi": "Paid",
+    "faturali": "Invoiced"
   },
   "invoice": {
     "invoice_no": "Invoice No",

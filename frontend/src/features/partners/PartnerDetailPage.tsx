@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/table'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { modeSlug } from '@/features/shipments/modeConfig'
-import { usePartner, usePartnerShipments, PARTNER_TYPE_LABELS } from './hooks'
+import { usePartner, usePartnerShipments } from './hooks'
 import { PartnerFormDialog } from './PartnerFormDialog'
 import { ExportButton } from '@/components/shared/ExportButton'
 import { exportFormatters } from '@/lib/export'
@@ -32,9 +32,10 @@ const MODE_ICON: Record<string, React.ReactNode> = {
   export: <Plane className="w-3.5 h-3.5" />,
 }
 
-const MODE_LABELS: Record<string, string> = {
-  road: 'Karayolu', maritime: 'Denizyolu', sea: 'Denizyolu',
-  air: 'Havayolu', storage: 'Depolama', import: 'İthalat', export: 'İhracat',
+// Mod adlari i18n'den gelir; anahtarlar transport.modes.* altinda
+const MODE_I18N: Record<string, string> = {
+  road: 'road', maritime: 'maritime', sea: 'maritime',
+  air: 'air', storage: 'storage', import: 'import', export: 'export',
 }
 
 
@@ -72,7 +73,7 @@ export function PartnerDetailPage() {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <h1 className="text-xl font-bold tracking-tight truncate">{partner.company_name}</h1>
-            <Badge variant="outline">{PARTNER_TYPE_LABELS[partner.type]}</Badge>
+            <Badge variant="outline">{t(`partner.types.${partner.type}`)}</Badge>
             {partner.partner_code && (
               <Badge variant="secondary" className="font-mono">{partner.partner_code}</Badge>
             )}
@@ -94,7 +95,7 @@ export function PartnerDetailPage() {
             icon={<Receipt className="w-4 h-4" />}
             label={t('partner.detail.total_shipments')}
             value={String(summary.count)}
-            sub="kayıt"
+            sub={t('common.records')}
           />
           <StatCard
             icon={<TrendingUp className="w-4 h-4" />}
@@ -106,14 +107,14 @@ export function PartnerDetailPage() {
             icon={<Coins className="w-4 h-4" />}
             label={t('partner.detail.gross_profit')}
             value={formatMoney(summary.total_profit, 'EUR')}
-            sub={`%${formatNumber(margin, 1)} marj`}
+            sub={`%${formatNumber(margin, 1)} ${t('fin.ui.margin')}`}
             variant={summary.total_profit > 0 ? 'success' : 'destructive'}
           />
           <StatCard
             icon={<Clock className="w-4 h-4" />}
             label={t('partner.detail.pending_payment')}
             value={String(summary.unpaid_count)}
-            sub={`${summary.paid_count} ödendi`}
+            sub={`${summary.paid_count} ${t('ui.odendi')}`}
             variant={summary.unpaid_count > 0 ? 'warning' : 'success'}
           />
         </div>
@@ -125,7 +126,7 @@ export function PartnerDetailPage() {
             <Building2 className="w-3.5 h-3.5" /> {t('partner.detail.info')}
           </TabsTrigger>
           <TabsTrigger value="shipments">
-            <Receipt className="w-3.5 h-3.5" /> Sevkiyatlar ({shipments.length})
+            <Receipt className="w-3.5 h-3.5" /> {t('partner.detail.shipments_tab')} ({shipments.length})
           </TabsTrigger>
         </TabsList>
 
@@ -145,7 +146,7 @@ export function PartnerDetailPage() {
               <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 {t('partner.address')}
               </h3>
-              <InfoRow icon={<MapPin className="w-4 h-4" />} label="Fiziksel Adres" value={partner.physical_address} />
+              <InfoRow icon={<MapPin className="w-4 h-4" />} label={t('partner.physical_address')} value={partner.physical_address} />
               <InfoRow icon={<MapPin className="w-4 h-4" />} label={t('partner.postal_code')} value={partner.postal_code} />
               <InfoRow icon={<MapPin className="w-4 h-4" />} label={t('ui.sehir_ulke')} value={[partner.city, partner.country].filter(Boolean).join(' / ')} />
             </Card>
@@ -175,7 +176,7 @@ export function PartnerDetailPage() {
             <div>
               {shipments.length} sevkiyat ·
               Ciro: <strong className="text-foreground">{formatMoney(summary?.total_sale || 0, 'EUR')}</strong> ·
-              Faturalı: <strong className="text-foreground">{formatMoney(summary?.total_invoiced || 0, 'EUR')}</strong>
+              {t('ui.faturali')}: <strong className="text-foreground">{formatMoney(summary?.total_invoiced || 0, 'EUR')}</strong>
             </div>
             <ExportButton
               data={shipments as unknown as Record<string, unknown>[]}
@@ -184,16 +185,16 @@ export function PartnerDetailPage() {
               columns={[
                 { header: 'Sevkiyat No', key: 'shipment_no' },
                 { header: 'Tarih', key: 'created_date', format: exportFormatters.date },
-                { header: 'Mod', key: 'transport_type', format: (v) => MODE_LABELS[v as string] || String(v ?? '') },
+                { header: t('vehicle.transport_type'), key: 'transport_type', format: (v) => t(`transport.modes.${MODE_I18N[v as string] || v}`, { defaultValue: String(v ?? '') }) },
                 { header: 'Durum', key: 'status', format: (v) => STATUS_LABELS[v as string]?.label || String(v ?? '') },
-                { header: 'Çıkış', key: 'departure_country' },
-                { header: 'Varış', key: 'arrival_country' },
-                { header: 'Toplam Alış', key: 'purchase_price', format: (v) => exportFormatters.number(v) },
-                { header: 'Toplam Satış', key: 'sale_price', format: (v) => exportFormatters.number(v) },
+                { header: t('shipment.fields.departure_country'), key: 'departure_country' },
+                { header: t('shipment.fields.arrival_country'), key: 'arrival_country' },
+                { header: t('shipment.financial.total_purchase'), key: 'purchase_price', format: (v) => exportFormatters.number(v) },
+                { header: t('shipment.financial.total_sale'), key: 'sale_price', format: (v) => exportFormatters.number(v) },
                 { header: 'Para Birimi', key: 'currency_code' },
                 { header: 'Fatura No', key: 'invoice_no' },
                 { header: 'Fatura Tarihi', key: 'invoice_date', format: exportFormatters.date },
-                { header: 'Ödendi', key: 'payment_received', format: exportFormatters.yesNo },
+                { header: t('ui.odendi'), key: 'payment_received', format: exportFormatters.yesNo },
               ]}
             />
           </Card>
@@ -237,9 +238,9 @@ export function PartnerDetailPage() {
                     const profit = sale - purchase
                     // Hangi rolde olduğunu bul
                     const roles: string[] = []
-                    if (s.client_billing === partner.company_name) roles.push('Müşteri')
-                    if (s.sender === partner.company_name) roles.push('Gönderici')
-                    if (s.receiver === partner.company_name) roles.push('Alıcı')
+                    if (s.client_billing === partner.company_name) roles.push(t('partner.types.customer'))
+                    if (s.sender === partner.company_name) roles.push(t('partner.types.sender'))
+                    if (s.receiver === partner.company_name) roles.push(t('partner.types.receiver'))
                     if (s.agent === partner.company_name) roles.push('Acente')
                     return (
                       <TableRow
@@ -251,7 +252,7 @@ export function PartnerDetailPage() {
                         <TableCell>
                           <Badge variant="outline" className="gap-1 text-xs">
                             {MODE_ICON[s.transport_type]}
-                            {MODE_LABELS[s.transport_type] || s.transport_type}
+                            {t(`transport.modes.${MODE_I18N[s.transport_type] || s.transport_type}`, { defaultValue: s.transport_type })}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-xs whitespace-nowrap">{formatDate(s.created_date)}</TableCell>

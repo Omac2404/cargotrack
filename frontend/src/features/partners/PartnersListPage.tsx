@@ -20,7 +20,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { usePartners, useDeletePartner, PARTNER_TYPE_LABELS } from './hooks'
+import { usePartners, useDeletePartner } from './hooks'
 import { PartnerFormDialog } from './PartnerFormDialog'
 import type { Partner, PartnerType } from '@/types/api'
 import { ExportButton } from '@/components/shared/ExportButton'
@@ -112,25 +112,25 @@ export function PartnersListPage() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <div className="text-xs text-muted-foreground px-2">{filtered.length} kayıt</div>
+        <div className="text-xs text-muted-foreground px-2">{filtered.length} {t('common.records')}</div>
         <ExportButton
           data={filtered}
           filename="partnerler"
           sheetName="Partnerler"
           columns={[
             { header: 'Kod', key: 'partner_code' },
-            { header: 'Şirket Adı', key: 'company_name' },
-            { header: 'Tip', key: 'type', format: (v) => PARTNER_TYPE_LABELS[v as PartnerType] || String(v ?? '') },
-            { header: 'İletişim Kişi', key: 'contact_person' },
+            { header: t('partner.company_name'), key: 'company_name' },
+            { header: t('partner.type'), key: 'type', format: (v) => t(`partner.types.${v as PartnerType}`, { defaultValue: String(v ?? '') }) },
+            { header: t('shipment.fields.contact_person'), key: 'contact_person' },
             { header: 'Telefon', key: 'contact_phone' },
             { header: 'E-posta', key: 'contact_email' },
             { header: 'Adres', key: 'physical_address' },
             { header: 'Posta Kodu', key: 'postal_code' },
-            { header: 'Şehir', key: 'city' },
-            { header: 'Ülke', key: 'country' },
+            { header: t('partner.city'), key: 'city' },
+            { header: t('partner.country'), key: 'country' },
             { header: 'VKN', key: 'tax_number' },
             { header: 'EORI', key: 'eori_number' },
-            { header: 'MERSİS', key: 'mersis_number' },
+            { header: t('partner.mersis_number'), key: 'mersis_number' },
             { header: 'Fatura Adresi', key: 'billing_address' },
             { header: 'Fatura E-posta', key: 'billing_email' },
           ]}

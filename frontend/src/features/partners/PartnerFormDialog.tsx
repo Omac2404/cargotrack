@@ -18,25 +18,25 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
-import { useSavePartner, PARTNER_TYPE_LABELS } from './hooks'
+import { useSavePartner, PARTNER_TYPES } from './hooks'
 import type { Partner, PartnerType } from '@/types/api'
 
 const schema = z.object({
   type: z.enum(['customer', 'receiver', 'sender', 'agent']),
   extra_roles: z.array(z.string()),
-  company_name: z.string().min(1, 'Şirket adı zorunludur'),
+  company_name: z.string().min(1, 'partner.err.company_required'),
   physical_address: z.string().optional().or(z.literal('')),
   postal_code: z.string().optional().or(z.literal('')),
   city: z.string().optional().or(z.literal('')),
   country: z.string().optional().or(z.literal('')),
   contact_person: z.string().optional().or(z.literal('')),
-  contact_email: z.string().email('Geçersiz e-posta').optional().or(z.literal('')),
+  contact_email: z.string().email('partner.err.invalid_email').optional().or(z.literal('')),
   contact_phone: z.string().optional().or(z.literal('')),
   tax_number: z.string().optional().or(z.literal('')),
   mersis_number: z.string().optional().or(z.literal('')),
   eori_number: z.string().optional().or(z.literal('')),
   billing_address: z.string().optional().or(z.literal('')),
-  billing_email: z.string().email('Geçersiz e-posta').optional().or(z.literal('')),
+  billing_email: z.string().email('partner.err.invalid_email').optional().or(z.literal('')),
 })
 type FormValues = z.infer<typeof schema>
 
@@ -96,7 +96,7 @@ export function PartnerFormDialog({ open, onOpenChange, partner, defaultType = '
     const payload = { ...values, partner_id: partner?.id }
     saveMut.mutate(payload, {
       onSuccess: () => {
-        toast.success(isEdit ? 'Partner güncellendi' : 'Partner oluşturuldu')
+        toast.success(isEdit ? t('partner.updated') : t('partner.created'))
         onOpenChange(false)
       },
       onError: (err: Error) => toast.error(err.message),
@@ -107,9 +107,9 @@ export function PartnerFormDialog({ open, onOpenChange, partner, defaultType = '
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{isEdit ? `${partner.company_name} düzenle` : 'Yeni Partner'}</DialogTitle>
+          <DialogTitle>{isEdit ? `${partner.company_name} — ${t('common.edit')}` : t('partner.new')}</DialogTitle>
           <DialogDescription>
-            {isEdit ? partner?.partner_code : 'Müşteri, gönderici, alıcı veya acente kaydı oluştur.'}
+            {isEdit ? partner?.partner_code : t('partner.new_hint')}
           </DialogDescription>
         </DialogHeader>
 
@@ -117,32 +117,33 @@ export function PartnerFormDialog({ open, onOpenChange, partner, defaultType = '
           {/* Tip */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label>Ana Rol *</Label>
+              <Label>{t('partner.main_role')} *</Label>
               <Select value={currentType} onValueChange={(v) => setValue('type', v as PartnerType)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {Object.entries(PARTNER_TYPE_LABELS).map(([k, label]) => (
-                    <SelectItem key={k} value={k}>{label}</SelectItem>
+                  {PARTNER_TYPES.map((k) => (
+                    // value = DB degeri, gorunen metin cevrilir
+                    <SelectItem key={k} value={k}>{t(`partner.types.${k}`)}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-1.5">
-              <Label>Ek Roller (opsiyonel)</Label>
+              <Label>{t('partner.extra_roles')}</Label>
               <div className="flex flex-wrap gap-3 h-9 items-center">
-                {(Object.keys(PARTNER_TYPE_LABELS) as PartnerType[])
-                  .filter((t) => t !== currentType)
-                  .map((t) => (
-                    <label key={t} className="flex items-center gap-1.5 text-sm cursor-pointer">
+                {PARTNER_TYPES
+                  .filter((role) => role !== currentType)
+                  .map((role) => (
+                    <label key={role} className="flex items-center gap-1.5 text-sm cursor-pointer">
                       <Checkbox
-                        checked={extraRoles.includes(t)}
+                        checked={extraRoles.includes(role)}
                         onCheckedChange={(c) => {
-                          const next = c ? [...extraRoles, t] : extraRoles.filter((r) => r !== t)
+                          const next = c ? [...extraRoles, role] : extraRoles.filter((r) => r !== role)
                           setValue('extra_roles', next)
                         }}
                       />
-                      {PARTNER_TYPE_LABELS[t]}
+                      {t(`partner.types.${role}`)}
                     </label>
                   ))}
               </div>
@@ -157,7 +158,7 @@ export function PartnerFormDialog({ open, onOpenChange, partner, defaultType = '
             <Field label={t('partner.postal_code')} name="postal_code" register={register} errors={errors} />
             <Field label={t('partner.country')} name="country" register={register} errors={errors} className="md:col-span-2" />
           </div>
-          <FieldArea label="Fiziksel Adres" name="physical_address" register={register} errors={errors} />
+          <FieldArea label={t('partner.physical_address')} name="physical_address" register={register} errors={errors} />
 
           <Section>{t('ui.vergi_tanitici')}</Section>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -174,7 +175,7 @@ export function PartnerFormDialog({ open, onOpenChange, partner, defaultType = '
           </div>
 
           <Section>{t('shipment.tabs.invoice')}</Section>
-          <FieldArea label="Faturalama Adresi" name="billing_address" register={register} errors={errors} />
+          <FieldArea label={t('partner.billing_address')} name="billing_address" register={register} errors={errors} />
           <Field label={t('partner.billing_email')} name="billing_email" register={register} errors={errors} type="email" />
         </form>
 
@@ -182,7 +183,7 @@ export function PartnerFormDialog({ open, onOpenChange, partner, defaultType = '
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{t('common.cancel')}</Button>
           <Button type="submit" form="partner-form" disabled={saveMut.isPending}>
             {saveMut.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-            {isEdit ? 'Güncelle' : 'Kaydet'}
+            {isEdit ? t('common.update') : t('common.save')}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -209,23 +210,25 @@ type FieldProps = {
 }
 
 function Field({ label, name, register, errors, className, required, ...rest }: FieldProps) {
+  const { t } = useTranslation()
   const err = errors[name as keyof FieldErrors<FormValues>]
   return (
     <div className={cn('space-y-1.5', className)}>
       <Label htmlFor={name as string}>{label}</Label>
       <Input id={name as string} {...register(name as never)} {...rest} />
-      {err && <p className="text-xs text-destructive">{String((err as { message?: string }).message)}</p>}
+      {err && <p className="text-xs text-destructive">{t(String((err as { message?: string }).message ?? ''))}</p>}
     </div>
   )
 }
 
 function FieldArea({ label, name, register, errors }: Omit<FieldProps, 'type' | 'required'>) {
+  const { t } = useTranslation()
   const err = errors[name as keyof FieldErrors<FormValues>]
   return (
     <div className="space-y-1.5">
       <Label htmlFor={name as string}>{label}</Label>
       <Textarea id={name as string} rows={2} {...register(name as never)} />
-      {err && <p className="text-xs text-destructive">{String((err as { message?: string }).message)}</p>}
+      {err && <p className="text-xs text-destructive">{t(String((err as { message?: string }).message ?? ''))}</p>}
     </div>
   )
 }

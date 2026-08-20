@@ -235,6 +235,16 @@
       "gross_profit": "Marge brute",
       "pending_payment": "Paiement en attente",
       "no_shipments": "Ce partenaire n'a encore participé à aucune expédition."
+    },
+    "new_hint": "Créer une fiche client, expéditeur, destinataire ou agent.",
+    "main_role": "Rôle principal",
+    "extra_roles": "Rôles supplémentaires (facultatif)",
+    "physical_address": "Adresse physique",
+    "updated": "Partenaire mis à jour",
+    "created": "Partenaire créé",
+    "err": {
+      "company_required": "La raison sociale est obligatoire",
+      "invalid_email": "Adresse e-mail invalide"
     }
   },
   "vehicle": {
@@ -922,7 +932,9 @@
     "save_first_for_history": "Enregistrez d’abord l’expédition — l’historique commence après sa création.",
     "save_first_for_vehicle_load": "Enregistrez d’abord le véhicule — le pool de marchandises est disponible une fois le véhicule enregistré.",
     "ldm_label": "MP (mètre plancher)",
-    "saved_stay": "Modifications enregistrées"
+    "saved_stay": "Modifications enregistrées",
+    "odendi": "Payé",
+    "faturali": "Facturé"
   },
   "invoice": {
     "invoice_no": "N° de facture",

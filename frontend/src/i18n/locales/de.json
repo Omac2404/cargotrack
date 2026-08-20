@@ -235,6 +235,16 @@
       "gross_profit": "Bruttogewinn",
       "pending_payment": "Ausstehende Zahlung",
       "no_shipments": "Dieser Partner war bisher an keiner Sendung beteiligt."
+    },
+    "new_hint": "Kunden-, Absender-, Empfänger- oder Agentendatensatz anlegen.",
+    "main_role": "Hauptrolle",
+    "extra_roles": "Zusätzliche Rollen (optional)",
+    "physical_address": "Physische Adresse",
+    "updated": "Partner aktualisiert",
+    "created": "Partner angelegt",
+    "err": {
+      "company_required": "Firmenname ist erforderlich",
+      "invalid_email": "Ungültige E-Mail-Adresse"
     }
   },
   "vehicle": {
@@ -922,7 +932,9 @@
     "save_first_for_history": "Speichern Sie zuerst die Sendung — der Verlauf beginnt nach dem Anlegen.",
     "save_first_for_vehicle_load": "Speichern Sie zuerst das Fahrzeug — der Ladungspool ist nach dem Speichern verfügbar.",
     "ldm_label": "LDM (Lademeter)",
-    "saved_stay": "Änderungen gespeichert"
+    "saved_stay": "Änderungen gespeichert",
+    "odendi": "Bezahlt",
+    "faturali": "Fakturiert"
   },
   "invoice": {
     "invoice_no": "Rechnungsnr.",

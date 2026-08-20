@@ -235,6 +235,16 @@
       "gross_profit": "Brüt Kâr",
       "pending_payment": "Bekleyen Ödeme",
       "no_shipments": "Bu partner henüz hiçbir sevkiyatta yer almamış."
+    },
+    "new_hint": "Müşteri, gönderici, alıcı veya acente kaydı oluştur.",
+    "main_role": "Ana Rol",
+    "extra_roles": "Ek Roller (opsiyonel)",
+    "physical_address": "Fiziksel Adres",
+    "updated": "Partner güncellendi",
+    "created": "Partner oluşturuldu",
+    "err": {
+      "company_required": "Şirket adı zorunludur",
+      "invalid_email": "Geçersiz e-posta"
     }
   },
   "vehicle": {
@@ -922,7 +932,9 @@
     "save_first_for_history": "Önce sevkiyatı kaydet — geçmiş kaydı sevkiyat oluşturulduktan sonra başlar.",
     "save_first_for_vehicle_load": "Önce aracı kaydet — yük havuzu, araç kaydedildikten sonra kullanılabilir.",
     "ldm_label": "MP (Yükleme Metresi)",
-    "saved_stay": "Değişiklikler kaydedildi"
+    "saved_stay": "Değişiklikler kaydedildi",
+    "odendi": "Ödendi",
+    "faturali": "Faturalı"
   },
   "invoice": {
     "invoice_no": "Fatura No",

@@ -67,9 +67,11 @@ export function usePartnerShipments(id: number | string | undefined) {
   })
 }
 
-export const PARTNER_TYPE_LABELS: Record<PartnerType, string> = {
-  customer: 'Müşteri',
-  sender: 'Gönderici',
-  receiver: 'Alıcı',
-  agent: 'Acente',
-}
+/**
+ * Partner rolleri — DB'de saklanan değerler.
+ *
+ * Ekranda gösterilen adlar i18n'den gelir (`partner.types.*`); burada yalnızca
+ * geçerli rol listesi tutulur. Rol adı burada sabitlenirse dil değiştirildiğinde
+ * çevrilmez, bu yüzden metin tutulmuyor.
+ */
+export const PARTNER_TYPES: PartnerType[] = ['customer', 'sender', 'receiver', 'agent']
