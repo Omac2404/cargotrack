@@ -683,7 +683,7 @@
   },
   "cover": {
     "title": "Aktendeckblatt",
-    "subtitle": "Die Felder werden aus der Sendung vorbefuellt. Sie koennen sie aendern oder leere ergaenzen. Mit Erstellen wird das PDF mit den angezeigten Werten erzeugt - die Sendung bleibt unveraendert.",
+    "subtitle": "Die Felder werden aus der Sendung vorbefüllt. Ihre Änderungen werden für diese Akte gespeichert und beim nächsten Öffnen wiederhergestellt. „Erstellen\" erzeugt das PDF mit den angezeigten Werten.",
     "generate": "Erstellen",
     "reset": "Automatische Werte",
     "reset_done": "Felder zurueckgesetzt",
@@ -934,7 +934,9 @@
     "ldm_label": "LDM (Lademeter)",
     "saved_stay": "Änderungen gespeichert",
     "odendi": "Bezahlt",
-    "faturali": "Fakturiert"
+    "faturali": "Fakturiert",
+    "vehicle_manifest": "Ladeliste (PDF)",
+    "vehicle_manifest_hint": "Listet alle Ladungen des Fahrzeugs auf einer Seite — zum Ausdrucken für den Fahrer"
   },
   "invoice": {
     "invoice_no": "Rechnungsnr.",

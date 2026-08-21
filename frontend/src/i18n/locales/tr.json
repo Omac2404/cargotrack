@@ -683,7 +683,7 @@
   },
   "cover": {
     "title": "Dosya Kapagi",
-    "subtitle": "Alanlar sevkiyattan otomatik dolduruldu. Degistirebilir, bos kalanlari elle yazabilirsin. Olustur dediginde PDF ekrandaki degerlerle hazirlanir - sevkiyat kaydi degismez.",
+    "subtitle": "Alanlar sevkiyattan otomatik dolduruldu. Değiştirdiğin alanlar bu dosya için kaydedilir ve bir sonraki açılışta aynen gelir. \"Oluştur\" PDF'i ekrandaki değerlerle üretir.",
     "generate": "Olustur",
     "reset": "Otomatik degerlere don",
     "reset_done": "Alanlar otomatik degerlere donduruldu",
@@ -934,7 +934,9 @@
     "ldm_label": "MP (Yükleme Metresi)",
     "saved_stay": "Değişiklikler kaydedildi",
     "odendi": "Ödendi",
-    "faturali": "Faturalı"
+    "faturali": "Faturalı",
+    "vehicle_manifest": "Yükleme Listesi (PDF)",
+    "vehicle_manifest_hint": "Araçtaki tüm yükleri tek sayfada listeler — çıktısı alınıp sürücüye verilebilir"
   },
   "invoice": {
     "invoice_no": "Fatura No",

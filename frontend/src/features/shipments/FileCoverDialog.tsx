@@ -48,7 +48,8 @@ export function FileCoverDialog({ shipmentId, open, onOpenChange }: Props) {
 
   const resetToAuto = () => {
     if (data) {
-      setValues({ ...data.values })
+      // data.values kayitli duzenlemeleri de icerir; sifirlama SAF otomatiklere doner
+      setValues({ ...data.auto })
       toast.success(t('cover.reset_done', { defaultValue: 'Alanlar otomatik değerlere döndürüldü' }))
     }
   }

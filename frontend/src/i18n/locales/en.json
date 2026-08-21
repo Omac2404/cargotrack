@@ -683,7 +683,7 @@
   },
   "cover": {
     "title": "File Cover",
-    "subtitle": "Fields are prefilled from the shipment. You can edit them or fill in the blanks. Clicking Generate builds the PDF with the values shown - the shipment record is not changed.",
+    "subtitle": "Fields are prefilled from the shipment. Your edits are saved for this file and restored next time. \"Generate\" builds the PDF with the values shown.",
     "generate": "Generate",
     "reset": "Reset to auto values",
     "reset_done": "Fields reset to auto values",
@@ -934,7 +934,9 @@
     "ldm_label": "LDM (loading metre)",
     "saved_stay": "Changes saved",
     "odendi": "Paid",
-    "faturali": "Invoiced"
+    "faturali": "Invoiced",
+    "vehicle_manifest": "Loading sheet (PDF)",
+    "vehicle_manifest_hint": "Lists all loads on the vehicle on one page — print it for the driver"
   },
   "invoice": {
     "invoice_no": "Invoice No",

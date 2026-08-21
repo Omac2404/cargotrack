@@ -683,7 +683,7 @@
   },
   "cover": {
     "title": "Couverture de dossier",
-    "subtitle": "Les champs sont préremplis à partir de l’expédition. Vous pouvez les modifier ou compléter ceux qui sont vides. En cliquant sur « Générer », le PDF est créé avec les valeurs affichées — l’expédition n’est pas modifiée.",
+    "subtitle": "Les champs sont préremplis à partir de l’expédition. Vos modifications sont enregistrées pour ce dossier et retrouvées à la prochaine ouverture. « Générer » crée le PDF avec les valeurs affichées.",
     "generate": "Générer",
     "reset": "Rétablir les valeurs automatiques",
     "reset_done": "Champs rétablis aux valeurs automatiques",
@@ -934,7 +934,9 @@
     "ldm_label": "MP (mètre plancher) / MP (Yükleme Metresi)",
     "saved_stay": "Modifications enregistrées",
     "odendi": "Payé",
-    "faturali": "Facturé"
+    "faturali": "Facturé",
+    "vehicle_manifest": "Feuille de chargement (PDF)",
+    "vehicle_manifest_hint": "Liste toutes les marchandises du véhicule sur une page — à imprimer pour le chauffeur"
   },
   "invoice": {
     "invoice_no": "N° de facture (Fatura No)",

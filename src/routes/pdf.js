@@ -404,6 +404,8 @@ async function buildCoverFields(ship) {
     transporteur = rows.map((r) => r.driver_name).filter(Boolean).join(' · ') || ship.agent || '';
   }
 
+  const grossKg = parseFloat(ship.gross_weight) || 0;
+  const qty = parseInt(ship.quantity, 10) || 0;
   return {
     expediteur: ship.sender || '',
     destinataire: ship.receiver || '',
@@ -413,8 +415,9 @@ async function buildCoverFields(ship) {
     prix_vente: (() => { const v = totalSaleAmount(ship); return v ? `${formatTr(v)} ${ship.currency_code || 'EUR'}` : ''; })(),
     douane_export: ship.departure_country || '',
     date: formatDateTr(ship.created_date || ship.created_at),
-    poids: ship.gross_weight ? `${formatTr(ship.gross_weight, 0)} kg` : '',
-    colisage: ship.quantity ? `${ship.quantity} kap` : '',
+    // DECIMAL kolonlar "0.00" (truthy string) doner; kapakta "0 kg" basiliyordu
+    poids: grossKg > 0 ? `${formatTr(grossKg, 0)} kg` : '',
+    colisage: qty > 0 ? `${qty} kap` : '',
     // Boyut + (varsa) MP / mètre plancher — kapakta ayrı satır yok, birleştirilir
     dimensions: [ship.dimensions, modeData.ldm ? `${modeData.ldm} MP` : '']
       .filter(Boolean).join(' · '),
@@ -423,6 +426,15 @@ async function buildCoverFields(ship) {
     douane_import: ship.arrival_country || '',
     observation: ship.goods_description || '',
   };
+}
+
+/** shipments.cover_data içindeki kayıtlı düzenlemeleri güvenle ayrıştırır. */
+function parseSavedCover(raw) {
+  if (!raw) return {};
+  try {
+    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+  } catch { return {}; }
 }
 
 /** İstekten gelen düzenlenmiş değerleri temizleyip otomatik değerlerin üstüne yazar. */
@@ -500,8 +512,11 @@ router.get('/file-cover/:shipmentId/fields', verifyToken, async (req, res) => {
     const id = toInt(req.params.shipmentId);
     const ship = await loadShipment(id, req.user);
     if (!ship) return sendError(res, 'Sevkiyat bulunamadı', 404);
-    const values = await buildCoverFields(ship);
-    res.json({ success: true, data: { shipment_no: ship.shipment_no, fields: COVER_FIELDS, values } });
+    const auto = await buildCoverFields(ship);
+    // Kullanıcının daha önce kaydettiği düzenlemeler otomatiklerin üstüne biner;
+    // `auto` ayrıca döner ki "otomatik değerlere dön" butonu çalışabilsin.
+    const values = mergeCoverOverrides(auto, parseSavedCover(ship.cover_data));
+    res.json({ success: true, data: { shipment_no: ship.shipment_no, fields: COVER_FIELDS, values, auto } });
   } catch (err) {
     console.error('[pdf/file-cover-fields]', err);
     sendError(res, 'Kapak alanları alınamadı', 500);
@@ -514,8 +529,24 @@ async function renderFileCover(req, res) {
     const ship = await loadShipment(id, req.user);
     if (!ship) return sendError(res, 'Sevkiyat bulunamadı', 404);
 
-    // Otomatik değerler + (POST ise) kullanıcının düzenlemeleri
-    const cover = mergeCoverOverrides(await buildCoverFields(ship), req.body);
+    // Otomatik değerler + kayıtlı düzenlemeler + (POST ise) bu istekteki düzenlemeler
+    const auto = await buildCoverFields(ship);
+    const saved = parseSavedCover(ship.cover_data);
+    const cover = mergeCoverOverrides(mergeCoverOverrides(auto, saved), req.body);
+
+    // Düzenlemeler kalıcı olsun: yalnızca otomatikten FARKLI olan alanlar saklanır.
+    // Böylece sevkiyat verisi sonradan değişirse (örn. ağırlık güncellenir) elle
+    // ezilmemiş alanlar yeni otomatik değeri göstermeye devam eder.
+    if (req.method === 'POST') {
+      const overrides = {};
+      for (const [k, v] of Object.entries(cover)) {
+        if ((auto[k] ?? '') !== (v ?? '')) overrides[k] = v;
+      }
+      await pool.execute(
+        'UPDATE shipments SET cover_data = ? WHERE id = ?',
+        [Object.keys(overrides).length ? JSON.stringify(overrides) : null, id]
+      );
+    }
 
     const modeData = parseJsonField(ship.mode_data);
     const financial = parseJsonField(ship.financial_data);
@@ -1144,6 +1175,156 @@ router.get('/storage-report/:shipmentId', verifyTokenFlexible, async (req, res) 
     doc.end();
   } catch (err) {
     console.error('[pdf/storage-report]', err);
+    if (!res.headersSent) sendError(res, 'PDF üretilemedi', 500);
+  }
+});
+
+// ============================================================
+// 5) Feuille de chargement — araç yükleme listesi
+// ============================================================
+// Müşterinin elle tuttuğu kağıt listenin (araç plakası + tarih başlıklı,
+// gönderici/alıcı/kap/kg/posta kodu/tarih/fatura kolonlu) dijital karşılığı.
+// Araçtaki tüm aktif yükleri tek sayfada listeler.
+router.get('/vehicle-manifest/:vehicleId', verifyTokenFlexible, async (req, res) => {
+  try {
+    const id = toInt(req.params.vehicleId);
+    const [vrows] = await pool.execute(
+      'SELECT id, plate, trailer_plate, driver_name, capacity_kg FROM vehicles WHERE id = ? AND deleted_at IS NULL LIMIT 1',
+      [id]
+    );
+    if (vrows.length === 0) return sendError(res, 'Araç bulunamadı', 404);
+    const vehicle = vrows[0];
+
+    // Aktif yükler: atama silinmemiş + sevkiyat arşivde değil.
+    // Alıcının posta kodu partner kartından gelir (sevkiyatta tutulmuyor).
+    const [rows] = await pool.execute(
+      `SELECT a.assigned_quantity, a.assigned_weight, a.loading_date,
+              s.shipment_no, s.sender, s.receiver, s.invoice_no, s.package_type,
+              p.postal_code AS receiver_postal, p.city AS receiver_city
+       FROM vehicle_assignments a
+       JOIN shipments s ON s.id = a.shipment_id AND s.deleted_at IS NULL
+       LEFT JOIN partners p ON p.company_name = s.receiver AND p.deleted_at IS NULL
+       WHERE a.vehicle_id = ? AND a.deleted_at IS NULL
+       ORDER BY a.created_at ASC`,
+      [id]
+    );
+
+    const filename = `Feuille_Chargement_${String(vehicle.plate || id).replace(/\s+/g, '_')}.pdf`;
+    setupPdfHeaders(res, filename);
+    await logAudit(req, 'download', 'documents', id, `vehicle-manifest/${vehicle.plate}`);
+
+    const doc = new PDFDocument({
+      size: 'A4',
+      margins: { top: 36, left: 36, right: 36, bottom: 0 },
+      bufferPages: true,
+    });
+    doc.pipe(res);
+    const F = setupFonts(doc);
+    const W = 595.28;
+
+    // === Antet ===
+    let y = 34;
+    if (letterheadFile) {
+      const LH_W = 120;
+      doc.image(letterheadFile, 36, y, { width: LH_W });
+    } else {
+      doc.fontSize(14).font(F.bold).fillColor(COLORS.text).text(COMPANY.name, 36, y);
+    }
+    doc.fontSize(20).font(F.bold).fillColor(COLORS.primary)
+       .text('FEUILLE DE CHARGEMENT', 180, y + 8, { width: W - 216, align: 'right' });
+    doc.fontSize(11).font(F.bold).fillColor(COLORS.text)
+       .text(`${vehicle.plate}${vehicle.trailer_plate ? ' / ' + vehicle.trailer_plate : ''}  —  ${formatDateFr(new Date())}`,
+             180, y + 36, { width: W - 216, align: 'right' });
+    if (vehicle.driver_name) {
+      doc.fontSize(9).font(F.regular).fillColor(COLORS.textMuted)
+         .text(`Chauffeur : ${vehicle.driver_name}`, 180, y + 52, { width: W - 216, align: 'right' });
+    }
+    y += letterheadFile ? Math.max(Math.round(120 * letterheadRatio) + 14, 78) : 78;
+    doc.moveTo(36, y).lineTo(W - 36, y).lineWidth(1.2).strokeColor(COLORS.primary).stroke();
+    y += 12;
+
+    // === Tablo ===
+    // Kolonlar kağıt örnekle aynı: gönderici, alıcı, kap, kg, CP,
+    // giriş/teslim tarihleri (elle doldurulur) ve fatura no.
+    const cols = [
+      { label: 'EXPÉDITEUR', x: 36,  w: 96,  align: 'left'  },
+      { label: 'DESTINATAIRE', x: 136, w: 96, align: 'left'  },
+      { label: 'NB', x: 236, w: 34, align: 'right' },
+      { label: 'KG', x: 274, w: 48, align: 'right' },
+      { label: 'CODE POSTAL', x: 326, w: 56, align: 'center' },
+      { label: "DATE D'ENTRÉE", x: 386, w: 58, align: 'center' },
+      { label: 'DATE DE LIVRAISON', x: 448, w: 62, align: 'center' },
+      { label: 'FACTURE N°', x: 514, w: 46, align: 'center' },
+    ];
+
+    const drawHeader = () => {
+      doc.rect(36, y, W - 72, 18).fillColor('#eef2ff').fill();
+      doc.fontSize(6.8).font(F.bold).fillColor(COLORS.text);
+      for (const c of cols) doc.text(c.label, c.x + 2, y + 5.5, { width: c.w - 4, align: c.align, lineBreak: false });
+      y += 18;
+      doc.moveTo(36, y).lineTo(W - 36, y).lineWidth(0.7).strokeColor(COLORS.border).stroke();
+    };
+    drawHeader();
+
+    doc.font(F.regular).fontSize(8).fillColor(COLORS.text);
+    let totQty = 0, totKg = 0;
+    for (const r of rows) {
+      if (y > 780) { doc.addPage(); y = 40; drawHeader(); }
+      const rowH = 22;
+      const qty = parseInt(r.assigned_quantity, 10) || 0;
+      const kg = parseFloat(r.assigned_weight) || 0;
+      totQty += qty; totKg += kg;
+
+      const vals = [
+        r.sender || '—',
+        r.receiver || '—',
+        String(qty),
+        formatFr(kg, 0),
+        r.receiver_postal || '',
+        r.loading_date ? formatDateFr(r.loading_date) : '',
+        '', // teslim tarihi elle doldurulur
+        r.invoice_no || '',
+      ];
+      doc.font(F.regular).fontSize(7.6).fillColor(COLORS.text);
+      cols.forEach((c, i) => {
+        doc.text(String(vals[i]), c.x + 2, y + 7, { width: c.w - 4, align: c.align, ellipsis: true, lineBreak: false });
+      });
+      y += rowH;
+      doc.moveTo(36, y).lineTo(W - 36, y).lineWidth(0.4).strokeColor(COLORS.borderLight).stroke();
+    }
+
+    if (rows.length === 0) {
+      doc.fontSize(9).font(F.italic).fillColor(COLORS.textLight)
+         .text('Aucune marchandise affectée à ce véhicule.', 36, y + 14, { width: W - 72, align: 'center' });
+      y += 36;
+    } else {
+      // Toplam satırı
+      y += 4;
+      doc.font(F.bold).fontSize(8.4).fillColor(COLORS.text);
+      doc.text(`TOTAL — ${rows.length} expédition(s)`, 38, y + 4, { width: 190 });
+      doc.text(String(totQty), cols[2].x + 2, y + 4, { width: cols[2].w - 4, align: 'right' });
+      doc.text(formatFr(totKg, 0), cols[3].x + 2, y + 4, { width: cols[3].w - 4, align: 'right' });
+      if (vehicle.capacity_kg > 0) {
+        doc.font(F.regular).fontSize(7.6).fillColor(COLORS.textMuted)
+           .text(`Capacité : ${formatFr(vehicle.capacity_kg, 0)} kg  ·  Utilisation : ${formatFr((totKg / vehicle.capacity_kg) * 100, 1)} %`,
+                 cols[4].x, y + 5, { width: W - 36 - cols[4].x, align: 'right' });
+      }
+      y += 22;
+    }
+
+    // === Yasal künye ===
+    const mLegal = legalFooterLines();
+    let mLegalY = 842 - 20 - mLegal.length * 9;
+    doc.moveTo(36, mLegalY - 6).lineTo(W - 36, mLegalY - 6).lineWidth(0.5).strokeColor(COLORS.borderLight).stroke();
+    doc.fontSize(6.8).font(F.bold).fillColor(COLORS.primary);
+    for (const line of mLegal) {
+      doc.text(line, 36, mLegalY, { align: 'center', width: W - 72, lineBreak: false });
+      mLegalY += 9;
+    }
+
+    doc.end();
+  } catch (err) {
+    console.error('[pdf/vehicle-manifest]', err);
     if (!res.headersSent) sendError(res, 'PDF üretilemedi', 500);
   }
 });

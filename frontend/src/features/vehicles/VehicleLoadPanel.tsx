@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { Package, Loader2, AlertCircle, Inbox, ExternalLink, Calendar, Plus } from 'lucide-react'
+import { Package, Loader2, AlertCircle, Inbox, ExternalLink, Calendar, Plus, FileText } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -11,6 +11,7 @@ import {
 import { cn, formatNumber, formatDate } from '@/lib/utils'
 import { modeSlug } from '@/features/shipments/modeConfig'
 import { AssignmentFormDialog } from '@/features/assignments/AssignmentFormDialog'
+import { getVehicleManifestUrl, openPdf } from '@/features/pdf/hooks'
 import { useVehicleLoad } from './hooks'
 
 const STATUS_LABELS: Record<string, { label: string; variant: 'default' | 'secondary' | 'warning' | 'success' }> = {
@@ -106,15 +107,29 @@ export function VehicleLoadPanel({ vehicleId }: Props) {
             Yüklenen Sevkiyatlar ({assignments.length})
           </h3>
           {/* Aynı araca birden fazla sevkiyat yüklenebilir — buradan tek tıkla ekle */}
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-7 ml-auto"
-            onClick={() => setAddOpen(true)}
-          >
-            <Plus className="w-3.5 h-3.5" />
-            {t('ui.bu_araca_yuk_ekle')}
-          </Button>
+          <div className="ml-auto flex items-center gap-1.5">
+            {assignments.length > 0 && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7"
+                onClick={() => openPdf(getVehicleManifestUrl(vehicleId))}
+                title={t('ui.vehicle_manifest_hint')}
+              >
+                <FileText className="w-3.5 h-3.5" />
+                {t('ui.vehicle_manifest')}
+              </Button>
+            )}
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7"
+              onClick={() => setAddOpen(true)}
+            >
+              <Plus className="w-3.5 h-3.5" />
+              {t('ui.bu_araca_yuk_ekle')}
+            </Button>
+          </div>
         </div>
 
         {assignments.length === 0 ? (

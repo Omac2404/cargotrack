@@ -144,6 +144,8 @@ CREATE TABLE IF NOT EXISTS `shipments` (
   `insurance` TINYINT(1) DEFAULT 0,
   `goods_value` DECIMAL(15,2),
   `crates_data` TEXT DEFAULT NULL,
+  -- Dosya kapaginda elle duzenlenen alanlar (JSON)
+  `cover_data` LONGTEXT DEFAULT NULL,
   -- Çoklu ürün/kalem listesi (her kalemin kendi HS kodu, menşei, ağırlığı, değeri)
   -- Yapı: [{ description, hs_code, origin_country, quantity, package_type,
   --          gross_weight, net_weight, volume_cbm, value, note }]

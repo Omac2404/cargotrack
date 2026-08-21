@@ -26,6 +26,11 @@ export function getBarcodesUrl(shipmentId: number) {
   return makePdfUrl(`/api/pdf/barcodes/${shipmentId}`)
 }
 
+/** Araç yükleme listesi (feuille de chargement) — araçtaki tüm aktif yükler */
+export function getVehicleManifestUrl(vehicleId: number) {
+  return makePdfUrl(`/api/pdf/vehicle-manifest/${vehicleId}`)
+}
+
 /**
  * Yeni sekmede PDF aç.
  */
@@ -45,7 +50,10 @@ export interface CoverFieldDef {
 export interface CoverFieldsResponse {
   shipment_no: string
   fields: { left: CoverFieldDef[]; right: CoverFieldDef[] }
+  /** Otomatik değerler + kullanıcının kaydettiği düzenlemeler */
   values: Record<string, string>
+  /** Saf otomatik değerler — "otomatik değerlere dön" için */
+  auto: Record<string, string>
 }
 
 /** Kapak alanlarının otomatik doldurulmuş hâlini getirir (düzenleme formu için). */
@@ -84,6 +92,7 @@ export async function openFileCoverWithValues(
   const blob = await resp.blob()
   const url = URL.createObjectURL(blob)
   window.open(url, '_blank')
-  // Sekme açıldıktan sonra bırak; erken revoke edilirse boş sayfa açılıyor
-  setTimeout(() => URL.revokeObjectURL(url), 60_000)
+  // Yazdırma diyaloğu blob'u yeniden okuyabiliyor; erken revoke edilirse
+  // 60 sn sonra yazdırmaya çalışan kullanıcı boş sayfa alıyordu.
+  setTimeout(() => URL.revokeObjectURL(url), 30 * 60_000)
 }
