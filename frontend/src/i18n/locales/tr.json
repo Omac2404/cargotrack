@@ -269,7 +269,9 @@
     "adr_certified": "ADR Sertifikalı",
     "search_placeholder": "Plaka, kod, sürücü, marka...",
     "load_pool": "Yük Havuzu",
-    "vehicle_info": "Araç Bilgileri"
+    "vehicle_info": "Araç Bilgileri",
+    "carrier_name": "Nakliyeci Firma",
+    "carrier_ph": "örn. TRANSBATUR — yükleme listesinin başlığında görünür"
   },
   "warehouse": {
     "title": "Depolar",

@@ -81,6 +81,7 @@ CREATE TABLE IF NOT EXISTS `vehicles` (
   `equipment_type` VARCHAR(30) DEFAULT 'tilt',
   `adr_certified` TINYINT(1) DEFAULT 0,
   `brand_model` VARCHAR(150) DEFAULT '',
+  `carrier_name` VARCHAR(200) DEFAULT '',
   `driver_name` VARCHAR(150) DEFAULT '',
   `driver_phone` VARCHAR(50) DEFAULT '',
   `registration_date` DATE DEFAULT NULL,

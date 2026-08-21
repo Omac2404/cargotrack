@@ -269,7 +269,9 @@
     "adr_certified": "Certifié ADR (ADR Sertifikalı)",
     "search_placeholder": "Plaque, code, chauffeur, marque... (Plaka, kod, sürücü, marka...)",
     "load_pool": "Pool de charge (Yük Havuzu)",
-    "vehicle_info": "Infos véhicule (Araç Bilgileri)"
+    "vehicle_info": "Infos véhicule (Araç Bilgileri)",
+    "carrier_name": "Transporteur (Nakliyeci Firma)",
+    "carrier_ph": "ex. TRANSBATUR — apparaît en titre de la feuille de chargement"
   },
   "warehouse": {
     "title": "Entrepôts (Depolar)",

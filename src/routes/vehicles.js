@@ -74,6 +74,7 @@ router.post('/', verifyToken, async (req, res) => {
       equipment_type: equipmentType,
       adr_certified: toBool01(body.adr_certified),
       brand_model: sanitizeText(body.brand_model),
+      carrier_name: sanitizeText(body.carrier_name),
       driver_name: sanitizeText(body.driver_name),
       driver_phone: sanitizeText(body.driver_phone),
       registration_date: toNullableDate(body.registration_date),

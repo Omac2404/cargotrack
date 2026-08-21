@@ -391,7 +391,7 @@ async function buildCoverFields(ship) {
   } else {
     // Karayolu: atanmış araçların plakaları + sürücü
     const [rows] = await pool.execute(
-      `SELECT v.plate, v.trailer_plate, v.driver_name
+      `SELECT v.plate, v.trailer_plate, v.driver_name, v.carrier_name
        FROM vehicle_assignments a
        JOIN vehicles v ON v.id = a.vehicle_id
        WHERE a.shipment_id = ? AND a.deleted_at IS NULL AND v.deleted_at IS NULL
@@ -401,7 +401,11 @@ async function buildCoverFields(ship) {
     plaque = rows
       .map((r) => [r.plate, r.trailer_plate].filter(Boolean).join(' / '))
       .filter(Boolean).join(' · ');
-    transporteur = rows.map((r) => r.driver_name).filter(Boolean).join(' · ') || ship.agent || '';
+    // Oncelik: aracin nakliyeci firmasi > sofor adi > sevkiyattaki acente
+    const carriers = [...new Set(rows.map((r) => (r.carrier_name || '').trim()).filter(Boolean))];
+    transporteur = carriers.join(' · ')
+      || rows.map((r) => r.driver_name).filter(Boolean).join(' · ')
+      || ship.agent || '';
   }
 
   const grossKg = parseFloat(ship.gross_weight) || 0;
@@ -1189,7 +1193,7 @@ router.get('/vehicle-manifest/:vehicleId', verifyTokenFlexible, async (req, res)
   try {
     const id = toInt(req.params.vehicleId);
     const [vrows] = await pool.execute(
-      'SELECT id, plate, trailer_plate, driver_name, capacity_kg FROM vehicles WHERE id = ? AND deleted_at IS NULL LIMIT 1',
+      'SELECT id, plate, trailer_plate, driver_name, carrier_name, capacity_kg FROM vehicles WHERE id = ? AND deleted_at IS NULL LIMIT 1',
       [id]
     );
     if (vrows.length === 0) return sendError(res, 'Araç bulunamadı', 404);
@@ -1239,11 +1243,17 @@ router.get('/vehicle-manifest/:vehicleId', verifyTokenFlexible, async (req, res)
     const TITLE_W = 320;
     const TITLE_X = 36 + 130 + ((W - 36) - (36 + 130) - TITLE_W) / 2; // antetin sagindaki alanda ortala
     const ROW_H = 26;
-    // Ust satir: belge adi (gri dolgu)
+    // Ust satir (gri dolgu): kagit ornekteki gibi NAKLIYECI FIRMA adi; araca
+    // nakliyeci girilmemisse belge adi basilir.
+    const titleTop = (vehicle.carrier_name || '').trim() || 'FEUILLE DE CHARGEMENT';
+    if ((vehicle.carrier_name || '').trim()) {
+      doc.fontSize(8).font(F.bold).fillColor(COLORS.textMuted)
+         .text('FEUILLE DE CHARGEMENT', TITLE_X, y - 12, { width: TITLE_W, align: 'center', lineBreak: false });
+    }
     doc.rect(TITLE_X, y, TITLE_W, ROW_H).fillColor('#d6d6d6').fill();
     doc.rect(TITLE_X, y, TITLE_W, ROW_H).lineWidth(1).strokeColor('#444444').stroke();
     doc.fontSize(13).font(F.bold).fillColor('#111111')
-       .text('FEUILLE DE CHARGEMENT', TITLE_X, y + 7, { width: TITLE_W, align: 'center', lineBreak: false });
+       .text(titleTop, TITLE_X + 4, y + 7, { width: TITLE_W - 8, align: 'center', lineBreak: false, ellipsis: true });
     // Alt satir: plaka + tarih
     doc.rect(TITLE_X, y + ROW_H, TITLE_W, ROW_H).lineWidth(1).strokeColor('#444444').stroke();
     doc.fontSize(12).font(F.bold).fillColor(COLORS.text)

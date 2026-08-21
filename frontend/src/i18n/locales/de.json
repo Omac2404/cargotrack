@@ -269,7 +269,9 @@
     "adr_certified": "ADR-zertifiziert",
     "search_placeholder": "Kennzeichen, Code, Fahrer, Marke...",
     "load_pool": "Lade-Pool",
-    "vehicle_info": "Fahrzeuginfo"
+    "vehicle_info": "Fahrzeuginfo",
+    "carrier_name": "Frachtführer",
+    "carrier_ph": "z. B. TRANSBATUR — erscheint als Titel der Ladeliste"
   },
   "warehouse": {
     "title": "Lagerhäuser",

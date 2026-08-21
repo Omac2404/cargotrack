@@ -97,6 +97,8 @@ export interface Vehicle {
   equipment_type: string
   adr_certified?: 0 | 1
   brand_model?: string
+  /** Nakliyeci firma — yükleme listesi başlığında kullanılır */
+  carrier_name?: string
   driver_name?: string
   driver_phone?: string
   registration_date?: string | null

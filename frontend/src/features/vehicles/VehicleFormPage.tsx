@@ -32,6 +32,7 @@ const schema = z.object({
   volume_m3: z.union([z.string(), z.number()]).optional(),
   capacity_kg: z.union([z.string(), z.number()]).optional(),
   brand_model: z.string().optional().or(z.literal('')),
+  carrier_name: z.string().optional().or(z.literal('')),
   driver_name: z.string().optional().or(z.literal('')),
   driver_phone: z.string().optional().or(z.literal('')),
   registration_date: z.string().optional().or(z.literal('')),
@@ -82,6 +83,7 @@ export function VehicleFormPage() {
         volume_m3: existing.volume_m3 || '',
         capacity_kg: existing.capacity_kg || '',
         brand_model: existing.brand_model || '',
+        carrier_name: existing.carrier_name || '',
         driver_name: existing.driver_name || '',
         driver_phone: existing.driver_phone || '',
         registration_date: existing.registration_date || '',
@@ -264,6 +266,11 @@ export function VehicleFormPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Field label={t('vehicle.brand_model')} name="brand_model" register={register} errors={errors} />
                 <Field label={t('vehicle.registration_date')} name="registration_date" register={register} errors={errors} type="date" />
+                {/* Yukleme listesinin (feuille de chargement) baslik satirinda gorunur */}
+                <div className="md:col-span-2">
+                  <Field label={t('vehicle.carrier_name')} name="carrier_name" register={register} errors={errors}
+                         placeholder={t('vehicle.carrier_ph')} />
+                </div>
               </div>
             </Card>
 

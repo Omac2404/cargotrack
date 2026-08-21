@@ -109,6 +109,8 @@ async function migrate() {
   await ensureColumn('shipments', 'parties_data', 'JSON NULL AFTER `arrival_country`');
   // Dosya kapaginda kullanicinin duzenledigi alanlar (kalici olsun diye)
   await ensureColumn('shipments', 'cover_data', 'LONGTEXT NULL');
+  // Nakliyeci firma — arac hangi tasiyiciya ait (yukleme listesinde baslik olur)
+  await ensureColumn('vehicles', 'carrier_name', "VARCHAR(200) DEFAULT '' AFTER `brand_model`");
   await ensureColumn('shipments', 'goods_items', 'LONGTEXT NULL AFTER `crates_data`');
   await ensureColumn('users', 'permissions', 'JSON NULL AFTER `role`');
   await ensureColumn('users', 'must_change_password', 'TINYINT(1) NOT NULL DEFAULT 0 AFTER `password`');
