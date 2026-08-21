@@ -654,9 +654,13 @@ async function renderFileCover(req, res) {
     y += 18;
 
     // === 2 kolon grid (sol / sağ) — vertical text ortada ===
-    const colW = (innerW - 40) / 2;      // her kolon genişliği
-    const colGap = 40;                    // ortadaki dikey text alanı
-    const colLeftX = PAD + 12;
+    // Kolon geometrisi — dis cerceve icinde SIMETRIK: iki yanda 12pt ic bosluk.
+    // Onceden genislik ic bosluk dusulmeden hesaplaniyordu; sag kolon cerceveyi
+    // 12pt asiyordu.
+    const colInset = 12;                                   // iki yanda ic bosluk
+    const colGap = 40;                                     // ortadaki dikey text alani
+    const colW = (innerW - colInset * 2 - colGap) / 2;     // her kolon genisligi
+    const colLeftX = PAD + colInset;
     const colRightX = colLeftX + colW + colGap;
     const fieldH = 38;                    // alan başına yükseklik (label + box)
     const fieldGap = 12;                  // alan arası boşluk
