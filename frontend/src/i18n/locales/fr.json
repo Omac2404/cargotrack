@@ -691,7 +691,8 @@
     "generate": "Générer",
     "reset": "Rétablir les valeurs automatiques",
     "reset_done": "Champs rétablis aux valeurs automatiques",
-    "observation_ph": "Désignation, remarques, liste des marchandises…"
+    "observation_ph": "Désignation, remarques, liste des marchandises…",
+    "saved": "Informations de couverture enregistrées"
   },
   "ui": {
     "adr_tehlikeli_madde_sertifikali": "Certifié ADR (marchandises dangereuses) / ADR (Tehlikeli Madde) Sertifikalı",

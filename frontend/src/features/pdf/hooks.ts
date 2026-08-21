@@ -62,6 +62,13 @@ export async function fetchCoverFields(shipmentId: number): Promise<CoverFieldsR
   return api.get<CoverFieldsResponse>(`/api/pdf/file-cover/${shipmentId}/fields`)
 }
 
+/** Kapak düzenlemelerini PDF üretmeden kaydeder. */
+export async function saveCoverValues(shipmentId: number, values: Record<string, string>): Promise<number> {
+  const { api } = await import('@/lib/api')
+  const r = await api.post<{ saved: number }>(`/api/pdf/file-cover/${shipmentId}/save`, values)
+  return r.saved
+}
+
 /**
  * Düzenlenmiş alanlarla kapağı üretir ve yeni sekmede açar.
  *

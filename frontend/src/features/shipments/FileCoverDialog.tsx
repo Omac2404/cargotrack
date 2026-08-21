@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
-import { FileBadge2, Loader2, RotateCcw } from 'lucide-react'
+import { FileBadge2, Loader2, RotateCcw, Save } from 'lucide-react'
 
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import {
-  fetchCoverFields, openFileCoverWithValues, type CoverFieldsResponse,
+  fetchCoverFields, openFileCoverWithValues, saveCoverValues, type CoverFieldsResponse,
 } from '@/features/pdf/hooks'
 
 interface Props {
@@ -34,6 +34,21 @@ export function FileCoverDialog({ shipmentId, open, onOpenChange }: Props) {
   const [values, setValues] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(false)
   const [generating, setGenerating] = useState(false)
+  const [saving, setSaving] = useState(false)
+
+  const save = async () => {
+    setSaving(true)
+    try {
+      await saveCoverValues(shipmentId, values)
+      // Diyalog acik kalir; kayitli degerler bir sonraki acilista aynen gelir
+      setData((d) => (d ? { ...d, values: { ...values } } : d))
+      toast.success(t('cover.saved', { defaultValue: 'Kapak bilgileri kaydedildi' }))
+    } catch (e) {
+      toast.error((e as Error).message)
+    } finally {
+      setSaving(false)
+    }
+  }
 
   useEffect(() => {
     if (!open) return
@@ -124,7 +139,11 @@ export function FileCoverDialog({ shipmentId, open, onOpenChange }: Props) {
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
             {t('common.cancel')}
           </Button>
-          <Button type="button" onClick={generate} disabled={!data || generating}>
+          <Button type="button" variant="secondary" onClick={save} disabled={!data || saving || generating}>
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            {t('common.save')}
+          </Button>
+          <Button type="button" onClick={generate} disabled={!data || generating || saving}>
             {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileBadge2 className="w-4 h-4" />}
             {t('cover.generate', { defaultValue: 'Oluştur' })}
           </Button>

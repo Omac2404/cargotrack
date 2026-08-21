@@ -691,7 +691,8 @@
     "generate": "Erstellen",
     "reset": "Automatische Werte",
     "reset_done": "Felder zurueckgesetzt",
-    "observation_ph": "Warenbeschreibung, Notizen, Positionsliste..."
+    "observation_ph": "Warenbeschreibung, Notizen, Positionsliste...",
+    "saved": "Deckblattdaten gespeichert"
   },
   "ui": {
     "adr_tehlikeli_madde_sertifikali": "ADR-zertifiziert (Gefahrgut)",

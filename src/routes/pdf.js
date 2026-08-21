@@ -527,6 +527,32 @@ router.get('/file-cover/:shipmentId/fields', verifyToken, async (req, res) => {
   }
 });
 
+/**
+ * Kapak duzenlemelerini PDF uretmeden kaydeder.
+ * Diyalogdaki "Kaydet" butonu; "Olustur" zaten kaydedip PDF uretir.
+ */
+router.post('/file-cover/:shipmentId/save', verifyToken, async (req, res) => {
+  try {
+    const id = toInt(req.params.shipmentId);
+    const ship = await loadShipment(id, req.user);
+    if (!ship) return sendError(res, 'Sevkiyat bulunamadı', 404);
+    const auto = await buildCoverFields(ship);
+    const cover = mergeCoverOverrides(mergeCoverOverrides(auto, parseSavedCover(ship.cover_data)), req.body);
+    const overrides = {};
+    for (const [k, v] of Object.entries(cover)) {
+      if ((auto[k] ?? '') !== (v ?? '')) overrides[k] = v;
+    }
+    await pool.execute(
+      'UPDATE shipments SET cover_data = ? WHERE id = ?',
+      [Object.keys(overrides).length ? JSON.stringify(overrides) : null, id]
+    );
+    res.json({ success: true, data: { saved: Object.keys(overrides).length } });
+  } catch (err) {
+    console.error('[pdf/file-cover-save]', err);
+    sendError(res, 'Kapak kaydedilemedi', 500);
+  }
+});
+
 async function renderFileCover(req, res) {
   try {
     const id = toInt(req.params.shipmentId);
@@ -656,36 +682,12 @@ async function renderFileCover(req, res) {
          .text(value || '', x + 10, boxY + 7, { width: colW - 20, height: 12, ellipsis: true });
     };
 
-    // Sol kolon alanları
-    const transporter = ship.transport_type === 'maritime' || ship.transport_type === 'sea'
-      ? (modeData.vessel_name || '—')
-      : ship.transport_type === 'air'
-        ? (modeData.airline_code ? `${modeData.airline_code} ${modeData.flight_no || ''}` : '—')
-        : (ship.agent || '—');
-    const plate = ship.transport_type === 'maritime' || ship.transport_type === 'sea'
-      ? (modeData.mbl_no || modeData.hbl_no || '—')
-      : ship.transport_type === 'air'
-        ? (modeData.mawb_no || modeData.hawb_no || '—')
-        : ''; // road için araç plakası ayrı (assignment'tan)
-
-    const leftFields = [
-      ['EXPÉDITEUR', ship.sender || ''],
-      ['DESTINATAIRE', ship.receiver || ''],
-      ['FACTURE N° CLIENT', ship.invoice_no || ''],
-      ['FACTURE N° FOURNISSEUR', ''],
-      ['RÉFÉRENCE', ship.client_reference || ship.shipment_no],
-      ['PRIX DE VENTE', (() => { const v = totalSaleAmount(ship); return v ? `${formatTr(v)} ${ship.currency_code || 'EUR'}` : ''; })()],
-      ['DOUANE EXPORT', ship.departure_country || ''],
-    ];
-    const rightFields = [
-      ['DATE', formatDateTr(ship.created_date || ship.created_at)],
-      ['POIDS', ship.gross_weight ? `${formatTr(ship.gross_weight, 0)} kg` : ''],
-      ['COLISAGE', ship.quantity ? `${ship.quantity} kap` : ''],
-      ['DIMENSIONS', ship.dimensions || ''],
-      ['TRANSPORTEUR', transporter],
-      ['PLAQUE N°', plate],
-      ['DOUANE IMPORT', ship.arrival_country || ''],
-    ];
+    // Alan degerleri TEK KAYNAKTAN: `cover` = otomatik + kayitli duzenlemeler + bu
+    // istekteki duzenlemeler (yukarida birlestirildi). Onceden burada alanlar
+    // dogrudan sevkiyat verisinden yeniden hesaplaniyordu; kullanicinin diyalogda
+    // girdigi degerler kaydediliyor ama PDF'e HIC BASILMIYORDU.
+    const leftFields = COVER_FIELDS.left.map((f) => [f.label, cover[f.key] || '']);
+    const rightFields = COVER_FIELDS.right.map((f) => [f.label, cover[f.key] || '']);
 
     const fieldsStartY = y;
     leftFields.forEach((f, i) => drawField(colLeftX, fieldsStartY + i * (fieldH + fieldGap), f[0], f[1]));

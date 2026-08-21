@@ -691,7 +691,8 @@
     "generate": "Generate",
     "reset": "Reset to auto values",
     "reset_done": "Fields reset to auto values",
-    "observation_ph": "Goods description, notes, item list..."
+    "observation_ph": "Goods description, notes, item list...",
+    "saved": "Cover details saved"
   },
   "ui": {
     "adr_tehlikeli_madde_sertifikali": "ADR (Dangerous Goods) Certified",

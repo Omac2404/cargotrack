@@ -691,7 +691,8 @@
     "generate": "Olustur",
     "reset": "Otomatik degerlere don",
     "reset_done": "Alanlar otomatik degerlere donduruldu",
-    "observation_ph": "Mal tanimi, notlar, urun listesi..."
+    "observation_ph": "Mal tanimi, notlar, urun listesi...",
+    "saved": "Kapak bilgileri kaydedildi"
   },
   "ui": {
     "adr_tehlikeli_madde_sertifikali": "ADR (Tehlikeli Madde) Sertifikalı",
