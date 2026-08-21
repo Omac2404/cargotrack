@@ -941,7 +941,8 @@
     "odendi": "Payé",
     "faturali": "Facturé",
     "vehicle_manifest": "Feuille de chargement (PDF)",
-    "vehicle_manifest_hint": "Liste toutes les marchandises du véhicule sur une page — à imprimer pour le chauffeur"
+    "vehicle_manifest_hint": "Liste toutes les marchandises du véhicule sur une page — à imprimer pour le chauffeur",
+    "pallet_count": "Nombre de palettes (Palet Sayısı)"
   },
   "invoice": {
     "invoice_no": "N° de facture (Fatura No)",

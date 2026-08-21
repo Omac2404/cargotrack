@@ -941,7 +941,8 @@
     "odendi": "Ödendi",
     "faturali": "Faturalı",
     "vehicle_manifest": "Yükleme Listesi (PDF)",
-    "vehicle_manifest_hint": "Araçtaki tüm yükleri tek sayfada listeler — çıktısı alınıp sürücüye verilebilir"
+    "vehicle_manifest_hint": "Araçtaki tüm yükleri tek sayfada listeler — çıktısı alınıp sürücüye verilebilir",
+    "pallet_count": "Palet Sayısı"
   },
   "invoice": {
     "invoice_no": "Fatura No",

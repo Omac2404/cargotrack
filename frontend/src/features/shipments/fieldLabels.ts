@@ -36,6 +36,7 @@ const TOP_LEVEL: Record<string, string> = {
   dimensions: 'Boyutlar',
   quantity: 'Kap Adedi',
   package_count: 'Paket Sayısı',
+  pallet_count: 'Palet Sayısı',
   pallets: 'Palet',
   package_type: 'Paket Tipi',
   package_type_custom: 'Paket Tipi (Özel)',

@@ -102,7 +102,7 @@ const FIELD_TAB: Record<string, string> = {
 
   goods_description: 'cargo', hs_code: 'cargo', goods_value: 'cargo', goods_items: 'cargo',
   gross_weight: 'cargo', net_weight: 'cargo', volume_cbm: 'cargo', dimensions: 'cargo',
-  quantity: 'cargo', package_count: 'cargo', package_type: 'cargo',
+  quantity: 'cargo', package_count: 'cargo', pallet_count: 'cargo', package_type: 'cargo',
   dangerous_goods: 'cargo', adr_code: 'cargo', temperature_controlled: 'cargo',
   temperature_min: 'cargo', temperature_max: 'cargo', insurance: 'cargo', crates_data: 'cargo',
 
@@ -831,6 +831,8 @@ export function ShipmentFormPage() {
                 <Field label="Boyutlar" name="dimensions" register={register} errors={errors} placeholder="120x80x100 cm" />
                 <Field label={t('ui.kap_adedi')} name="quantity" register={register} errors={errors} type="number" readOnly={hasGoodsItems} />
                 <Field label={t('ui.paket_sayisi')} name="package_count" register={register} errors={errors} type="number" />
+                {/* Yukleme listesinde kap sayisinin altinda gosterilir */}
+                <Field label={t('ui.pallet_count')} name="pallet_count" register={register} errors={errors} type="number" />
               </div>
 
               {/* Paket Tipi — Combobox (UN R21 standart 377 kod) */}

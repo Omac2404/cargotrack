@@ -941,7 +941,8 @@
     "odendi": "Paid",
     "faturali": "Invoiced",
     "vehicle_manifest": "Loading sheet (PDF)",
-    "vehicle_manifest_hint": "Lists all loads on the vehicle on one page — print it for the driver"
+    "vehicle_manifest_hint": "Lists all loads on the vehicle on one page — print it for the driver",
+    "pallet_count": "Pallet Count"
   },
   "invoice": {
     "invoice_no": "Invoice No",

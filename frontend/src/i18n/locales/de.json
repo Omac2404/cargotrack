@@ -941,7 +941,8 @@
     "odendi": "Bezahlt",
     "faturali": "Fakturiert",
     "vehicle_manifest": "Ladeliste (PDF)",
-    "vehicle_manifest_hint": "Listet alle Ladungen des Fahrzeugs auf einer Seite — zum Ausdrucken für den Fahrer"
+    "vehicle_manifest_hint": "Listet alle Ladungen des Fahrzeugs auf einer Seite — zum Ausdrucken für den Fahrer",
+    "pallet_count": "Anzahl Paletten"
   },
   "invoice": {
     "invoice_no": "Rechnungsnr.",

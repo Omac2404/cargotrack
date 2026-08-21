@@ -1209,7 +1209,7 @@ router.get('/vehicle-manifest/:vehicleId', verifyTokenFlexible, async (req, res)
     // Alıcının posta kodu partner kartından gelir (sevkiyatta tutulmuyor).
     const [rows] = await pool.execute(
       `SELECT a.assigned_quantity, a.assigned_weight, a.loading_date,
-              s.shipment_no, s.sender, s.receiver, s.invoice_no, s.package_type,
+              s.shipment_no, s.sender, s.receiver, s.invoice_no, s.package_type, s.pallet_count,
               p.postal_code AS receiver_postal, p.city AS receiver_city
        FROM vehicle_assignments a
        JOIN shipments s ON s.id = a.shipment_id AND s.deleted_at IS NULL
@@ -1280,19 +1280,19 @@ router.get('/vehicle-manifest/:vehicleId', verifyTokenFlexible, async (req, res)
     const TABLE_X = 36;
     const TABLE_W = W - 72;
     const cols = [
-      { key: 'sender',    label: 'EXPÉDITEUR',        w: 108, align: 'left'   },
-      { key: 'receiver',  label: 'DESTINATAIRE',      w: 108, align: 'left'   },
-      { key: 'nb',        label: 'NB',                w: 40,  align: 'right'  },
+      { key: 'sender',    label: 'EXPÉDITEUR',        w: 100, align: 'left'   },
+      { key: 'receiver',  label: 'DESTINATAIRE',      w: 100, align: 'left'   },
+      { key: 'nb',        label: 'NB',                w: 46,  align: 'right'  },
       { key: 'kg',        label: 'KG',                w: 52,  align: 'right'  },
-      { key: 'cp',        label: 'CODE POSTAL',       w: 52,  align: 'center' },
-      { key: 'entree',    label: "DATE D'ENTRÉE",     w: 55,  align: 'center' },
-      { key: 'livraison', label: 'DATE DE LIVRAISON', w: 58,  align: 'center' },
-      { key: 'facture',   label: 'FACTURE N°',        w: 50,  align: 'center' },
+      { key: 'cp',        label: 'CODE\nPOSTAL',      w: 50,  align: 'center' },
+      { key: 'entree',    label: "DATE\nD'ENTRÉE",    w: 54,  align: 'center' },
+      { key: 'livraison', label: 'DATE DE\nLIVRAISON', w: 57, align: 'center' },
+      { key: 'facture',   label: 'FACTURE N°',        w: 64,  align: 'center' },
     ];
     // Kolon x konumlari
     { let cx = TABLE_X; for (const c of cols) { c.x = cx; cx += c.w; } }
 
-    const HEAD_H = 20;
+    const HEAD_H = 22;  // iki satirli basliklara ("DATE DE / LIVRAISON") yer birakir
     const VAL_H = 30;   // iki satir firma adina yer birakir
     const GAP = 10;     // bloklar arasi bosluk
 
@@ -1305,18 +1305,22 @@ router.get('/vehicle-manifest/:vehicleId', verifyTokenFlexible, async (req, res)
       doc.fontSize(6.6).font(F.bold).fillColor('#111111');
       for (const c of cols) {
         doc.rect(c.x, y, c.w, HEAD_H).lineWidth(0.8).strokeColor('#555555').stroke();
-        // Dar hucrelerde ("DATE DE LIVRAISON") baslik kagittaki gibi iki satira sarar
-        doc.text(c.label, c.x + 3, y + 4, { width: c.w - 6, height: HEAD_H - 5, align: c.align === 'left' ? 'left' : c.align, ellipsis: true });
+        // Basliklar acikca satir kirilarak tanimli; asla kesilmez
+        const lines = c.label.split('\n');
+        const ty = lines.length > 1 ? y + 3.5 : y + 7.5;
+        doc.text(c.label, c.x + 3, ty, { width: c.w - 6, align: c.align === 'left' ? 'left' : c.align, lineGap: 0.5 });
       }
       y += HEAD_H;
 
       // --- Deger satiri: beyaz zemin + hucre cerceveleri ---
       const qty = parseInt(r.assigned_quantity, 10) || 0;
       const kg = parseFloat(r.assigned_weight) || 0;
+      const pallets = parseInt(r.pallet_count, 10) || 0;
       const vals = {
         sender: r.sender || '—',
         receiver: r.receiver || '—',
-        nb: `${qty}${r.package_type ? ' ' + r.package_type : ''}`,
+        // "528 PX" ve altinda palet sayisi (musteri istegi)
+        nb: `${qty}${r.package_type ? ' ' + r.package_type : ''}${pallets ? `\n${pallets} pal.` : ''}`,
         kg: `${formatFr(kg, 0)} KGS`,
         cp: r.receiver_postal || '',
         entree: r.loading_date ? formatDateFr(r.loading_date) : '',
@@ -1327,7 +1331,8 @@ router.get('/vehicle-manifest/:vehicleId', verifyTokenFlexible, async (req, res)
       for (const c of cols) {
         doc.rect(c.x, y, c.w, VAL_H).lineWidth(0.8).strokeColor('#555555').stroke();
         // height sinirli sarma: en fazla iki satir, tasani uc nokta ile kes
-        doc.text(String(vals[c.key]), c.x + 3, y + (c.key === 'sender' || c.key === 'receiver' ? 5 : 10), {
+        const twoLine = c.key === 'sender' || c.key === 'receiver' || (c.key === 'nb' && pallets > 0);
+        doc.text(String(vals[c.key]), c.x + 3, y + (twoLine ? 5 : 10), {
           width: c.w - 6,
           height: VAL_H - 8,
           align: c.align,
@@ -1335,13 +1340,13 @@ router.get('/vehicle-manifest/:vehicleId', verifyTokenFlexible, async (req, res)
         });
       }
       y += VAL_H + GAP;
-      return { qty, kg };
+      return { qty, kg, pallets };
     };
 
-    let totQty = 0, totKg = 0;
+    let totQty = 0, totKg = 0, totPallets = 0;
     for (const r of rows) {
-      const { qty, kg } = drawBlock(r);
-      totQty += qty; totKg += kg;
+      const { qty, kg, pallets } = drawBlock(r);
+      totQty += qty; totKg += kg; totPallets += pallets;
     }
 
     if (rows.length === 0) {
@@ -1355,6 +1360,10 @@ router.get('/vehicle-manifest/:vehicleId', verifyTokenFlexible, async (req, res)
       doc.rect(TABLE_X, y, TABLE_W, 22).lineWidth(0.8).strokeColor('#555555').stroke();
       doc.font(F.bold).fontSize(8.4).fillColor(COLORS.text);
       doc.text(`TOTAL — ${rows.length} expédition(s)`, TABLE_X + 6, y + 7, { width: 200, lineBreak: false });
+      // Isaretlenen bos alana toplam palet
+      if (totPallets > 0) {
+        doc.text(`${totPallets} palettes`, TABLE_X + 150, y + 7, { width: 90, align: 'left', lineBreak: false });
+      }
       doc.text(`${totQty} colis`, cols[2].x, y + 7, { width: cols[2].w + 10, align: 'right', lineBreak: false });
       doc.text(`${formatFr(totKg, 0)} KGS`, cols[3].x + 10, y + 7, { width: cols[3].w + 20, align: 'right', lineBreak: false });
       if (vehicle.capacity_kg > 0) {

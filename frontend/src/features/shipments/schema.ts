@@ -84,6 +84,7 @@ export const shipmentSchema = z.object({
   dimensions: optString,
   quantity: numericString,
   package_count: numericString,
+  pallet_count: numericString,
   package_type: optString,
   dangerous_goods: z.boolean().or(z.number()).default(0).transform((v) => (v ? 1 : 0)),
   adr_code: optString,

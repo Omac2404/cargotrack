@@ -65,6 +65,7 @@ const COL_DEFS = {
   dimensions: { type: 'text' },
   quantity: { type: 'int' },
   package_count: { type: 'int' },
+  pallet_count: { type: 'int' },
   pallets: { type: 'bool' },
   package_type: { type: 'text' },
   package_type_custom: { type: 'text' },

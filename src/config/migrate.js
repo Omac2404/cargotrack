@@ -109,6 +109,8 @@ async function migrate() {
   await ensureColumn('shipments', 'parties_data', 'JSON NULL AFTER `arrival_country`');
   // Dosya kapaginda kullanicinin duzenledigi alanlar (kalici olsun diye)
   await ensureColumn('shipments', 'cover_data', 'LONGTEXT NULL');
+  // Palet sayisi — yukleme listesinde kap sayisinin altinda gosterilir
+  await ensureColumn('shipments', 'pallet_count', 'INT NULL AFTER `package_count`');
   // Nakliyeci firma — arac hangi tasiyiciya ait (yukleme listesinde baslik olur)
   await ensureColumn('vehicles', 'carrier_name', "VARCHAR(200) DEFAULT '' AFTER `brand_model`");
   await ensureColumn('shipments', 'goods_items', 'LONGTEXT NULL AFTER `crates_data`');
