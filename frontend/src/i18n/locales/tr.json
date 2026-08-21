@@ -267,11 +267,13 @@
     "brand_model": "Marka / Model",
     "registration_date": "Tescil / Kayıt Tarihi",
     "adr_certified": "ADR Sertifikalı",
-    "search_placeholder": "Plaka, kod, sürücü, marka...",
+    "search_placeholder": "Plaka, kod, sürücü, marka, nakliyeci...",
     "load_pool": "Yük Havuzu",
     "vehicle_info": "Araç Bilgileri",
     "carrier_name": "Nakliyeci Firma",
-    "carrier_ph": "örn. TRANSBATUR — yükleme listesinin başlığında görünür"
+    "carrier_ph": "örn. TRANSBATUR — yükleme listesinin başlığında görünür",
+    "carrier_filter_all": "Tüm Nakliyeciler",
+    "carrier_unspecified": "Nakliyecisiz"
   },
   "warehouse": {
     "title": "Depolar",

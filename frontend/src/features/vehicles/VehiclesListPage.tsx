@@ -1,9 +1,9 @@
-import { useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
 import {
-  Plus, Search, Pencil, Trash2, Loader2, Truck, Ship, Plane, Inbox, AlertCircle,
+  Plus, Search, Pencil, Trash2, Loader2, Truck, Ship, Plane, Inbox, AlertCircle, Building2,
 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -16,6 +16,9 @@ import {
 import {
   Tabs, TabsList, TabsTrigger,
 } from '@/components/ui/tabs'
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select'
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -40,6 +43,7 @@ export function VehiclesListPage() {
   const [mode, setMode] = useState<VehicleTransport | 'all'>('all')
   const MODE_TABS = MODE_TAB_DEFS.map((m) => ({ ...m, label: t(m.key) }))
   const [search, setSearch] = useState('')
+  const [carrier, setCarrier] = useState<string>('__all__')
   const [deleteTarget, setDeleteTarget] = useState<Vehicle | null>(null)
 
   const { data: vehicles = [], isLoading, error } = useVehicles(mode === 'all' ? undefined : mode)
@@ -47,14 +51,44 @@ export function VehiclesListPage() {
   const summaryMap = useMemo(() => Object.fromEntries(summaries.map((s) => [s.id, s])), [summaries])
   const deleteMut = useDeleteVehicle()
 
+  // Filodaki nakliyeci firmalar (alfabetik) — filtre listesi buradan dolar
+  const carriers = useMemo(() => {
+    const set = new Set<string>()
+    for (const v of vehicles) {
+      const c = (v.carrier_name || '').trim()
+      if (c) set.add(c)
+    }
+    return Array.from(set).sort((a, b) => a.localeCompare(b, 'tr'))
+  }, [vehicles])
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
-    if (!q) return vehicles
-    return vehicles.filter((v) =>
-      [v.plate, v.vehicle_code, v.trailer_plate, v.driver_name, v.brand_model]
-        .filter(Boolean).join(' ').toLowerCase().includes(q)
-    )
-  }, [vehicles, search])
+    let list = vehicles
+    if (carrier !== '__all__') {
+      list = list.filter((v) =>
+        carrier === '__none__'
+          ? !(v.carrier_name || '').trim()
+          : (v.carrier_name || '').trim() === carrier
+      )
+    }
+    if (q) {
+      list = list.filter((v) =>
+        [v.plate, v.vehicle_code, v.trailer_plate, v.driver_name, v.brand_model, v.carrier_name]
+          .filter(Boolean).join(' ').toLowerCase().includes(q)
+      )
+    }
+    // Nakliyeci adina gore alfabetik grupla/sirala; nakliyecisi olmayanlar sona
+    return [...list].sort((a, b) => {
+      const ca = (a.carrier_name || '').trim()
+      const cb = (b.carrier_name || '').trim()
+      if (ca !== cb) {
+        if (!ca) return 1
+        if (!cb) return -1
+        return ca.localeCompare(cb, 'tr')
+      }
+      return (a.plate || '').localeCompare(b.plate || '', 'tr')
+    })
+  }, [vehicles, search, carrier])
 
   const handleDelete = () => {
     if (!deleteTarget) return
@@ -87,15 +121,33 @@ export function VehiclesListPage() {
         </Button>
       </div>
 
-      <Tabs value={mode} onValueChange={(v) => setMode(v as VehicleTransport | 'all')}>
-        <TabsList>
-          {MODE_TABS.map((t) => (
-            <TabsTrigger key={t.value} value={t.value}>
-              {t.icon} {t.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
+      <div className="flex flex-wrap items-center gap-3">
+        <Tabs value={mode} onValueChange={(v) => setMode(v as VehicleTransport | 'all')}>
+          <TabsList>
+            {MODE_TABS.map((t) => (
+              <TabsTrigger key={t.value} value={t.value}>
+                {t.icon} {t.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+
+        {/* Nakliyeci firmaya gore filtre — liste her durumda nakliyeci adina
+            gore alfabetik gruplanir; buradan tek firmaya daraltilir */}
+        <Select value={carrier} onValueChange={setCarrier}>
+          <SelectTrigger className="h-9 w-[230px]">
+            <Building2 className="w-3.5 h-3.5 mr-1 text-muted-foreground shrink-0" />
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__all__">{t('vehicle.carrier_filter_all')}</SelectItem>
+            {carriers.map((c) => (
+              <SelectItem key={c} value={c}>{c}</SelectItem>
+            ))}
+            <SelectItem value="__none__">{t('vehicle.carrier_unspecified')}</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
       <Card className="p-3 flex flex-wrap items-center gap-2">
         <div className="relative flex-1 min-w-[240px]">
@@ -120,6 +172,7 @@ export function VehiclesListPage() {
             { header: 'Ekipman Tipi', key: 'equipment_type' },
             { header: 'Kapasite (kg)', key: 'capacity_kg', format: (v) => exportFormatters.number(v) },
             { header: 'Hacim (m³)', key: 'volume_m3', format: (v) => exportFormatters.number(v, 3) },
+            { header: t('vehicle.carrier_name'), key: 'carrier_name' },
             { header: 'Marka / Model', key: 'brand_model' },
             { header: 'Sürücü', key: 'driver_name' },
             { header: 'Telefon', key: 'driver_phone' },
@@ -162,6 +215,7 @@ export function VehiclesListPage() {
               <TableRow>
                 <TableHead className="w-[80px]">{t('vehicle.equipment_type')}</TableHead>
                 <TableHead>{t('vehicle.plate')}</TableHead>
+                <TableHead>{t('vehicle.carrier_name')}</TableHead>
                 <TableHead>{t('reports.mode')}</TableHead>
                 <TableHead>{t('vehicle.equipment_type')}</TableHead>
                 <TableHead className="text-right">{t('vehicle.capacity')}</TableHead>
@@ -172,16 +226,34 @@ export function VehiclesListPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.map((v) => {
+              {filtered.map((v, idx) => {
                 const equipment = EQUIPMENT_BY_MODE[v.transport_type]?.find((e) => e.value === v.equipment_type)
                 const status = VEHICLE_STATUS_LABELS[v.status]
                 const modeBadge = MODE_TABS.find((m) => m.value === v.transport_type)
+                // Liste nakliyeciye gore sirali; firma degistiginde grup basligi bas
+                const thisCarrier = (v.carrier_name || '').trim()
+                const prevCarrier = idx > 0 ? (filtered[idx - 1].carrier_name || '').trim() : null
+                const showGroupHeader = carrier === '__all__' && carriers.length > 0 && thisCarrier !== prevCarrier
                 return (
-                  <TableRow key={v.id} className="cursor-pointer" onClick={() => navigate(`/vehicles/${v.id}/edit`)}>
+                  <React.Fragment key={v.id}>
+                  {showGroupHeader && (
+                    <TableRow className="bg-muted/40 hover:bg-muted/40">
+                      <TableCell colSpan={10} className="py-1.5">
+                        <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          <Building2 className="w-3 h-3" />
+                          {thisCarrier || t('vehicle.carrier_unspecified')}
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                  <TableRow className="cursor-pointer" onClick={() => navigate(`/vehicles/${v.id}/edit`)}>
                     <TableCell className="font-mono text-xs">{v.vehicle_code}</TableCell>
                     <TableCell className="font-medium font-mono">
                       {v.plate}
                       {v.trailer_plate && <div className="text-[10px] text-muted-foreground">+ {v.trailer_plate}</div>}
+                    </TableCell>
+                    <TableCell className="text-xs">
+                      {thisCarrier || <span className="text-muted-foreground">—</span>}
                     </TableCell>
                     <TableCell>
                       {modeBadge && (
@@ -247,6 +319,7 @@ export function VehiclesListPage() {
                       </div>
                     </TableCell>
                   </TableRow>
+                  </React.Fragment>
                 )
               })}
             </TableBody>

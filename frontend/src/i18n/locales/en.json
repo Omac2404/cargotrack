@@ -267,11 +267,13 @@
     "brand_model": "Brand / Model",
     "registration_date": "Registration Date",
     "adr_certified": "ADR Certified",
-    "search_placeholder": "Plate, code, driver, brand...",
+    "search_placeholder": "Plate, code, driver, brand, carrier…",
     "load_pool": "Load Pool",
     "vehicle_info": "Vehicle Info",
     "carrier_name": "Carrier Company",
-    "carrier_ph": "e.g. TRANSBATUR — shown as the loading sheet title"
+    "carrier_ph": "e.g. TRANSBATUR — shown as the loading sheet title",
+    "carrier_filter_all": "All Carriers",
+    "carrier_unspecified": "No carrier"
   },
   "warehouse": {
     "title": "Warehouses",
