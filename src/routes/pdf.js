@@ -1222,94 +1222,131 @@ router.get('/vehicle-manifest/:vehicleId', verifyTokenFlexible, async (req, res)
     const F = setupFonts(doc);
     const W = 595.28;
 
-    // === Antet ===
+    // === Antet + baslik kutusu ===
+    // Kagit ornekteki gibi: solda antet, ortada iki satirli cerceveli baslik
+    // tablosu (ust satir belge adi, alt satir plaka + tarih).
     let y = 34;
+    let headBottom = y;
     if (letterheadFile) {
-      const LH_W = 120;
+      const LH_W = 110;
       doc.image(letterheadFile, 36, y, { width: LH_W });
+      headBottom = y + Math.round(LH_W * letterheadRatio);
     } else {
       doc.fontSize(14).font(F.bold).fillColor(COLORS.text).text(COMPANY.name, 36, y);
+      headBottom = y + 20;
     }
-    doc.fontSize(20).font(F.bold).fillColor(COLORS.primary)
-       .text('FEUILLE DE CHARGEMENT', 180, y + 8, { width: W - 216, align: 'right' });
-    doc.fontSize(11).font(F.bold).fillColor(COLORS.text)
-       .text(`${vehicle.plate}${vehicle.trailer_plate ? ' / ' + vehicle.trailer_plate : ''}  —  ${formatDateFr(new Date())}`,
-             180, y + 36, { width: W - 216, align: 'right' });
+
+    const TITLE_W = 320;
+    const TITLE_X = 36 + 130 + ((W - 36) - (36 + 130) - TITLE_W) / 2; // antetin sagindaki alanda ortala
+    const ROW_H = 26;
+    // Ust satir: belge adi (gri dolgu)
+    doc.rect(TITLE_X, y, TITLE_W, ROW_H).fillColor('#d6d6d6').fill();
+    doc.rect(TITLE_X, y, TITLE_W, ROW_H).lineWidth(1).strokeColor('#444444').stroke();
+    doc.fontSize(13).font(F.bold).fillColor('#111111')
+       .text('FEUILLE DE CHARGEMENT', TITLE_X, y + 7, { width: TITLE_W, align: 'center', lineBreak: false });
+    // Alt satir: plaka + tarih
+    doc.rect(TITLE_X, y + ROW_H, TITLE_W, ROW_H).lineWidth(1).strokeColor('#444444').stroke();
+    doc.fontSize(12).font(F.bold).fillColor(COLORS.text)
+       .text(`${vehicle.plate}${vehicle.trailer_plate && vehicle.trailer_plate !== vehicle.plate ? ' / ' + vehicle.trailer_plate : ''}  -  ${formatDateFr(new Date())}`,
+             TITLE_X, y + ROW_H + 7, { width: TITLE_W, align: 'center', lineBreak: false });
     if (vehicle.driver_name) {
       doc.fontSize(9).font(F.regular).fillColor(COLORS.textMuted)
-         .text(`Chauffeur : ${vehicle.driver_name}`, 180, y + 52, { width: W - 216, align: 'right' });
+         .text(`Chauffeur : ${vehicle.driver_name}`, TITLE_X, y + ROW_H * 2 + 6, { width: TITLE_W, align: 'center', lineBreak: false });
     }
-    y += letterheadFile ? Math.max(Math.round(120 * letterheadRatio) + 14, 78) : 78;
-    doc.moveTo(36, y).lineTo(W - 36, y).lineWidth(1.2).strokeColor(COLORS.primary).stroke();
-    y += 12;
+    y = Math.max(headBottom, y + ROW_H * 2 + 20) + 14;
 
-    // === Tablo ===
-    // Kolonlar kağıt örnekle aynı: gönderici, alıcı, kap, kg, CP,
-    // giriş/teslim tarihleri (elle doldurulur) ve fatura no.
+    // === Sevkiyat bloklari ===
+    // Musterinin kagit listesiyle birebir: HER SEVKIYAT AYRI CERCEVELI TABLO.
+    // Baslik satiri gri dolgulu, deger satiri beyaz; bloklar arasinda bosluk.
+    // Onceki tek-tablo tasarimda uzun firma adlari alt satirlara tasip
+    // ic ice geciyordu; burada deger satiri iki satir metne yer verir ve
+    // her hucre kendi cercevesi icinde kalir.
+    const TABLE_X = 36;
+    const TABLE_W = W - 72;
     const cols = [
-      { label: 'EXPÉDITEUR', x: 36,  w: 96,  align: 'left'  },
-      { label: 'DESTINATAIRE', x: 136, w: 96, align: 'left'  },
-      { label: 'NB', x: 236, w: 34, align: 'right' },
-      { label: 'KG', x: 274, w: 48, align: 'right' },
-      { label: 'CODE POSTAL', x: 326, w: 56, align: 'center' },
-      { label: "DATE D'ENTRÉE", x: 386, w: 58, align: 'center' },
-      { label: 'DATE DE LIVRAISON', x: 448, w: 62, align: 'center' },
-      { label: 'FACTURE N°', x: 514, w: 46, align: 'center' },
+      { key: 'sender',    label: 'EXPÉDITEUR',        w: 108, align: 'left'   },
+      { key: 'receiver',  label: 'DESTINATAIRE',      w: 108, align: 'left'   },
+      { key: 'nb',        label: 'NB',                w: 40,  align: 'right'  },
+      { key: 'kg',        label: 'KG',                w: 52,  align: 'right'  },
+      { key: 'cp',        label: 'CODE POSTAL',       w: 52,  align: 'center' },
+      { key: 'entree',    label: "DATE D'ENTRÉE",     w: 55,  align: 'center' },
+      { key: 'livraison', label: 'DATE DE LIVRAISON', w: 58,  align: 'center' },
+      { key: 'facture',   label: 'FACTURE N°',        w: 50,  align: 'center' },
     ];
+    // Kolon x konumlari
+    { let cx = TABLE_X; for (const c of cols) { c.x = cx; cx += c.w; } }
 
-    const drawHeader = () => {
-      doc.rect(36, y, W - 72, 18).fillColor('#eef2ff').fill();
-      doc.fontSize(6.8).font(F.bold).fillColor(COLORS.text);
-      for (const c of cols) doc.text(c.label, c.x + 2, y + 5.5, { width: c.w - 4, align: c.align, lineBreak: false });
-      y += 18;
-      doc.moveTo(36, y).lineTo(W - 36, y).lineWidth(0.7).strokeColor(COLORS.border).stroke();
-    };
-    drawHeader();
+    const HEAD_H = 20;
+    const VAL_H = 30;   // iki satir firma adina yer birakir
+    const GAP = 10;     // bloklar arasi bosluk
 
-    doc.font(F.regular).fontSize(8).fillColor(COLORS.text);
-    let totQty = 0, totKg = 0;
-    for (const r of rows) {
-      if (y > 780) { doc.addPage(); y = 40; drawHeader(); }
-      const rowH = 22;
+    const drawBlock = (r) => {
+      // Blok sayfaya sigmiyorsa yeni sayfa (yasal kunyeye 60pt pay birak)
+      if (y + HEAD_H + VAL_H > 842 - 70) { doc.addPage(); y = 40; }
+
+      // --- Baslik satiri: gri dolgu + hucre cerceveleri ---
+      doc.rect(TABLE_X, y, TABLE_W, HEAD_H).fillColor('#d6d6d6').fill();
+      doc.fontSize(6.6).font(F.bold).fillColor('#111111');
+      for (const c of cols) {
+        doc.rect(c.x, y, c.w, HEAD_H).lineWidth(0.8).strokeColor('#555555').stroke();
+        // Dar hucrelerde ("DATE DE LIVRAISON") baslik kagittaki gibi iki satira sarar
+        doc.text(c.label, c.x + 3, y + 4, { width: c.w - 6, height: HEAD_H - 5, align: c.align === 'left' ? 'left' : c.align, ellipsis: true });
+      }
+      y += HEAD_H;
+
+      // --- Deger satiri: beyaz zemin + hucre cerceveleri ---
       const qty = parseInt(r.assigned_quantity, 10) || 0;
       const kg = parseFloat(r.assigned_weight) || 0;
-      totQty += qty; totKg += kg;
-
-      const vals = [
-        r.sender || '—',
-        r.receiver || '—',
-        String(qty),
-        formatFr(kg, 0),
-        r.receiver_postal || '',
-        r.loading_date ? formatDateFr(r.loading_date) : '',
-        '', // teslim tarihi elle doldurulur
-        r.invoice_no || '',
-      ];
+      const vals = {
+        sender: r.sender || '—',
+        receiver: r.receiver || '—',
+        nb: `${qty}${r.package_type ? ' ' + r.package_type : ''}`,
+        kg: `${formatFr(kg, 0)} KGS`,
+        cp: r.receiver_postal || '',
+        entree: r.loading_date ? formatDateFr(r.loading_date) : '',
+        livraison: '',            // sofor elle doldurur
+        facture: r.invoice_no || '',
+      };
       doc.font(F.regular).fontSize(7.6).fillColor(COLORS.text);
-      cols.forEach((c, i) => {
-        doc.text(String(vals[i]), c.x + 2, y + 7, { width: c.w - 4, align: c.align, ellipsis: true, lineBreak: false });
-      });
-      y += rowH;
-      doc.moveTo(36, y).lineTo(W - 36, y).lineWidth(0.4).strokeColor(COLORS.borderLight).stroke();
+      for (const c of cols) {
+        doc.rect(c.x, y, c.w, VAL_H).lineWidth(0.8).strokeColor('#555555').stroke();
+        // height sinirli sarma: en fazla iki satir, tasani uc nokta ile kes
+        doc.text(String(vals[c.key]), c.x + 3, y + (c.key === 'sender' || c.key === 'receiver' ? 5 : 10), {
+          width: c.w - 6,
+          height: VAL_H - 8,
+          align: c.align,
+          ellipsis: true,
+        });
+      }
+      y += VAL_H + GAP;
+      return { qty, kg };
+    };
+
+    let totQty = 0, totKg = 0;
+    for (const r of rows) {
+      const { qty, kg } = drawBlock(r);
+      totQty += qty; totKg += kg;
     }
 
     if (rows.length === 0) {
       doc.fontSize(9).font(F.italic).fillColor(COLORS.textLight)
-         .text('Aucune marchandise affectée à ce véhicule.', 36, y + 14, { width: W - 72, align: 'center' });
+         .text('Aucune marchandise affectée à ce véhicule.', TABLE_X, y + 14, { width: TABLE_W, align: 'center' });
       y += 36;
     } else {
-      // Toplam satırı
-      y += 4;
+      // Toplam satiri — bloklarin altinda, cerceveli
+      if (y + 24 > 842 - 70) { doc.addPage(); y = 40; }
+      doc.rect(TABLE_X, y, TABLE_W, 22).fillColor('#eef2ff').fill();
+      doc.rect(TABLE_X, y, TABLE_W, 22).lineWidth(0.8).strokeColor('#555555').stroke();
       doc.font(F.bold).fontSize(8.4).fillColor(COLORS.text);
-      doc.text(`TOTAL — ${rows.length} expédition(s)`, 38, y + 4, { width: 190 });
-      doc.text(String(totQty), cols[2].x + 2, y + 4, { width: cols[2].w - 4, align: 'right' });
-      doc.text(formatFr(totKg, 0), cols[3].x + 2, y + 4, { width: cols[3].w - 4, align: 'right' });
+      doc.text(`TOTAL — ${rows.length} expédition(s)`, TABLE_X + 6, y + 7, { width: 200, lineBreak: false });
+      doc.text(`${totQty} colis`, cols[2].x, y + 7, { width: cols[2].w + 10, align: 'right', lineBreak: false });
+      doc.text(`${formatFr(totKg, 0)} KGS`, cols[3].x + 10, y + 7, { width: cols[3].w + 20, align: 'right', lineBreak: false });
       if (vehicle.capacity_kg > 0) {
-        doc.font(F.regular).fontSize(7.6).fillColor(COLORS.textMuted)
+        doc.font(F.regular).fontSize(7.4).fillColor(COLORS.textMuted)
            .text(`Capacité : ${formatFr(vehicle.capacity_kg, 0)} kg  ·  Utilisation : ${formatFr((totKg / vehicle.capacity_kg) * 100, 1)} %`,
-                 cols[4].x, y + 5, { width: W - 36 - cols[4].x, align: 'right' });
+                 cols[4].x + 20, y + 8, { width: TABLE_X + TABLE_W - cols[4].x - 26, align: 'right', lineBreak: false });
       }
-      y += 22;
+      y += 30;
     }
 
     // === Yasal künye ===
