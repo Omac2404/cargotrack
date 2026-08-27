@@ -684,7 +684,8 @@
       "gross_profit": "Marge brute (Brut Kar)",
       "margin": "Marge (Marj)",
       "currency": "Devise (Para birimi)",
-      "items_title": "Éléments financiers (Finansal Kalemler)"
+      "items_title": "Éléments financiers (Finansal Kalemler)",
+      "other_mode_items": "Autres postes (autre mode / ancien dossier)"
     }
   },
   "cover": {

@@ -63,6 +63,20 @@ export function FinancialTable({ mode, currency, value, onChange }: Props) {
     return Array.from(map.entries())
   }, [schema])
 
+  // Semada OLMAYAN ama veride kayitli kalemler (or. dosyanin tasima modu
+  // degistiginde eski modun kalemleri). Onceden hicbir grupta gorunmuyor,
+  // "kalem kayboldu" saniliyordu — toplamlara ise dahil edilmeye devam
+  // ediyordu. Artik ayri baslik altinda gosterilir ve duzenlenebilir.
+  const orphanKeys = useMemo(() => {
+    const known = new Set(schema.map((s) => s.key))
+    const prefixes = Array.from(new Set(schema.map((s) => `custom_${slugifyGroup(s.group)}_`)))
+    return Object.keys(value).filter((k) => {
+      if (known.has(k)) return false
+      if (prefixes.some((p) => k.startsWith(p))) return false
+      return !isEmptyEntry(value[k] || {})
+    })
+  }, [value, schema])
+
   const setEntry = (key: string, patch: Partial<FinLineEntry>) => {
     const next: FinancialData = { ...value, [key]: { ...value[key], ...patch } }
     // Şema kalemleri boşaltılınca temizlenir; kullanıcının eklediği özel kalemler
@@ -120,6 +134,37 @@ export function FinancialTable({ mode, currency, value, onChange }: Props) {
                 sym={sym}
               />
             ))}
+
+            {/* Baska mod semasindan / eski surumden kalan kalemler — asla gizlenmez */}
+            {orphanKeys.length > 0 && (
+              <>
+                <tr className="bg-warning/10">
+                  <td colSpan={6} className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    {t('fin.ui.other_mode_items')}
+                  </td>
+                </tr>
+                {orphanKeys.map((key) =>
+                  isCustomKey(key) ? (
+                    <CustomFinRow
+                      key={key}
+                      rowKey={key}
+                      entry={value[key] || {}}
+                      onSetEntry={setEntry}
+                      onRemove={removeEntry}
+                      sym={sym}
+                    />
+                  ) : (
+                    <FinRow
+                      key={key}
+                      item={{ group: '', key, label: key }}
+                      entry={value[key] || {}}
+                      onSetEntry={setEntry}
+                      sym={sym}
+                    />
+                  )
+                )}
+              </>
+            )}
           </tbody>
           {/* Toplamlar — faturadaki yapının aynısı:
               hizmetler KDV matrahı, vergiler (débours) matrah dışı, sonra net tutar */}

@@ -1063,21 +1063,22 @@ router.get('/proforma/:shipmentId', verifyTokenFlexible, async (req, res) => {
       }
     }
 
-    // === Footer — Fransiz faturalarinda zorunlu yasal kunye ===
+    // === Footer + filigran — HER sayfaya basılır ===
+    // Önceden yasal künye içerik akışının sonunda bir kez çiziliyordu; belge iki
+    // sayfaya taşarsa ilk sayfanın altı boş kalıyordu. bufferedPages ile tüm
+    // sayfalar gezilip künye + filigran her sayfaya ayrı ayrı basılır.
     const legal = legalFooterLines();
-    let legalY = 842 - 24 - legal.length * 10;
-    doc.moveTo(40, legalY - 8).lineTo(W - 40, legalY - 8)
-       .lineWidth(0.5).strokeColor(COLORS.borderLight).stroke();
-    doc.fontSize(7.5).font(F.bold).fillColor(COLORS.primary);
-    for (const line of legal) {
-      doc.text(line, 40, legalY, { align: 'center', width: W - 80, lineBreak: false });
-      legalY += 10;
-    }
-
-    // === Watermark — bufferedPages mode, ilk sayfaya geri dönüp diagonal overlay ===
     const range = doc.bufferedPageRange();
     for (let i = range.start; i < range.start + range.count; i++) {
       doc.switchToPage(i);
+      let legalY = 842 - 24 - legal.length * 10;
+      doc.moveTo(40, legalY - 8).lineTo(W - 40, legalY - 8)
+         .lineWidth(0.5).strokeColor(COLORS.borderLight).stroke();
+      doc.fontSize(7.5).font(F.bold).fillColor(COLORS.primary);
+      for (const line of legal) {
+        doc.text(line, 40, legalY, { align: 'center', width: W - 80, lineBreak: false });
+        legalY += 10;
+      }
       doc.save();
       doc.opacity(0.06);
       doc.fontSize(110).font(F.bold).fillColor(COLORS.primary);

@@ -684,7 +684,8 @@
       "gross_profit": "Rohertrag",
       "margin": "Marge",
       "currency": "Waehrung",
-      "items_title": "Finanzpositionen"
+      "items_title": "Finanzpositionen",
+      "other_mode_items": "Weitere Posten (anderer Modus / Altbestand)"
     }
   },
   "cover": {

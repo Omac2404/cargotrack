@@ -684,7 +684,8 @@
       "gross_profit": "Brut Kar",
       "margin": "Marj",
       "currency": "Para birimi",
-      "items_title": "Finansal Kalemler"
+      "items_title": "Finansal Kalemler",
+      "other_mode_items": "Diğer Kalemler (başka moddan / eski kayıt)"
     }
   },
   "cover": {
