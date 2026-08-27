@@ -509,8 +509,8 @@
       "dest_airport": "Varış Havalimanı (IATA)",
       "mawb_no": "MAWB No (Master AWB)",
       "hawb_no": "HAWB No (House AWB)",
-      "volumetric_weight": "Volumetric Weight (kg)",
-      "chargeable_weight": "Chargeable Weight (kg)"
+      "volumetric_weight": "Hacimsel Ağırlık (kg)",
+      "chargeable_weight": "Ücrete Esas Ağırlık (kg)"
     },
     "vehicle_labels": {
       "plate": "Plaka",

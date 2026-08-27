@@ -34,11 +34,11 @@ export function useDeleteWarehouse() {
 
 // CGI uyumlu depo tipleri
 export const WAREHOUSE_TYPES: Record<string, { code: string; label: string; description: string }> = {
-  R: { code: 'R', label: 'Tip I', description: 'Entrepôt douanier type I (kamu)' },
+  R: { code: 'R', label: 'Tip I', description: 'Entrepôt douanier type I' },
   S: { code: 'S', label: 'Tip II', description: 'Entrepôt douanier type II' },
   T: { code: 'T', label: 'Tip III', description: 'Entrepôt douanier type III' },
-  U: { code: 'U', label: 'Özel', description: 'Entrepôt privé (özel)' },
+  U: { code: 'U', label: 'Özel', description: 'Entrepôt privé' },
   V: { code: 'V', label: 'Geçici', description: 'Installation de stockage temporaire' },
   Y: { code: 'Y', label: 'Diğer', description: 'Entrepôt autre que douanier' },
-  Z: { code: 'Z', label: 'Serbest', description: 'Zone franche (serbest bölge)' },
+  Z: { code: 'Z', label: 'Serbest', description: 'Zone franche' },
 }
