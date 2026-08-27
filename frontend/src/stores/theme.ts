@@ -1,18 +1,19 @@
 import { create } from 'zustand'
 
-type Theme = 'light' | 'dark' | 'turquoise'
+type Theme = 'light' | 'dark' | 'blue'
 const STORAGE_KEY = 'ct_theme'
 
 function loadTheme(): Theme {
-  const saved = localStorage.getItem(STORAGE_KEY) as Theme | null
-  if (saved === 'light' || saved === 'dark' || saved === 'turquoise') return saved
+  const saved = localStorage.getItem(STORAGE_KEY) as string | null
+  if (saved === 'turquoise') return 'blue' // eski ad
+  if (saved === 'light' || saved === 'dark' || saved === 'blue') return saved
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
 }
 
 function applyTheme(t: Theme) {
   const root = document.documentElement
   root.classList.toggle('dark', t === 'dark')
-  root.classList.toggle('turquoise', t === 'turquoise')
+  root.classList.toggle('blue', t === 'blue')
 }
 
 interface ThemeState {
@@ -31,9 +32,9 @@ export const useTheme = create<ThemeState>((set, get) => ({
     applyTheme(t)
     set({ theme: t })
   },
-  // Sirali gecis: aydinlik -> karanlik -> turkuaz -> aydinlik (kisayol icin)
+  // Sirali gecis: aydinlik -> karanlik -> mavi -> aydinlik (kisayol icin)
   toggle: () => {
-    const order: Theme[] = ['light', 'dark', 'turquoise']
+    const order: Theme[] = ['light', 'dark', 'blue']
     const cur = order.indexOf(get().theme)
     get().set(order[(cur + 1) % order.length])
   },

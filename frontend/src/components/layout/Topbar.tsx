@@ -83,7 +83,7 @@ export function Topbar() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" title={t('common.theme')}>
                 {theme === 'dark' ? <Moon className="w-4 h-4" />
-                  : theme === 'turquoise' ? <Droplet className="w-4 h-4 text-[#009CDF] fill-[#009CDF]/25" />
+                  : theme === 'blue' ? <Droplet className="w-4 h-4 text-[#0098D8] fill-[#0098D8]/25" />
                   : <Sun className="w-4 h-4" />}
               </Button>
             </DropdownMenuTrigger>
@@ -96,9 +96,9 @@ export function Topbar() {
                 <Moon className="w-4 h-4 mr-2" />
                 {t('common.theme_dark')}
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setTheme('turquoise')} className={theme === 'turquoise' ? 'bg-accent' : ''}>
-                <Droplet className="w-4 h-4 mr-2 text-[#009CDF] fill-[#009CDF]/25" />
-                {t('common.theme_turquoise')}
+              <DropdownMenuItem onClick={() => setTheme('blue')} className={theme === 'blue' ? 'bg-accent' : ''}>
+                <Droplet className="w-4 h-4 mr-2 text-[#0098D8] fill-[#0098D8]/25" />
+                {t('common.theme_blue')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
