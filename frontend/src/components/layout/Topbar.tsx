@@ -41,7 +41,7 @@ export function Topbar() {
       .toUpperCase() || 'CT'
 
   return (
-    <header className="h-14 sticky top-0 z-30 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
+    <header className="app-topbar h-14 sticky top-0 z-30 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
       <div className="h-full flex items-center justify-between px-3 md:px-4 gap-2 md:gap-4">
         {/* Mobil hamburger butonu */}
         <Button

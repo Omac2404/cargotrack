@@ -139,7 +139,7 @@ export function Sidebar() {
 
       <aside
         className={cn(
-          'border-r bg-card flex flex-col h-screen z-50',
+          'app-sidebar border-r bg-card flex flex-col h-screen z-50',
           // Desktop: sticky, w-56
           'md:sticky md:top-0 md:w-56 md:shrink-0 md:translate-x-0',
           // Mobile: fixed overlay drawer, w-64, transition
