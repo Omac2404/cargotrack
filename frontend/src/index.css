@@ -81,41 +81,44 @@
     --ring: 234 89% 70%;
   }
 
-  /* Turkuaz tema — logodaki mavi/turkuaz ton (#009CDF = hsl(198 100% 43%)) */
+  /* Turkuaz tema — logodaki mavi/turkuaz ton (#009CDF = hsl(198 100% 43%)).
+     Kenar cubugu ve ust bar dahil TUM yuzeyler token'lardan boyandigi icin
+     karti/arka plani/kenarliklari belirgin sekilde turkuaza cekiyoruz —
+     onceden kart beyaz kalinca tema yalnizca zeminde hissediliyordu. */
   .turquoise {
-    --background: 197 45% 97%;
-    --foreground: 200 55% 12%;
+    --background: 197 60% 93%;
+    --foreground: 200 60% 11%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 200 55% 12%;
+    --card: 197 50% 97%;
+    --card-foreground: 200 60% 11%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 200 55% 12%;
+    --popover: 197 50% 98%;
+    --popover-foreground: 200 60% 11%;
 
-    --primary: 198 100% 40%;
+    --primary: 198 100% 38%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 197 45% 93%;
-    --secondary-foreground: 200 55% 12%;
+    --secondary: 197 55% 87%;
+    --secondary-foreground: 200 60% 11%;
 
-    --muted: 197 45% 93%;
-    --muted-foreground: 200 25% 40%;
+    --muted: 197 55% 88%;
+    --muted-foreground: 199 32% 34%;
 
-    --accent: 198 90% 92%;
-    --accent-foreground: 198 100% 26%;
+    --accent: 198 85% 84%;
+    --accent-foreground: 198 100% 22%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 160 84% 32%;
+    --success: 160 84% 30%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 38 92% 50%;
+    --warning: 38 92% 48%;
     --warning-foreground: 0 0% 100%;
 
-    --border: 197 40% 85%;
-    --input: 197 40% 85%;
-    --ring: 198 100% 40%;
+    --border: 197 50% 76%;
+    --input: 197 50% 76%;
+    --ring: 198 100% 38%;
   }
 }
 

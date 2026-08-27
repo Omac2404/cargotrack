@@ -150,7 +150,7 @@ export function ShipmentsListPage() {
           </div>
           <div>
             <h1 className="text-xl font-bold tracking-tight">{t('shipment.title_with_mode', { mode: modeLabel })}</h1>
-            <p className="text-xs text-muted-foreground">{config.description}</p>
+            <p className="text-xs text-muted-foreground">{t(config.description)}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
