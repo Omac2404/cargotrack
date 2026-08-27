@@ -37,7 +37,9 @@
     "confirm": "Onayla",
     "apply": "Uygula",
     "records": "kayıt",
-    "no_results": "Arama sonucu bulunamadı"
+    "no_results": "Arama sonucu bulunamadı",
+    "theme": "Tema",
+    "theme_turquoise": "Turkuaz Tema"
   },
   "auth": {
     "login": "Giriş Yap",

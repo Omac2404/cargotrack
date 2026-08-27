@@ -1,5 +1,5 @@
 import { useNavigate, Link } from 'react-router-dom'
-import { LogOut, Search, Sun, Moon, User as UserIcon, Keyboard, Menu } from 'lucide-react'
+import { LogOut, Search, Sun, Moon, Droplet, User as UserIcon, Keyboard, Menu } from 'lucide-react'
 import { NotificationsBell } from '@/features/notifications/NotificationsBell'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -17,7 +17,7 @@ export function Topbar() {
   const { t } = useTranslation()
   const user = useAuth((s) => s.user)
   const logout = useAuth((s) => s.logout)
-  const { theme, toggle } = useTheme()
+  const { theme, set: setTheme } = useTheme()
   const navigate = useNavigate()
   const toggleMobileSidebar = useUI((s) => s.toggleMobileSidebar)
 
@@ -79,9 +79,29 @@ export function Topbar() {
         <div className="flex items-center gap-1.5">
           <LanguageSwitcher />
 
-          <Button variant="ghost" size="icon" onClick={toggle} title={theme === 'dark' ? t('common.theme_light') : t('common.theme_dark')}>
-            {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" title={t('common.theme')}>
+                {theme === 'dark' ? <Moon className="w-4 h-4" />
+                  : theme === 'turquoise' ? <Droplet className="w-4 h-4 text-[#009CDF] fill-[#009CDF]/25" />
+                  : <Sun className="w-4 h-4" />}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setTheme('light')} className={theme === 'light' ? 'bg-accent' : ''}>
+                <Sun className="w-4 h-4 mr-2" />
+                {t('common.theme_light')}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTheme('dark')} className={theme === 'dark' ? 'bg-accent' : ''}>
+                <Moon className="w-4 h-4 mr-2" />
+                {t('common.theme_dark')}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTheme('turquoise')} className={theme === 'turquoise' ? 'bg-accent' : ''}>
+                <Droplet className="w-4 h-4 mr-2 text-[#009CDF] fill-[#009CDF]/25" />
+                {t('common.theme_turquoise')}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <Button
             variant="ghost"

@@ -53,6 +53,7 @@ import { HistoryPanel } from './HistoryPanel'
 import { PartyInfoCard } from './PartyInfoCard'
 import { PartySecondaryFields, type PartiesData, type PartyKey } from './PartySecondaryFields'
 import { PartnerFormDialog } from '@/features/partners/PartnerFormDialog'
+import { calcFinTotals, getFinSchema } from '@/lib/constants/finSchemas'
 import type { FinancialData } from '@/lib/constants/finSchemas'
 import type { PartnerType, DocumentsData } from '@/types/api'
 
@@ -154,7 +155,7 @@ export function ShipmentFormPage() {
     },
   })
 
-  const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = form
+  const { register, handleSubmit, reset, watch, setValue, formState: { errors, isDirty } } = form
 
   // Mode config (PHP TRANSPORT_MODES port)
   const modeCfg = getTransportMode(config.key)
@@ -217,7 +218,11 @@ export function ShipmentFormPage() {
     // — statü "Taslak"a dönüyor, Incoterm siliniyordu. Belge durumu gibi
     // sunucu tarafı bilgiler zaten formdan değil `existing`ten okunuyor,
     // dolayısıyla formu tazelemeye gerek yok.
-    if (loadedIdRef.current === String(existing.id)) return
+    // Ayni kayit icin arka plan tazelemesi: formda KAYDEDILMEMIS degisiklik
+    // YOKSA sunucu degerleriyle yeniden senkronla. Onceden hic senkronlanmiyordu;
+    // bayat onbellekten acilan formda durum/incoterm gibi acilir kutular
+    // varsayilani ("Taslak", "Belirtilmedi") gosterebiliyordu.
+    if (loadedIdRef.current === String(existing.id) && isDirty) return
 
     const values: Partial<ShipmentFormValues> = {}
     for (const k of Object.keys(existing) as Array<keyof typeof existing>) {
@@ -230,7 +235,7 @@ export function ShipmentFormPage() {
     }
     reset(values as ShipmentFormValues)
     loadedIdRef.current = String(existing.id)
-  }, [existing, reset])
+  }, [existing, reset, isDirty])
 
   // Belge durumu (varsa) — Belgeler tab'ında özetleme için
   const docStatus = useMemo(() => {
@@ -252,6 +257,11 @@ export function ShipmentFormPage() {
 
   const setFinancialData = (data: FinancialData) => {
     setValue('financial_data', JSON.stringify(data), { shouldDirty: true })
+    // Ozet kolonlar kalemlerden turetilir — istatistik/panolar bunlari okur.
+    // Debours (musteri adina odenen vergiler) haric, KDV haric toplamlar.
+    const totals = calcFinTotals(getFinSchema(config.key), data)
+    setValue('sale_price', Number(totals.totalIncome.toFixed(2)), { shouldDirty: true })
+    setValue('purchase_price', Number(totals.totalExpense.toFixed(2)), { shouldDirty: true })
   }
 
   // parties_data parse + setter (sevkiyata özel ek bilgi paneli için)

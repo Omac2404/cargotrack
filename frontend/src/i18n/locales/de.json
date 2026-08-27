@@ -37,7 +37,9 @@
     "confirm": "Bestätigen",
     "apply": "Anwenden",
     "records": "Einträge",
-    "no_results": "Keine Suchergebnisse"
+    "no_results": "Keine Suchergebnisse",
+    "theme": "Design",
+    "theme_turquoise": "Türkis-Design"
   },
   "auth": {
     "login": "Anmelden",

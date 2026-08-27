@@ -37,7 +37,9 @@
     "confirm": "Confirm",
     "apply": "Apply",
     "records": "records",
-    "no_results": "No search results"
+    "no_results": "No search results",
+    "theme": "Theme",
+    "theme_turquoise": "Turquoise Theme"
   },
   "auth": {
     "login": "Sign In",

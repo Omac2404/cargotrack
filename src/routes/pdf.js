@@ -817,16 +817,18 @@ router.get('/proforma/:shipmentId', verifyTokenFlexible, async (req, res) => {
     }
 
     // Sağ üst: belge başlığı + (varsa) vergi kimlik satırları
-    doc.fontSize(24).font(F.bold).fillColor(COLORS.primary)
-       .text('FACTURE PROFORMA', 300, 44, { width: W - 340, align: 'right' });
+    // Tek satir garanti (lineBreak: false) — onceden 24pt baslik dar alanda iki
+    // satira sariyor ve alttaki aciklama/TVA satirlarinin ustune biniyordu.
+    doc.fontSize(19).font(F.bold).fillColor(COLORS.primary)
+       .text('FACTURE PROFORMA', 260, 46, { width: W - 300, align: 'right', lineBreak: false });
     doc.fontSize(7.5).font(F.regular).fillColor(COLORS.textMuted)
        .text('Ce document est fourni à titre informatif et ne constitue pas une facture officielle.',
-             300, 74, { width: W - 340, align: 'right' });
-    let rightY = 96;
+             260, 68, { width: W - 300, align: 'right' });
+    let rightY = 82;
     if (idLines.length > 0) {
       doc.fontSize(7.5).fillColor(COLORS.textLight);
       for (const line of idLines) {
-        doc.text(line, 300, rightY, { width: W - 340, align: 'right', lineBreak: false });
+        doc.text(line, 260, rightY, { width: W - 300, align: 'right', lineBreak: false });
         rightY += 10;
       }
     }
@@ -879,7 +881,7 @@ router.get('/proforma/:shipmentId', verifyTokenFlexible, async (req, res) => {
     // === Mal listesi (çoklu ürün) ===
     // goods_items doluysa gümrük için kalem kalem HS kodu / menşe / kıymet dökümü
     // basılır. Boşsa üst seviye tek ürün bilgisi eski davranışla korunur.
-    let tableY = cardY + cardH + 30;
+    let tableY = cardY + cardH + 22;
     const goodsItems = parseGoodsItems(ship.goods_items);
     if (goodsItems.length > 0) {
       doc.fontSize(9).font(F.bold).fillColor(COLORS.textLight);
@@ -900,7 +902,7 @@ router.get('/proforma/:shipmentId', verifyTokenFlexible, async (req, res) => {
       doc.font(F.regular).fontSize(8).fillColor(COLORS.text);
       let gQty = 0, gGross = 0, gNet = 0, gValue = 0;
       for (const it of goodsItems) {
-        if (tableY > 660) { doc.addPage(); tableY = 60; }
+        if (tableY > 700) { doc.addPage(); tableY = 60; }
         gQty += Number(it.quantity) || 0;
         gGross += Number(it.gross_weight) || 0;
         gNet += Number(it.net_weight) || 0;
@@ -914,7 +916,7 @@ router.get('/proforma/:shipmentId', verifyTokenFlexible, async (req, res) => {
         doc.text(formatFr(it.gross_weight || 0, 1), 410, tableY, { width: 50, align: 'right' });
         doc.text(formatFr(it.net_weight || 0, 1), 465, tableY, { width: 45, align: 'right' });
         doc.text(formatFr(it.value || 0), 515, tableY, { width: 45, align: 'right' });
-        tableY += 15;
+        tableY += 13;
 
         if (it.note) {
           doc.fontSize(7).fillColor(COLORS.textMuted)
@@ -933,7 +935,7 @@ router.get('/proforma/:shipmentId', verifyTokenFlexible, async (req, res) => {
       doc.text(formatFr(gGross, 1), 410, tableY, { width: 50, align: 'right' });
       doc.text(formatFr(gNet, 1), 465, tableY, { width: 45, align: 'right' });
       doc.text(`${symbol}${formatFr(gValue)}`, 505, tableY, { width: 55, align: 'right' });
-      tableY += 28;
+      tableY += 20;
     }
 
     // === Kalemleri ikiye ayır ===
@@ -963,7 +965,7 @@ router.get('/proforma/:shipmentId', verifyTokenFlexible, async (req, res) => {
     const totalIncomeVat = prestations.reduce((s, l) => s + l.vat, 0);
     const totalDebours = debours.reduce((s, l) => s + l.income, 0);
 
-    const pageBreak = () => { if (tableY > 650) { doc.addPage(); tableY = 60; } };
+    const pageBreak = () => { if (tableY > 705) { doc.addPage(); tableY = 60; } };
 
     // === Prestations tablosu ===
     doc.fontSize(9).font(F.bold).fillColor(COLORS.textLight);
@@ -982,13 +984,13 @@ router.get('/proforma/:shipmentId', verifyTokenFlexible, async (req, res) => {
       doc.text(formatFr(l.income), 330, tableY, { width: 100, align: 'right' });
       doc.text(`${l.vatRate.toFixed(0)}%`, 440, tableY, { width: 40, align: 'right' });
       doc.text(formatFr(l.vat), 490, tableY, { width: 70, align: 'right' });
-      tableY += 22;
+      tableY += 16;
       pageBreak();
     }
     if (prestations.length === 0) {
       doc.fontSize(10).font(F.italic).fillColor(COLORS.textLight);
       doc.text('Aucune prestation saisie', 50, tableY, { width: 500, align: 'center' });
-      tableY += 22;
+      tableY += 16;
     }
 
     // Prestations alt toplamı
@@ -999,13 +1001,13 @@ router.get('/proforma/:shipmentId', verifyTokenFlexible, async (req, res) => {
     doc.fontSize(10).font(F.regular).fillColor(COLORS.text)
        .text('Total HT :', totalsX, tableY, { width: 150 });
     doc.font(F.bold).text(`${symbol}${formatFr(totalIncome)}`, totalsValueX, tableY, { width: totalsValueW, align: 'right' });
-    tableY += 18;
+    tableY += 15;
     doc.font(F.regular).text('Total TVA :', totalsX, tableY, { width: 150 });
     doc.font(F.bold).text(`${symbol}${formatFr(totalIncomeVat)}`, totalsValueX, tableY, { width: totalsValueW, align: 'right' });
-    tableY += 18;
+    tableY += 15;
     doc.font(F.regular).text('Total TTC :', totalsX, tableY, { width: 150 });
     doc.font(F.bold).text(`${symbol}${formatFr(totalIncome + totalIncomeVat)}`, totalsValueX, tableY, { width: totalsValueW, align: 'right' });
-    tableY += 28;
+    tableY += 20;
     pageBreak();
 
     // === Débours tablosu (varsa) ===
@@ -1024,7 +1026,7 @@ router.get('/proforma/:shipmentId', verifyTokenFlexible, async (req, res) => {
         doc.font(F.regular).fontSize(10).fillColor(COLORS.text);
         doc.text(l.label, 50, tableY, { width: 400, ellipsis: true });
         doc.text(formatFr(l.income), 460, tableY, { width: 100, align: 'right' });
-        tableY += 22;
+        tableY += 16;
         pageBreak();
       }
 
@@ -1034,23 +1036,23 @@ router.get('/proforma/:shipmentId', verifyTokenFlexible, async (req, res) => {
       doc.fontSize(10).font(F.regular).fillColor(COLORS.text)
          .text('Total débours :', totalsX, tableY, { width: 150 });
       doc.font(F.bold).text(`${symbol}${formatFr(totalDebours)}`, totalsValueX, tableY, { width: totalsValueW, align: 'right' });
-      tableY += 28;
+      tableY += 20;
       pageBreak();
     }
 
     // === Net à payer (büyük, primary renkli) ===
     doc.moveTo(320, tableY).lineTo(W - 40, tableY).strokeColor(COLORS.primary).lineWidth(1.2).stroke();
     tableY += 10;
-    doc.fontSize(15).font(F.bold).fillColor(COLORS.primary)
+    doc.fontSize(13).font(F.bold).fillColor(COLORS.primary)
        .text('NET À PAYER :', totalsX, tableY, { width: 200 });
-    doc.fontSize(18).font(F.bold).fillColor(COLORS.primary)
+    doc.fontSize(16).font(F.bold).fillColor(COLORS.primary)
        .text(`${symbol}${formatFr(totalIncome + totalIncomeVat + totalDebours)}`,
              totalsValueX - 30, tableY - 2, { width: totalsValueW + 30, align: 'right' });
 
     // === Banka bilgileri (env'de tanımlıysa) ===
     const bank = bankLines();
     if (bank.length > 0) {
-      let bankY = Math.min(tableY + 45, 730);
+      let bankY = Math.min(tableY + 28, 735);
       doc.fontSize(8).font(F.bold).fillColor(COLORS.textLight)
          .text('COORDONNÉES BANCAIRES', 40, bankY, { characterSpacing: 0.5 });
       bankY += 12;
@@ -1210,11 +1212,12 @@ router.get('/vehicle-manifest/:vehicleId', verifyTokenFlexible, async (req, res)
     const [rows] = await pool.execute(
       `SELECT a.assigned_quantity, a.assigned_weight, a.loading_date,
               s.shipment_no, s.sender, s.receiver, s.invoice_no, s.package_type, s.pallet_count,
-              p.postal_code AS receiver_postal, p.city AS receiver_city
+              MAX(p.postal_code) AS receiver_postal, MAX(p.city) AS receiver_city
        FROM vehicle_assignments a
        JOIN shipments s ON s.id = a.shipment_id AND s.deleted_at IS NULL
        LEFT JOIN partners p ON p.company_name = s.receiver AND p.deleted_at IS NULL
        WHERE a.vehicle_id = ? AND a.deleted_at IS NULL
+       GROUP BY a.id, s.id
        ORDER BY a.created_at ASC`,
       [id]
     );

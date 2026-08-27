@@ -10,6 +10,8 @@ const {
   jsonStringifyOrNull, whitelist, sendSuccess, sendError
 } = require('../helpers/utils');
 
+const { finSummaryTotals } = require('../helpers/finTotals');
+
 const router = express.Router();
 
 // Geçerli taşıma tipleri (DB ENUM ile birebir, ek olarak 'sea' alias)
@@ -271,6 +273,16 @@ router.post('/', verifyToken, async (req, res) => {
 
     // Veri kaydını oluştur
     const record = buildDataRecord(input);
+
+    // Finansal kalemler girildiyse özet kolonları (sale_price/purchase_price)
+    // kalemlerden hesaplanır — istatistikler bu kolonlardan okunuyor.
+    if (record.financial_data !== undefined) {
+      const fin = finSummaryTotals(record.financial_data);
+      if (fin) {
+        record.sale_price = fin.income;
+        record.purchase_price = fin.expense;
+      }
+    }
     // transport_type'ı SADECE istekte geldiyse yaz. Kısmi update'lerde
     // (örn. belge durumu güncellemesi) modun sessizce 'road'a dönmesini engeller.
     if (typeProvided) {

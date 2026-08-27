@@ -111,6 +111,29 @@ async function migrate() {
   await ensureColumn('shipments', 'cover_data', 'LONGTEXT NULL');
   // Palet sayisi — yukleme listesinde kap sayisinin altinda gosterilir
   await ensureColumn('shipments', 'pallet_count', 'INT NULL AFTER `package_count`');
+
+  // Geri doldurma: finansal kalemleri girilmiş ama özet kolonu 0 kalmış kayıtlar.
+  // İstatistik sayfası sale_price/purchase_price toplar; bu kolonlar boş olduğu
+  // için ciro/kâr hep 0 görünüyordu. Idempotent: yalnızca sale_price=0 olanlara dokunur.
+  try {
+    const { finSummaryTotals } = require('../helpers/finTotals');
+    const [rows] = await pool.query(
+      `SELECT id, financial_data, COALESCE(purchase_price,0) AS purchase_price
+       FROM shipments
+       WHERE financial_data IS NOT NULL AND financial_data != '' AND COALESCE(sale_price,0) = 0`
+    );
+    let fixed = 0;
+    for (const r of rows) {
+      const fin = finSummaryTotals(r.financial_data);
+      if (!fin || (!fin.income && !fin.expense)) continue;
+      const purchase = parseFloat(r.purchase_price) > 0 ? parseFloat(r.purchase_price) : fin.expense;
+      await pool.query('UPDATE shipments SET sale_price = ?, purchase_price = ? WHERE id = ?', [fin.income, purchase, r.id]);
+      fixed++;
+    }
+    if (fixed) console.log(`[migrate] ${fixed} sevkiyatta finansal özet geri dolduruldu`);
+  } catch (err) {
+    console.error('[migrate] finansal özet geri doldurma atlandı:', err.message);
+  }
   // Nakliyeci firma — arac hangi tasiyiciya ait (yukleme listesinde baslik olur)
   await ensureColumn('vehicles', 'carrier_name', "VARCHAR(200) DEFAULT '' AFTER `brand_model`");
   await ensureColumn('shipments', 'goods_items', 'LONGTEXT NULL AFTER `crates_data`');

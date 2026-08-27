@@ -37,7 +37,9 @@
     "confirm": "Confirmer",
     "apply": "Appliquer",
     "records": "enregistrements",
-    "no_results": "Aucun résultat"
+    "no_results": "Aucun résultat",
+    "theme": "Thème",
+    "theme_turquoise": "Thème turquoise"
   },
   "auth": {
     "login": "Connexion (Giriş Yap)",
