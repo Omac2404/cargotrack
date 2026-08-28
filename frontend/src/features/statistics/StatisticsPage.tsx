@@ -28,19 +28,24 @@ import { StatCard } from './StatCards'
 import { cn, formatDate, formatMoney, formatNumber } from '@/lib/utils'
 import { useTranslation } from 'react-i18next'
 
-const MODE_LABELS: Record<string, string> = {
-  road: 'Karayolu', maritime: 'Denizyolu', air: 'Havayolu', storage: 'Depolama',
-  import: 'İthalat', export: 'İhracat',
+// Aşağıdaki sabitler i18n ANAHTARI tutar — t() render anında çağrılır (import anında değil)
+const MODE_LABEL_KEYS: Record<string, string> = {
+  road: 'transport.modes.road', maritime: 'transport.modes.maritime', air: 'transport.modes.air',
+  storage: 'transport.modes.storage', import: 'transport.modes.import', export: 'transport.modes.export',
 }
 
-const STATUS_LABELS: Record<string, string> = {
-  draft: 'Taslak', in_progress: 'Devam', to_invoice: 'Faturalanacak', closed: 'Kapalı',
+const STATUS_LABEL_KEYS: Record<string, string> = {
+  draft: 'shipment.status.draft', in_progress: 'shipment.status.in_progress',
+  to_invoice: 'shipment.status.to_invoice', closed: 'shipment.status.closed',
 }
 
-const DOC_LABELS: Record<string, string> = {
-  invoice: 'Fatura', packing_list: 'Çeki Listesi', bl: 'BL', awb: 'AWB', cmr: 'CMR',
-  atr: 'ATR', eur1: 'EUR.1', certificate_origin: 'Menşe', customs_declaration: 'Gümrük Beyan.',
-  insurance_policy: 'Sigorta', weight_certificate: 'Ağırlık', fumigation: 'Fümigasyon',
+// Belge kısaltmaları (BL, AWB, CMR, ATR, EUR.1) dilden bağımsız kodlardır; çevrilmez.
+const DOC_CODES: Record<string, string> = { bl: 'BL', awb: 'AWB', cmr: 'CMR', atr: 'ATR', eur1: 'EUR.1' }
+const DOC_LABEL_KEYS: Record<string, string> = {
+  invoice: 'ui.fatura', packing_list: 'transport.documents.packing_list',
+  certificate_origin: 'ui.stat_doc_origin', customs_declaration: 'ui.stat_doc_customs',
+  insurance_policy: 'ui.stat_doc_insurance', weight_certificate: 'ui.stat_doc_weight',
+  fumigation: 'ui.stat_doc_fumigation',
 }
 
 // 30 gün önce / bugün defaultları
@@ -51,10 +56,10 @@ function daysAgo(n: number) {
 }
 
 const QUICK_RANGES = [
-  { label: 'Son 7 Gün', days: 7 },
-  { label: 'Son 30 Gün', days: 30 },
-  { label: 'Son 90 Gün', days: 90 },
-  { label: 'Bu Yıl', custom: () => ({ from: new Date(new Date().getFullYear(), 0, 1).toISOString().slice(0, 10), to: new Date().toISOString().slice(0, 10) }) },
+  { labelKey: 'ui.stat_last_7_days', days: 7 },
+  { labelKey: 'ui.stat_last_30_days', days: 30 },
+  { labelKey: 'ui.stat_last_90_days', days: 90 },
+  { labelKey: 'ui.stat_this_year', custom: () => ({ from: new Date(new Date().getFullYear(), 0, 1).toISOString().slice(0, 10), to: new Date().toISOString().slice(0, 10) }) },
 ]
 
 // Renk paleti (mod ve grafikler için)
@@ -162,11 +167,11 @@ export function StatisticsPage() {
           <div className="flex items-center gap-1.5 ml-auto pl-2 border-l">
             {QUICK_RANGES.map((q) => (
               <button
-                key={q.label}
+                key={q.labelKey}
                 onClick={() => handleQuickRange(q)}
                 className="text-xs px-2 py-1 rounded border border-input hover:bg-accent transition-colors"
               >
-                {q.label}
+                {t(q.labelKey)}
               </button>
             ))}
           </div>
@@ -177,8 +182,8 @@ export function StatisticsPage() {
             <Calendar className="w-3 h-3" />
             <span>
               {formatDate(data.filters.date_from)} → {formatDate(data.filters.date_to)} ·
-              {data.filters.period_days} gün
-              {data.filters.transport_type && ` · ${MODE_LABELS[data.filters.transport_type]}`} ·
+              {t('ui.stat_days_count', { count: data.filters.period_days })}
+              {data.filters.transport_type && ` · ${MODE_LABEL_KEYS[data.filters.transport_type] ? t(MODE_LABEL_KEYS[data.filters.transport_type]) : data.filters.transport_type}`} ·
               {' ' + data.filters.currency}
             </span>
           </div>
@@ -221,14 +226,14 @@ export function StatisticsPage() {
               variant="success"
               currency={filters.currency}
               trend={{ current: ov!.total_profit, previous: cmp!.prev_total_profit, format: 'money' }}
-              sub={`Maliyet: ${formatMoney(ov!.total_cost, filters.currency)}`}
+              sub={t('ui.stat_cost_sub', { value: formatMoney(ov!.total_cost, filters.currency) })}
             />
             <StatCard
               label={t('statistics.summary.margin')}
               value={`${formatNumber(ov!.avg_margin, 1)}%`}
               icon={<Activity className="w-3.5 h-3.5" />}
               variant={ov!.avg_margin >= cmp!.prev_avg_margin ? 'success' : 'warning'}
-              sub={`prev: ${formatNumber(cmp!.prev_avg_margin, 1)}%`}
+              sub={t('ui.stat_prev_sub', { value: `${formatNumber(cmp!.prev_avg_margin, 1)}%` })}
             />
 
             <StatCard
@@ -236,27 +241,27 @@ export function StatisticsPage() {
               value={formatMoney(ov!.unpaid_total, filters.currency)}
               icon={<Receipt className="w-3.5 h-3.5" />}
               variant={ov!.overdue_count > 0 ? 'destructive' : 'default'}
-              sub={`${ov!.unpaid_count} fatura · ${ov!.overdue_count} gecikmiş`}
+              sub={t('ui.stat_unpaid_sub', { invoices: ov!.unpaid_count, overdue: ov!.overdue_count })}
             />
             <StatCard
               label={t('ui.belge_eksik')}
               value={formatNumber(ov!.missing_doc_shipments, 0)}
               icon={<FileX className="w-3.5 h-3.5" />}
               variant={ov!.missing_doc_shipments > 0 ? 'warning' : 'default'}
-              sub="sevkiyat"
+              sub={t('ui.stat_shipment_unit')}
             />
             <StatCard
               label={t('ui.yeni_musteri')}
               value={formatNumber(ov!.new_customers, 0)}
               icon={<Users className="w-3.5 h-3.5" />}
               variant="primary"
-              sub="dönem içinde ilk kez"
+              sub={t('ui.stat_first_time_in_period')}
             />
             <StatCard
               label={t('ui.toplam_agirlik')}
-              value={`${formatNumber(ov!.total_weight / 1000, 1)} ton`}
+              value={t('ui.stat_tons', { value: formatNumber(ov!.total_weight / 1000, 1) })}
               icon={<Wallet className="w-3.5 h-3.5" />}
-              sub={`${formatNumber(ov!.total_quantity, 0)} kap`}
+              sub={t('ui.stat_packages', { count: formatNumber(ov!.total_quantity, 0) })}
             />
           </div>
 
@@ -266,7 +271,7 @@ export function StatisticsPage() {
             <Card className="lg:col-span-2">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm">{t('statistics.charts.monthly_trend')}</CardTitle>
-                <CardDescription>Ciro / Maliyet / Kâr</CardDescription>
+                <CardDescription>{t('ui.stat_rev_cost_profit')}</CardDescription>
               </CardHeader>
               <CardContent>
                 {data.financial.monthly_trend.length === 0 ? (
@@ -275,9 +280,9 @@ export function StatisticsPage() {
                   <ResponsiveContainer width="100%" height={260}>
                     <AreaChart data={data.financial.monthly_trend.map(p => ({
                       month: p.month,
-                      Ciro: Number(p.revenue || 0),
-                      Maliyet: Number(p.cost || 0),
-                      Kâr: Number(p.profit || 0),
+                      revenue: Number(p.revenue || 0),
+                      cost: Number(p.cost || 0),
+                      profit: Number(p.profit || 0),
                     }))}>
                       <defs>
                         <linearGradient id="cRev" x1="0" y1="0" x2="0" y2="1">
@@ -301,9 +306,9 @@ export function StatisticsPage() {
                         formatter={((v: unknown) => formatMoney(Number(v), filters.currency || 'EUR')) as never}
                       />
                       <Legend wrapperStyle={{ fontSize: 11 }} />
-                      <Area type="monotone" dataKey="Ciro" stroke="#10b981" fill="url(#cRev)" strokeWidth={2} />
-                      <Area type="monotone" dataKey="Maliyet" stroke="#ef4444" fill="url(#cCost)" strokeWidth={2} />
-                      <Area type="monotone" dataKey="Kâr" stroke="#6366f1" fill="url(#cProfit)" strokeWidth={2} />
+                      <Area type="monotone" dataKey="revenue" name={t('statistics.table.revenue')} stroke="#10b981" fill="url(#cRev)" strokeWidth={2} />
+                      <Area type="monotone" dataKey="cost" name={t('ui.rep_cost')} stroke="#ef4444" fill="url(#cCost)" strokeWidth={2} />
+                      <Area type="monotone" dataKey="profit" name={t('statistics.table.profit')} stroke="#6366f1" fill="url(#cProfit)" strokeWidth={2} />
                     </AreaChart>
                   </ResponsiveContainer>
                 )}
@@ -324,7 +329,7 @@ export function StatisticsPage() {
                     <PieChart>
                       <Pie
                         data={data.modes.breakdown.map(m => ({
-                          name: MODE_LABELS[m.transport_type] || m.transport_type,
+                          name: MODE_LABEL_KEYS[m.transport_type] ? t(MODE_LABEL_KEYS[m.transport_type]) : m.transport_type,
                           value: Number(m.revenue || 0),
                         }))}
                         dataKey="value"
@@ -368,7 +373,7 @@ export function StatisticsPage() {
                         <Badge variant="outline" className="font-mono">{c.currency_code}</Badge>
                         <div className="text-right">
                           <div className="font-mono">{formatMoney(c.revenue, c.currency_code)}</div>
-                          <div className="text-[10px] text-muted-foreground">{c.count} sevkiyat</div>
+                          <div className="text-[10px] text-muted-foreground">{t('ui.stat_shipments_count', { count: c.count })}</div>
                         </div>
                       </div>
                     ))}
@@ -388,7 +393,7 @@ export function StatisticsPage() {
                   <ResponsiveContainer width="100%" height={150}>
                     <BarChart
                       data={data.operations.status_distribution.map(s => ({
-                        name: STATUS_LABELS[s.status] || s.status, value: s.count,
+                        name: STATUS_LABEL_KEYS[s.status] ? t(STATUS_LABEL_KEYS[s.status]) : s.status, value: s.count,
                       }))}
                       layout="vertical"
                     >
@@ -416,7 +421,7 @@ export function StatisticsPage() {
                   <div className="space-y-1.5">
                     {Object.entries(data.operations.doc_missing_top).map(([k, v]) => (
                       <div key={k} className="flex items-center justify-between text-sm">
-                        <span className="text-foreground">{DOC_LABELS[k] || k}</span>
+                        <span className="text-foreground">{DOC_LABEL_KEYS[k] ? t(DOC_LABEL_KEYS[k]) : (DOC_CODES[k] || k)}</span>
                         <Badge variant="warning">{v}</Badge>
                       </div>
                     ))}
@@ -472,7 +477,7 @@ export function StatisticsPage() {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm flex items-center gap-2">
-                <Clock className="w-3.5 h-3.5" /> Ödenmemiş Faturalar ({data.financial.unpaid_invoices.length})
+                <Clock className="w-3.5 h-3.5" /> {t('ui.stat_unpaid_invoices', { count: data.financial.unpaid_invoices.length })}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
@@ -500,9 +505,9 @@ export function StatisticsPage() {
                         <TableCell className="text-right tabular-nums">{formatMoney(inv.sale_price, inv.currency_code)}</TableCell>
                         <TableCell className="text-right text-xs">
                           {inv.overdue ? (
-                            <Badge variant="destructive">{inv.days_old} gün gecikmiş</Badge>
+                            <Badge variant="destructive">{t('ui.stat_days_overdue', { count: inv.days_old })}</Badge>
                           ) : (
-                            <span className="text-muted-foreground">{inv.days_old} gün</span>
+                            <span className="text-muted-foreground">{t('ui.stat_days_count', { count: inv.days_old })}</span>
                           )}
                         </TableCell>
                       </TableRow>
@@ -649,7 +654,7 @@ function CustomerTable({
           <TableHead>#</TableHead>
           <TableHead>{t('shipment.client')}</TableHead>
           <TableHead className="text-right">{t('statistics.table.shipment')}</TableHead>
-          <TableHead className="text-right">{field === 'revenue' ? 'Ciro' : 'Kâr'}</TableHead>
+          <TableHead className="text-right">{field === 'revenue' ? t('statistics.table.revenue') : t('statistics.table.profit')}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

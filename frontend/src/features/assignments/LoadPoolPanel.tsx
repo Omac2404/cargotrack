@@ -27,15 +27,11 @@ const TRANSPORT_ICON: Record<string, React.ReactNode> = {
   air: <Plane className="w-3.5 h-3.5" />,
 }
 
-const TRANSPORT_LABEL: Record<string, string> = {
-  road: 'Karayolu', maritime: 'Denizyolu', sea: 'Denizyolu', air: 'Havayolu',
-}
-
-
+// label / description = i18n key (t() ile çevrilir)
 const STATUS_FILTERS: Array<{ value: LoadPoolStatus; label: string; description: string }> = [
-  { value: 'partial', label: 'Atama Bekleyenler', description: 'Hiç atanmamış + kısmen atanmış' },
-  { value: 'unassigned', label: 'Hiç Atanmamış', description: 'Henüz hiç araç atanmamış' },
-  { value: 'all', label: 'Tümü', description: 'Kapalı olmayan tüm sevkiyatlar' },
+  { value: 'partial', label: 'ui.asg_pool_filter_partial', description: 'ui.asg_pool_filter_partial_desc' },
+  { value: 'unassigned', label: 'ui.hic_atanmamis', description: 'ui.asg_pool_filter_unassigned_desc' },
+  { value: 'all', label: 'common.all', description: 'ui.asg_pool_filter_all_desc' },
 ]
 
 export function LoadPoolPanel() {
@@ -60,7 +56,7 @@ export function LoadPoolPanel() {
       {/* Özet */}
       <Card className="p-3 grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
         <div>
-          <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Listelenen</div>
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{t('ui.asg_pool_listed')}</div>
           <div className="text-xl font-bold">{total}</div>
         </div>
         <div>
@@ -72,8 +68,8 @@ export function LoadPoolPanel() {
           <div className="text-xl font-bold text-warning">{totalPartial}</div>
         </div>
         <div>
-          <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Mod Filtresi</div>
-          <div className="text-xl font-bold">{transportType ? TRANSPORT_LABEL[transportType] : 'Tümü'}</div>
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{t('ui.asg_pool_mode_filter')}</div>
+          <div className="text-xl font-bold">{transportType ? t(`transport.modes.${transportType}`, { defaultValue: transportType }) : t('common.all')}</div>
         </div>
       </Card>
 
@@ -87,8 +83,8 @@ export function LoadPoolPanel() {
               {STATUS_FILTERS.map((f) => (
                 <SelectItem key={f.value} value={f.value}>
                   <div>
-                    <div>{f.label}</div>
-                    <div className="text-[10px] text-muted-foreground">{f.description}</div>
+                    <div>{t(f.label)}</div>
+                    <div className="text-[10px] text-muted-foreground">{t(f.description)}</div>
                   </div>
                 </SelectItem>
               ))}
@@ -121,7 +117,7 @@ export function LoadPoolPanel() {
             />
           </div>
         </div>
-        <div className="text-xs text-muted-foreground">{total} sevkiyat</div>
+        <div className="text-xs text-muted-foreground">{t('ui.asg_pool_count', { count: total })}</div>
       </Card>
 
       {/* Tablo */}
@@ -140,10 +136,10 @@ export function LoadPoolPanel() {
             <Inbox className="w-10 h-10 mx-auto mb-2 opacity-50" />
             <div className="text-sm">
               {status === 'unassigned'
-                ? 'Hiç atanmamış sevkiyat yok 🎉'
+                ? t('ui.asg_pool_empty_unassigned')
                 : status === 'partial'
-                  ? 'Atama bekleyen sevkiyat yok 🎉'
-                  : 'Sevkiyat bulunamadı'}
+                  ? t('ui.asg_pool_empty_partial')
+                  : t('ui.asg_pool_empty_none')}
             </div>
           </div>
         ) : (
@@ -153,8 +149,8 @@ export function LoadPoolPanel() {
                 <TableHead>{t('statistics.table.shipment')}</TableHead>
                 <TableHead>{t('ui.musteri_guzergah')}</TableHead>
                 <TableHead className="text-right">{t('ui.toplam_kap')}</TableHead>
-                <TableHead className="text-right">Atanan</TableHead>
-                <TableHead className="text-right">Kalan</TableHead>
+                <TableHead className="text-right">{t('ui.asg_pool_col_assigned')}</TableHead>
+                <TableHead className="text-right">{t('ui.asg_pool_col_remaining')}</TableHead>
                 <TableHead className="text-right">{t('ui.toplam_agirlik')}</TableHead>
                 <TableHead className="text-right">{t('ui.kalan_agirlik')}</TableHead>
                 <TableHead>{t('common.status')}</TableHead>
@@ -185,7 +181,7 @@ export function LoadPoolPanel() {
                     </TableCell>
                     <TableCell className="text-right tabular-nums text-xs text-muted-foreground">
                       {item.assigned_quantity}
-                      <div className="text-[10px]">({item.assignment_count} atama)</div>
+                      <div className="text-[10px]">({t('ui.asg_assignment_count', { count: item.assignment_count })})</div>
                     </TableCell>
                     <TableCell className="text-right tabular-nums text-xs">
                       <span className={cn(
@@ -195,7 +191,7 @@ export function LoadPoolPanel() {
                       )}>
                         {item.remaining_quantity}
                       </span>
-                      <div className="text-[10px] text-muted-foreground">kap</div>
+                      <div className="text-[10px] text-muted-foreground">{t('ui.asg_pkg_unit')}</div>
                     </TableCell>
                     <TableCell className="text-right tabular-nums text-xs text-muted-foreground">
                       {formatNumber(item.total_weight, 0)} kg
@@ -270,12 +266,9 @@ export function LoadPoolPanel() {
             {t('ui.adim_adim_anlatim_icin_nasil_kullanilir_arac')}
           </Link>
           <br />
-          <strong>{t('ui.bir_araca_birden_fazla_yuk')}</strong> Aynı TIR'ı birden çok sevkiyatta seçmen yeterli —
-          her satırda "Atama Yap" deyip aynı aracı seç, kapasite göstergesi dolarak ilerler.
-          <strong> {t('ui.bir_yuku_birden_fazla_araca_bolmek')}</strong> Aynı sevkiyat için birkaç kez atama yap,
-          her seferinde farklı araç ve kısmi kap/ağırlık gir; "Kalan" sütunu sıfırlanana kadar devam et.
-          Kalan kap/ağırlık forma otomatik gelir, düzenleyebilirsin.
-          Kapalı sevkiyatlar ve depolama işlemleri burada listelenmez.
+          <strong>{t('ui.bir_araca_birden_fazla_yuk')}</strong> {t('ui.asg_pool_info_multi')}
+          <strong> {t('ui.bir_yuku_birden_fazla_araca_bolmek')}</strong> {t('ui.asg_pool_info_split')}
+          {' '}{t('ui.asg_pool_info_tail')}
         </span>
       </Card>
 

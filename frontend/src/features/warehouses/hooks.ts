@@ -32,13 +32,13 @@ export function useDeleteWarehouse() {
   })
 }
 
-// CGI uyumlu depo tipleri
+// CGI uyumlu depo tipleri — label / description = i18n key (render'da t() ile çevrilir)
 export const WAREHOUSE_TYPES: Record<string, { code: string; label: string; description: string }> = {
-  R: { code: 'R', label: 'Tip I', description: 'Entrepôt douanier type I' },
-  S: { code: 'S', label: 'Tip II', description: 'Entrepôt douanier type II' },
-  T: { code: 'T', label: 'Tip III', description: 'Entrepôt douanier type III' },
-  U: { code: 'U', label: 'Özel', description: 'Entrepôt privé' },
-  V: { code: 'V', label: 'Geçici', description: 'Installation de stockage temporaire' },
-  Y: { code: 'Y', label: 'Diğer', description: 'Entrepôt autre que douanier' },
-  Z: { code: 'Z', label: 'Serbest', description: 'Zone franche' },
+  R: { code: 'R', label: 'ui.wh_type_r_label', description: 'ui.wh_type_r_desc' },
+  S: { code: 'S', label: 'ui.wh_type_s_label', description: 'ui.wh_type_s_desc' },
+  T: { code: 'T', label: 'ui.wh_type_t_label', description: 'ui.wh_type_t_desc' },
+  U: { code: 'U', label: 'ui.wh_type_u_label', description: 'ui.wh_type_u_desc' },
+  V: { code: 'V', label: 'ui.wh_type_v_label', description: 'ui.wh_type_v_desc' },
+  Y: { code: 'Y', label: 'ui.wh_type_y_label', description: 'ui.wh_type_y_desc' },
+  Z: { code: 'Z', label: 'ui.wh_type_z_label', description: 'ui.wh_type_z_desc' },
 }

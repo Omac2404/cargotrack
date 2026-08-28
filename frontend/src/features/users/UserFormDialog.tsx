@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -18,15 +18,16 @@ import {
 import { useSaveUser } from './hooks'
 import type { User, UserRole } from '@/types/api'
 
-const schema = z.object({
-  username: z.string().min(1, 'Kullanıcı adı zorunludur').optional(),
-  full_name: z.string().min(1, 'Ad Soyad zorunludur'),
-  email: z.string().email('Geçersiz e-posta').optional().or(z.literal('')),
+// Hata mesajları i18n'den gelir — şema bileşen içinde t() ile kurulur
+const buildSchema = (t: (k: string) => string) => z.object({
+  username: z.string().min(1, t('ui.usr_err_username_required')).optional(),
+  full_name: z.string().min(1, t('ui.usr_err_fullname_required')),
+  email: z.string().email(t('partner.err.invalid_email')).optional().or(z.literal('')),
   role: z.enum(['super_admin', 'admin', 'user']),
   status: z.enum(['active', 'inactive']),
   password: z.string().optional().or(z.literal('')),
 })
-type FormValues = z.infer<typeof schema>
+type FormValues = z.infer<ReturnType<typeof buildSchema>>
 
 interface Props {
   open: boolean
@@ -36,6 +37,7 @@ interface Props {
 
 export function UserFormDialog({ open, onOpenChange, user }: Props) {
   const { t } = useTranslation()
+  const schema = useMemo(() => buildSchema(t), [t])
   const isEdit = !!user
   const saveMut = useSaveUser()
 
@@ -80,7 +82,7 @@ export function UserFormDialog({ open, onOpenChange, user }: Props) {
 
     saveMut.mutate(payload, {
       onSuccess: () => {
-        toast.success(isEdit ? 'Kullanıcı güncellendi' : 'Kullanıcı oluşturuldu')
+        toast.success(isEdit ? t('ui.usr_updated') : t('ui.usr_created'))
         onOpenChange(false)
       },
       onError: (err: Error) => toast.error(err.message),
@@ -91,9 +93,9 @@ export function UserFormDialog({ open, onOpenChange, user }: Props) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{isEdit ? `${user.full_name} düzenle` : 'Yeni Kullanıcı'}</DialogTitle>
+          <DialogTitle>{isEdit ? t('ui.usr_edit_title', { name: user.full_name }) : t('users.new')}</DialogTitle>
           <DialogDescription>
-            {isEdit ? `@${user?.username}` : 'Sisteme erişimi olan yeni kullanıcı oluştur.'}
+            {isEdit ? `@${user?.username}` : t('ui.usr_new_hint')}
           </DialogDescription>
         </DialogHeader>
 
@@ -107,7 +109,7 @@ export function UserFormDialog({ open, onOpenChange, user }: Props) {
           )}
 
           <div className="space-y-1.5">
-            <Label htmlFor="full_name">Ad Soyad *</Label>
+            <Label htmlFor="full_name">{t('ui.usr_full_name_req')}</Label>
             <Input id="full_name" {...register('full_name')} />
             {errors.full_name && <p className="text-xs text-destructive">{errors.full_name.message}</p>}
           </div>
@@ -144,14 +146,14 @@ export function UserFormDialog({ open, onOpenChange, user }: Props) {
 
           <div className="space-y-1.5 pt-2 border-t">
             <Label htmlFor="password">
-              {isEdit ? 'Yeni Şifre (boş bırakırsan değişmez)' : 'Şifre *'}
+              {isEdit ? t('ui.usr_new_password_optional') : t('ui.usr_password_req')}
             </Label>
             <Input
               id="password"
               type="password"
               {...register('password')}
               autoComplete="new-password"
-              placeholder={isEdit ? '••••••••' : 'Min 6 karakter'}
+              placeholder={isEdit ? '••••••••' : t('ui.usr_password_ph')}
             />
           </div>
         </form>
@@ -160,7 +162,7 @@ export function UserFormDialog({ open, onOpenChange, user }: Props) {
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{t('common.cancel')}</Button>
           <Button type="submit" form="user-form" disabled={saveMut.isPending}>
             {saveMut.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-            {isEdit ? 'Güncelle' : 'Oluştur'}
+            {isEdit ? t('common.update') : t('audit.actions.create')}
           </Button>
         </DialogFooter>
       </DialogContent>

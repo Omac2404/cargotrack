@@ -94,7 +94,7 @@ export function VehiclesListPage() {
     if (!deleteTarget) return
     deleteMut.mutate(deleteTarget.id, {
       onSuccess: () => {
-        toast.success(`${deleteTarget.plate} silindi`)
+        toast.success(t('ui.veh_deleted', { name: deleteTarget.plate }))
         setDeleteTarget(null)
       },
       onError: (err: Error) => toast.error(err.message),
@@ -163,26 +163,26 @@ export function VehiclesListPage() {
         <ExportButton
           data={filtered}
           filename="araclar"
-          sheetName="Araçlar"
+          sheetName={t('vehicle.title')}
           columns={[
-            { header: 'Kod', key: 'vehicle_code' },
-            { header: 'Plaka', key: 'plate' },
-            { header: 'Dorse Plakası', key: 'trailer_plate' },
-            { header: 'Mod', key: 'transport_type', format: (v) => ({road:'Karayolu',sea:'Denizyolu',air:'Havayolu'}[v as string] || String(v ?? '')) },
-            { header: 'Ekipman Tipi', key: 'equipment_type' },
-            { header: 'Kapasite (kg)', key: 'capacity_kg', format: (v) => exportFormatters.number(v) },
-            { header: 'Hacim (m³)', key: 'volume_m3', format: (v) => exportFormatters.number(v, 3) },
+            { header: t('archive.columns.code'), key: 'vehicle_code' },
+            { header: t('vehicle.plate'), key: 'plate' },
+            { header: t('vehicle.trailer_plate'), key: 'trailer_plate' },
+            { header: t('reports.mode'), key: 'transport_type', format: (v) => (v ? t(`transport.modes.${v as string}`, { defaultValue: String(v) }) : '') },
+            { header: t('vehicle.equipment_type'), key: 'equipment_type' },
+            { header: t('transport.vehicle_labels.capacity'), key: 'capacity_kg', format: (v) => exportFormatters.number(v) },
+            { header: t('transport.vehicle_labels.volume'), key: 'volume_m3', format: (v) => exportFormatters.number(v, 3) },
             { header: t('vehicle.carrier_name'), key: 'carrier_name' },
-            { header: 'Marka / Model', key: 'brand_model' },
-            { header: 'Sürücü', key: 'driver_name' },
-            { header: 'Telefon', key: 'driver_phone' },
-            { header: 'Tescil Tarihi', key: 'registration_date', format: exportFormatters.date },
-            { header: 'ADR Sertifikalı', key: 'adr_certified', format: exportFormatters.yesNo },
+            { header: t('vehicle.brand_model'), key: 'brand_model' },
+            { header: t('vehicle.driver'), key: 'driver_name' },
+            { header: t('vehicle.driver_phone'), key: 'driver_phone' },
+            { header: t('vehicle.registration_date'), key: 'registration_date', format: exportFormatters.date },
+            { header: t('vehicle.adr_certified'), key: 'adr_certified', format: exportFormatters.yesNo },
             { header: t('common.status'), key: 'status', format: (v) => {
               const k = VEHICLE_STATUS_LABELS[v as string]?.label
               return k ? t(k) : String(v ?? '')
             }},
-            { header: 'Notlar', key: 'notes' },
+            { header: t('ui.asg_notes'), key: 'notes' },
           ]}
         />
       </Card>
@@ -284,7 +284,7 @@ export function VehiclesListPage() {
                         return (
                           <div className="space-y-1">
                             <div className="flex items-center justify-between text-[10px] tabular-nums">
-                              <span className="text-muted-foreground">{sum.assignment_count} atama</span>
+                              <span className="text-muted-foreground">{t('ui.asg_assignment_count', { count: sum.assignment_count })}</span>
                               <span className={cn('font-semibold', pct > 100 && 'text-destructive')}>%{pct.toFixed(0)}</span>
                             </div>
                             <div className="h-1.5 bg-muted rounded-full overflow-hidden">
@@ -332,8 +332,7 @@ export function VehiclesListPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>{t('ui.araci_sil')}</AlertDialogTitle>
             <AlertDialogDescription>
-              <strong className="font-mono text-foreground">{deleteTarget?.plate}</strong> ({deleteTarget?.vehicle_code}) silinecek.
-              Aracın atamaları varsa silme reddedilecektir.
+              <strong className="font-mono text-foreground">{deleteTarget?.plate}</strong> ({deleteTarget?.vehicle_code}) {t('ui.veh_delete_body')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -344,7 +343,7 @@ export function VehiclesListPage() {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {deleteMut.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-              Sil
+              {t('common.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

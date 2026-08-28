@@ -20,15 +20,18 @@ import { useAssignments, useSaveAssignment } from './hooks'
 import type { Assignment, TransportType, VehicleTransport } from '@/types/api'
 import { formatNumber, cn } from '@/lib/utils'
 
-const schema = z.object({
-  vehicle_id: z.number().min(1, 'Araç seçilmedi'),
-  shipment_id: z.number().min(1, 'Sevkiyat seçilmedi'),
-  assigned_quantity: z.number().min(1, 'Miktar > 0 olmalı'),
-  assigned_weight: z.number().min(0),
-  loading_date: z.string().optional().or(z.literal('')),
-  notes: z.string().optional().or(z.literal('')),
-})
-type FormValues = z.infer<typeof schema>
+// Hata mesajları i18n'den gelir — şema bileşen içinde t() ile kurulur
+function buildSchema(t: (k: string) => string) {
+  return z.object({
+    vehicle_id: z.number().min(1, t('ui.asg_err_vehicle_required')),
+    shipment_id: z.number().min(1, t('ui.asg_err_shipment_required')),
+    assigned_quantity: z.number().min(1, t('ui.asg_err_qty_positive')),
+    assigned_weight: z.number().min(0),
+    loading_date: z.string().optional().or(z.literal('')),
+    notes: z.string().optional().or(z.literal('')),
+  })
+}
+type FormValues = z.infer<ReturnType<typeof buildSchema>>
 
 // sea ↔ maritime normalize (vehicle: sea, shipment: maritime)
 function normalize(t?: string): string {
@@ -52,6 +55,7 @@ export function AssignmentFormDialog({
   open, onOpenChange, assignment, defaultShipmentId, defaultQuantity, defaultWeight, defaultVehicleId,
 }: Props) {
   const { t } = useTranslation()
+  const schema = useMemo(() => buildSchema(t), [t])
   const isEdit = !!assignment
   const saveMut = useSaveAssignment()
 
@@ -149,7 +153,7 @@ export function AssignmentFormDialog({
       { ...values, assignment_id: assignment?.id },
       {
         onSuccess: () => {
-          toast.success(isEdit ? 'Atama güncellendi' : 'Atama eklendi')
+          toast.success(isEdit ? t('ui.asg_updated') : t('ui.asg_added'))
           onOpenChange(false)
         },
         onError: (err: Error) => toast.error(err.message),
@@ -157,14 +161,14 @@ export function AssignmentFormDialog({
     )
   }
 
-  const VEHICLE_MODE_LABEL: Record<string, string> = { road: 'Karayolu', sea: 'Denizyolu', air: 'Havayolu' }
-  const SHIPMENT_MODE_LABEL: Record<string, string> = { road: 'Karayolu', maritime: 'Denizyolu', air: 'Havayolu', storage: 'Depo', import: 'İthalat', export: 'İhracat' }
+  // Mod adları transport.modes.* altından çevrilir
+  const modeLabel = (m?: string) => (m ? t(`transport.modes.${m}`, { defaultValue: m }) : '')
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{isEdit ? 'Atamayı düzenle' : 'Yeni Atama'}</DialogTitle>
+          <DialogTitle>{isEdit ? t('ui.asg_edit_title') : t('assignment.new')}</DialogTitle>
           <DialogDescription>
             {t('ui.bir_araca_bir_sevkiyat_ata_kapasite_ve_mod_u')}
           </DialogDescription>
@@ -180,12 +184,12 @@ export function AssignmentFormDialog({
               disabled={isEdit}
               options={allShipments.map((s) => ({
                 value: String(s.id),
-                label: `${s.shipment_no} [${SHIPMENT_MODE_LABEL[s.transport_type as string] || s.transport_type}]`,
+                label: `${s.shipment_no} [${modeLabel(s.transport_type as string)}]`,
                 description: [s.client_billing, s.departure_country && `${s.departure_country} → ${s.arrival_country}`].filter(Boolean).join(' · '),
               }))}
               placeholder={t('ui.sevkiyat_secin')}
               searchPlaceholder={t('ui.dosya_no_musteri_ara')}
-              emptyMessage={allShipments.length === 0 ? 'Atanabilir sevkiyat yok' : 'Sonuç yok'}
+              emptyMessage={allShipments.length === 0 ? t('ui.asg_no_assignable_shipments') : t('ui.sonuc_yok')}
               allowClear={false}
             />
             {errors.shipment_id && <p className="text-xs text-destructive">{errors.shipment_id.message}</p>}
@@ -201,7 +205,7 @@ export function AssignmentFormDialog({
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">{t('ui.toplam_kap')}</span>
                 <span className="font-medium">
-                  {usage.qtyUsed} / {usage.qtyTotal} kullanılmış (kalan: <strong>{usage.qtyTotal - usage.qtyUsed}</strong>)
+                  {t('ui.asg_used_of', { used: usage.qtyUsed, total: usage.qtyTotal })} ({t('ui.asg_remaining_lc')}: <strong>{usage.qtyTotal - usage.qtyUsed}</strong>)
                 </span>
               </div>
               <div className="flex items-center justify-between">
@@ -222,12 +226,12 @@ export function AssignmentFormDialog({
               disabled={isEdit}
               options={allVehicles.map((v) => ({
                 value: String(v.id),
-                label: `${v.plate} [${VEHICLE_MODE_LABEL[v.transport_type] || v.transport_type}]`,
+                label: `${v.plate} [${modeLabel(v.transport_type)}]`,
                 description: `${v.vehicle_code} · ${formatNumber(v.capacity_kg, 0)} kg${v.driver_name ? ' · ' + v.driver_name : ''}`,
               }))}
               placeholder={t('ui.arac_secin')}
               searchPlaceholder={t('ui.plaka_kod_surucu_ara')}
-              emptyMessage={allVehicles.length === 0 ? 'Araç tanımlı değil' : 'Sonuç yok'}
+              emptyMessage={allVehicles.length === 0 ? t('ui.asg_no_vehicles_defined') : t('ui.sonuc_yok')}
               allowClear={false}
             />
             {errors.vehicle_id && <p className="text-xs text-destructive">{errors.vehicle_id.message}</p>}
@@ -238,7 +242,11 @@ export function AssignmentFormDialog({
             <div className="p-3 rounded-md bg-destructive/10 border border-destructive/30 text-xs flex items-start gap-2">
               <AlertCircle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
               <div className="text-destructive">
-                <strong>{t('ui.mod_uyumsuzlugu')}</strong> {SHIPMENT_MODE_LABEL[selectedShipment!.transport_type as string]} sevkiyatı sadece {SHIPMENT_MODE_LABEL[shipmentMode]} aracına atanabilir — seçili araç {VEHICLE_MODE_LABEL[selectedVehicle!.transport_type]}. Kaydetmeye çalışırsan reddedilir.
+                <strong>{t('ui.mod_uyumsuzlugu')}</strong> {t('ui.asg_mode_mismatch_body', {
+                  shipmentMode: modeLabel(selectedShipment!.transport_type as string),
+                  vehicleMode: modeLabel(shipmentMode),
+                  selectedMode: modeLabel(selectedVehicle!.transport_type),
+                })}
               </div>
             </div>
           )}
@@ -314,7 +322,7 @@ export function AssignmentFormDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="notes">Notlar</Label>
+            <Label htmlFor="notes">{t('ui.asg_notes')}</Label>
             <Textarea id="notes" rows={2} {...register('notes')} />
           </div>
         </form>
@@ -323,7 +331,7 @@ export function AssignmentFormDialog({
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{t('common.cancel')}</Button>
           <Button type="submit" form="assignment-form" disabled={saveMut.isPending || modeIncompatible}>
             {saveMut.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-            {isEdit ? 'Güncelle' : 'Ata'}
+            {isEdit ? t('common.update') : t('ui.asg_assign_btn')}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -19,8 +19,9 @@ import {
 import { useSaveWarehouse, WAREHOUSE_TYPES } from './hooks'
 import type { Warehouse } from '@/types/api'
 
-const schema = z.object({
-  name: z.string().min(1, 'Depo adı zorunludur'),
+// Hata mesajları i18n'den gelir — şema bileşen içinde t() ile kurulur
+const buildSchema = (t: (k: string) => string) => z.object({
+  name: z.string().min(1, t('ui.wh_err_name_required')),
   type_code: z.enum(['R', 'S', 'T', 'U', 'V', 'Y', 'Z']),
   address: z.string().optional().or(z.literal('')),
   postal_code: z.string().optional().or(z.literal('')),
@@ -29,11 +30,11 @@ const schema = z.object({
   capacity_info: z.string().optional().or(z.literal('')),
   responsible_person: z.string().optional().or(z.literal('')),
   contact_phone: z.string().optional().or(z.literal('')),
-  contact_email: z.string().email('Geçersiz e-posta').optional().or(z.literal('')),
+  contact_email: z.string().email(t('partner.err.invalid_email')).optional().or(z.literal('')),
   notes: z.string().optional().or(z.literal('')),
   status: z.enum(['active', 'inactive']),
 })
-type FormValues = z.infer<typeof schema>
+type FormValues = z.infer<ReturnType<typeof buildSchema>>
 
 interface Props {
   open: boolean
@@ -43,6 +44,7 @@ interface Props {
 
 export function WarehouseFormDialog({ open, onOpenChange, warehouse }: Props) {
   const { t } = useTranslation()
+  const schema = useMemo(() => buildSchema(t), [t])
   const isEdit = !!warehouse
   const saveMut = useSaveWarehouse()
 
@@ -80,7 +82,7 @@ export function WarehouseFormDialog({ open, onOpenChange, warehouse }: Props) {
       { ...values, warehouse_id: warehouse?.id },
       {
         onSuccess: () => {
-          toast.success(isEdit ? 'Depo güncellendi' : 'Depo oluşturuldu')
+          toast.success(isEdit ? t('ui.wh_updated') : t('ui.wh_created'))
           onOpenChange(false)
         },
         onError: (err: Error) => toast.error(err.message),
@@ -92,9 +94,9 @@ export function WarehouseFormDialog({ open, onOpenChange, warehouse }: Props) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{isEdit ? `${warehouse.name} düzenle` : 'Yeni Depo'}</DialogTitle>
+          <DialogTitle>{isEdit ? t('ui.wh_edit_title', { name: warehouse.name }) : t('warehouse.new')}</DialogTitle>
           <DialogDescription>
-            {isEdit ? `Kod: ${warehouse?.warehouse_code}` : 'Yeni depo kaydı oluştur (CGI uyumlu).'}
+            {isEdit ? `${t('warehouse.code')}: ${warehouse?.warehouse_code}` : t('ui.wh_new_hint')}
           </DialogDescription>
         </DialogHeader>
 
@@ -111,9 +113,9 @@ export function WarehouseFormDialog({ open, onOpenChange, warehouse }: Props) {
               <Select value={watch('type_code')} onValueChange={(v) => setValue('type_code', v as FormValues['type_code'])}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {Object.values(WAREHOUSE_TYPES).map((t) => (
-                    <SelectItem key={t.code} value={t.code}>
-                      <span className="font-mono">{t.code}</span> · {t.label} <span className="text-muted-foreground text-xs">({t.description})</span>
+                  {Object.values(WAREHOUSE_TYPES).map((wt) => (
+                    <SelectItem key={wt.code} value={wt.code}>
+                      <span className="font-mono">{wt.code}</span> · {t(wt.label)} <span className="text-muted-foreground text-xs">({t(wt.description)})</span>
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -153,8 +155,8 @@ export function WarehouseFormDialog({ open, onOpenChange, warehouse }: Props) {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="capacity_info">Kapasite Bilgisi</Label>
-              <Input id="capacity_info" placeholder="1000 m² / 5000 palet" {...register('capacity_info')} />
+              <Label htmlFor="capacity_info">{t('ui.wh_capacity_info')}</Label>
+              <Input id="capacity_info" placeholder={t('ui.wh_capacity_ph')} {...register('capacity_info')} />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="responsible_person">{t('ui.sorumlu_kisi')}</Label>
@@ -172,7 +174,7 @@ export function WarehouseFormDialog({ open, onOpenChange, warehouse }: Props) {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="notes">Notlar</Label>
+            <Label htmlFor="notes">{t('ui.asg_notes')}</Label>
             <Textarea id="notes" rows={2} {...register('notes')} />
           </div>
         </form>
@@ -181,7 +183,7 @@ export function WarehouseFormDialog({ open, onOpenChange, warehouse }: Props) {
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{t('common.cancel')}</Button>
           <Button type="submit" form="warehouse-form" disabled={saveMut.isPending}>
             {saveMut.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-            {isEdit ? 'Güncelle' : 'Kaydet'}
+            {isEdit ? t('common.update') : t('common.save')}
           </Button>
         </DialogFooter>
       </DialogContent>

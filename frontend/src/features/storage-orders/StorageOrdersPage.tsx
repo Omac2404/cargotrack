@@ -71,7 +71,7 @@ export function StorageOrdersPage() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <div className="text-xs text-muted-foreground px-2">{filtered.length} sipariş</div>
+        <div className="text-xs text-muted-foreground px-2">{t('ui.sto_order_count', { count: filtered.length })}</div>
       </Card>
 
       <Card className="overflow-hidden">
@@ -99,7 +99,7 @@ export function StorageOrdersPage() {
                 <TableHead>{t('ui.giris_cikis')}</TableHead>
                 <TableHead className="text-right">{t('statistics.table.package')}</TableHead>
                 <TableHead>{t('common.status')}</TableHead>
-                <TableHead>Transit</TableHead>
+                <TableHead>{t('ui.sto_transit')}</TableHead>
                 <TableHead className="w-[100px] text-right">{t('audit.action')}</TableHead>
               </TableRow>
             </TableHeader>
@@ -127,21 +127,21 @@ export function StorageOrdersPage() {
                         <Calendar className="w-3 h-3" />{formatDate(s.entry_date)}
                       </div>
                       <div className="flex items-center gap-1 text-muted-foreground">
-                        <Calendar className="w-3 h-3" />{formatDate(s.exit_date) || 'devam'}
+                        <Calendar className="w-3 h-3" />{formatDate(s.exit_date) || t('ui.sto_ongoing')}
                       </div>
                     </TableCell>
                     <TableCell className="text-right tabular-nums">{formatNumber(s.depo_kap_sayisi, 0)}</TableCell>
                     <TableCell>
                       <Badge variant={s.status === 'closed' ? 'secondary' : 'success'}>
-                        {s.status === 'closed' ? 'Kapalı' : 'Aktif'}
+                        {s.status === 'closed' ? t('shipment.status.closed') : t('vehicle.status.active')}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-xs">
                       {transit.active ? (
                         <Badge variant={transit.severity === 'danger' ? 'destructive' : transit.severity === 'warning' ? 'warning' : 'default'}>
                           {transit.days_remaining !== null && transit.days_remaining > 0
-                            ? `${transit.days_remaining} gün`
-                            : `${Math.abs(transit.days_remaining ?? 0)} gün geçti`}
+                            ? t('ui.sto_days_remaining', { count: transit.days_remaining })
+                            : t('ui.sto_days_overdue', { count: Math.abs(transit.days_remaining ?? 0) })}
                         </Badge>
                       ) : (
                         <span className="text-muted-foreground">—</span>

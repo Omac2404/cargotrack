@@ -89,22 +89,22 @@ export function AssignmentsListPage() {
             <ExportButton
               data={assignments as unknown as Record<string, unknown>[]}
               filename="atamalar"
-              sheetName="Atamalar"
+              sheetName={t('assignment.title')}
               columns={[
-                { header: 'Sevkiyat No', key: 'shipment_no' },
-                { header: 'Müşteri', key: 'client_billing' },
-                { header: 'Mod', key: 'transport_type', format: (v) => ({road:'Karayolu',maritime:'Denizyolu',sea:'Denizyolu',air:'Havayolu',storage:'Depo',import:'İthalat',export:'İhracat'}[v as string] || String(v ?? '')) },
-                { header: 'Çıkış', key: 'departure_country' },
-                { header: 'Varış', key: 'arrival_country' },
-                { header: 'Araç Kodu', key: 'vehicle_code' },
-                { header: 'Plaka', key: 'plate' },
-                { header: 'Sürücü', key: 'driver_name' },
-                { header: 'Atanan Kap', key: 'assigned_quantity', format: (v) => exportFormatters.number(v, 0) },
-                { header: 'Toplam Kap', key: 'shipment_quantity', format: (v) => exportFormatters.number(v, 0) },
-                { header: 'Atanan Ağırlık (kg)', key: 'assigned_weight', format: (v) => exportFormatters.number(v) },
-                { header: 'Toplam Ağırlık (kg)', key: 'shipment_weight', format: (v) => exportFormatters.number(v) },
-                { header: 'Yükleme Tarihi', key: 'loading_date', format: exportFormatters.date },
-                { header: 'Notlar', key: 'notes' },
+                { header: t('shipment.shipment_no'), key: 'shipment_no' },
+                { header: t('shipment.client'), key: 'client_billing' },
+                { header: t('reports.mode'), key: 'transport_type', format: (v) => (v ? t(`transport.modes.${v as string}`, { defaultValue: String(v) }) : '') },
+                { header: t('shipment.fields.departure_country'), key: 'departure_country' },
+                { header: t('shipment.fields.arrival_country'), key: 'arrival_country' },
+                { header: t('ui.asg_vehicle_code'), key: 'vehicle_code' },
+                { header: t('vehicle.plate'), key: 'plate' },
+                { header: t('vehicle.driver'), key: 'driver_name' },
+                { header: t('assignment.assigned_quantity'), key: 'assigned_quantity', format: (v) => exportFormatters.number(v, 0) },
+                { header: t('ui.toplam_kap'), key: 'shipment_quantity', format: (v) => exportFormatters.number(v, 0) },
+                { header: t('ui.atanan_agirlik_kg'), key: 'assigned_weight', format: (v) => exportFormatters.number(v) },
+                { header: t('ui.asg_total_weight_kg'), key: 'shipment_weight', format: (v) => exportFormatters.number(v) },
+                { header: t('assignment.loading_date'), key: 'loading_date', format: exportFormatters.date },
+                { header: t('ui.asg_notes'), key: 'notes' },
               ]}
             />
           </Card>
@@ -163,7 +163,7 @@ export function AssignmentsListPage() {
                   </TableCell>
                   <TableCell className="text-right tabular-nums text-xs">
                     <div>
-                      <strong>{a.assigned_quantity}</strong> / {a.shipment_quantity || '?'} kap
+                      <strong>{a.assigned_quantity}</strong> / {a.shipment_quantity || '?'} {t('ui.asg_pkg_unit')}
                     </div>
                     <div className="text-muted-foreground">
                       {formatNumber(a.assigned_weight, 0)} / {formatNumber(a.shipment_weight, 0)} kg

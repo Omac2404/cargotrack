@@ -28,8 +28,9 @@ export function useDeleteUser() {
   })
 }
 
+// label = i18n key (auth.roles.*) — render'da t() ile çevrilir
 export const ROLE_LABELS: Record<UserRole, { label: string; variant: 'default' | 'warning' | 'secondary' }> = {
-  super_admin: { label: 'Süper Admin', variant: 'warning' },
-  admin: { label: 'Yönetici', variant: 'default' },
-  user: { label: 'Kullanıcı', variant: 'secondary' },
+  super_admin: { label: 'auth.roles.super_admin', variant: 'warning' },
+  admin: { label: 'auth.roles.admin', variant: 'default' },
+  user: { label: 'auth.roles.user', variant: 'secondary' },
 }

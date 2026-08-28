@@ -101,8 +101,8 @@ export function GoodsEditor({ value, onChange, currency }: Props) {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
           <Boxes className="w-3.5 h-3.5" />
-          Ürün / Kalem Listesi
-          {items.length > 0 && <Badge variant="outline">{items.length} kalem</Badge>}
+          {t('ui.gds_item_list')}
+          {items.length > 0 && <Badge variant="outline">{t('ui.gds_items_count', { n: items.length })}</Badge>}
         </Label>
         <Button type="button" size="sm" variant="outline" className="h-7" onClick={addItem}>
           <Plus className="w-3.5 h-3.5" />
@@ -131,7 +131,7 @@ export function GoodsEditor({ value, onChange, currency }: Props) {
                     type="button"
                     onClick={() => setExpanded(isOpen ? null : idx)}
                     className="flex items-center gap-1.5 text-xs font-medium hover:text-primary shrink-0"
-                    title={isOpen ? 'Detayları gizle' : 'Detayları göster'}
+                    title={isOpen ? t('history.hide_changes') : t('ui.gds_show_details')}
                   >
                     {isOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                     <span className="w-5 h-5 rounded bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold">
@@ -148,7 +148,7 @@ export function GoodsEditor({ value, onChange, currency }: Props) {
 
                   <div className="hidden md:flex items-center gap-1.5 text-[11px] text-muted-foreground shrink-0">
                     {item.hs_code && <Badge variant="secondary" className="font-mono">{item.hs_code}</Badge>}
-                    {item.quantity ? <span>{item.quantity} kap</span> : null}
+                    {item.quantity ? <span>{item.quantity} {t('ui.shp_unit_pkg')}</span> : null}
                     {item.gross_weight ? <span>{formatNumber(item.gross_weight, 0)} kg</span> : null}
                   </div>
 
@@ -172,7 +172,7 @@ export function GoodsEditor({ value, onChange, currency }: Props) {
                   <div className="p-3 space-y-3 border-t">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                       <div className="space-y-1">
-                        <Label className="text-[10px]">HS Kodu</Label>
+                        <Label className="text-[10px]">{t('ui.gds_hs_code')}</Label>
                         <div className="flex items-center gap-1">
                           <Input
                             value={item.hs_code || ''}
@@ -208,11 +208,11 @@ export function GoodsEditor({ value, onChange, currency }: Props) {
                       </div>
 
                       <div className="space-y-1">
-                        <Label className="text-[10px]">Paket / Ambalaj Tipi</Label>
+                        <Label className="text-[10px]">{t('ui.gds_package_type')}</Label>
                         <PackageTypeCombobox
                           value={item.package_type || ''}
                           onChange={(v) => updateItem(idx, { package_type: v })}
-                          placeholder="Ambalaj tipi..."
+                          placeholder={t('ui.gds_package_type_ph')}
                         />
                       </div>
                     </div>
@@ -245,7 +245,7 @@ export function GoodsEditor({ value, onChange, currency }: Props) {
                       <Input
                         value={item.note || ''}
                         onChange={(e) => updateItem(idx, { note: e.target.value })}
-                        placeholder="Marka, model, seri no, ADR bilgisi..."
+                        placeholder={t('ui.gds_note_ph')}
                         className="h-8 text-xs"
                       />
                     </div>
@@ -258,7 +258,7 @@ export function GoodsEditor({ value, onChange, currency }: Props) {
           {/* Toplam satırı */}
           <div className="rounded-md border bg-primary/5 border-primary/20 p-3">
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-center">
-              <TotalBox label={t('ui.toplam_kap')} value={String(totals.quantity)} sub="kap" />
+              <TotalBox label={t('ui.toplam_kap')} value={String(totals.quantity)} sub={t('ui.shp_unit_pkg')} />
               <TotalBox label={t('ui.brut_agirlik')} value={formatNumber(totals.gross_weight, 2)} sub="kg" />
               <TotalBox label={t('ui.net_agirlik')} value={formatNumber(totals.net_weight, 2)} sub="kg" />
               <TotalBox label={t('vehicle.volume')} value={formatNumber(totals.volume_cbm, 3)} sub="m³" />

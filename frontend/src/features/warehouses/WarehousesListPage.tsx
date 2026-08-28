@@ -49,7 +49,7 @@ export function WarehousesListPage() {
     if (!deleteTarget) return
     deleteMut.mutate(deleteTarget.id, {
       onSuccess: () => {
-        toast.success(`${deleteTarget.name} silindi`)
+        toast.success(t('ui.wh_deleted', { name: deleteTarget.name }))
         setDeleteTarget(null)
       },
       onError: (err: Error) => toast.error(err.message),
@@ -88,19 +88,19 @@ export function WarehousesListPage() {
         <ExportButton
           data={filtered}
           filename="depolar"
-          sheetName="Depolar"
+          sheetName={t('warehouse.title')}
           columns={[
-            { header: 'Kod', key: 'warehouse_code' },
-            { header: 'Ad', key: 'name' },
-            { header: 'Tip Kodu', key: 'type_code' },
-            { header: 'Tip Açıklaması', key: 'type_code', format: (v) => Object.values(WAREHOUSE_TYPES).find((w) => w.code === v)?.label || String(v ?? '') },
-            { header: 'Adres', key: 'address' },
-            { header: 'Şehir', key: 'city' },
-            { header: 'Ülke', key: 'country' },
-            { header: 'Telefon', key: 'phone' },
-            { header: 'Durum', key: 'status', format: (v) => v === 'active' ? 'Aktif' : 'Pasif' },
-            { header: 'Notlar', key: 'notes' },
-            { header: 'Oluşturma', key: 'created_at', format: exportFormatters.dateTime },
+            { header: t('warehouse.code'), key: 'warehouse_code' },
+            { header: t('warehouse.name'), key: 'name' },
+            { header: t('warehouse.type_code'), key: 'type_code' },
+            { header: t('ui.wh_type_description'), key: 'type_code', format: (v) => { const k = Object.values(WAREHOUSE_TYPES).find((w) => w.code === v)?.label; return k ? t(k) : String(v ?? '') } },
+            { header: t('warehouse.address'), key: 'address' },
+            { header: t('partner.city'), key: 'city' },
+            { header: t('partner.country'), key: 'country' },
+            { header: t('partner.phone'), key: 'phone' },
+            { header: t('common.status'), key: 'status', format: (v) => v === 'active' ? t('vehicle.status.active') : t('vehicle.status.inactive') },
+            { header: t('ui.asg_notes'), key: 'notes' },
+            { header: t('common.created_at'), key: 'created_at', format: exportFormatters.dateTime },
           ]}
         />
       </Card>
@@ -151,7 +151,7 @@ export function WarehousesListPage() {
                     <TableCell className="font-medium">{w.name}</TableCell>
                     <TableCell>
                       <Badge variant="outline" className="font-mono">
-                        {w.type_code} · {typeInfo?.label || '?'}
+                        {w.type_code} · {typeInfo ? t(typeInfo.label) : '?'}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
@@ -178,7 +178,7 @@ export function WarehousesListPage() {
                             <Badge variant={cnt > 0 ? 'default' : 'secondary'}>{cnt}</Badge>
                             {sum?.last_activity && (
                               <div className="text-[10px] text-muted-foreground">
-                                Son: {formatDate(sum.last_activity)}
+                                {t('ui.wh_last_activity')}: {formatDate(sum.last_activity)}
                               </div>
                             )}
                           </div>
@@ -187,7 +187,7 @@ export function WarehousesListPage() {
                     </TableCell>
                     <TableCell>
                       <Badge variant={w.status === 'active' ? 'success' : 'secondary'}>
-                        {w.status === 'active' ? 'Aktif' : 'Pasif'}
+                        {w.status === 'active' ? t('vehicle.status.active') : t('vehicle.status.inactive')}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
@@ -226,10 +226,9 @@ export function WarehousesListPage() {
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Depoyu sil?</AlertDialogTitle>
+            <AlertDialogTitle>{t('ui.wh_delete_title')}</AlertDialogTitle>
             <AlertDialogDescription>
-              <strong className="font-medium text-foreground">{deleteTarget?.name}</strong> kalıcı olarak silinecek.
-              Eğer bu depo herhangi bir sevkiyatta kullanılıyorsa silme reddedilir.
+              <strong className="font-medium text-foreground">{deleteTarget?.name}</strong> {t('ui.wh_delete_body')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -240,7 +239,7 @@ export function WarehousesListPage() {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {deleteMut.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-              Sil
+              {t('common.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

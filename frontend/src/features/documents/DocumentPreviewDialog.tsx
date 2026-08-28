@@ -56,7 +56,7 @@ export function DocumentPreviewDialog({ shipmentId, docKey, docLabel, open, onOp
     mutationFn: (version: number) =>
       api.post(`/api/documents/${shipmentId}/${docKey}/restore?version=${version}`, {}),
     onSuccess: (_, version) => {
-      toast.success(`Versiyon ${version} geri yüklendi`)
+      toast.success(t('ui.doc_version_restored', { version }))
       qc.invalidateQueries({ queryKey: ['doc-versions', shipmentId, docKey] })
       qc.invalidateQueries({ queryKey: shipmentKey(shipmentId) })
       setSelectedVersion(0)
@@ -84,14 +84,14 @@ export function DocumentPreviewDialog({ shipmentId, docKey, docLabel, open, onOp
             {selectedVersion === 0 ? (
               <Badge variant="success">{t('ui.guncel_2')}</Badge>
             ) : (
-              <Badge variant="warning">Versiyon {selectedVersion}</Badge>
+              <Badge variant="warning">{t('ui.doc_version_n', { version: selectedVersion })}</Badge>
             )}
           </DialogTitle>
           <DialogDescription>
             {filename ? (
               <span className="font-mono text-xs">{filename}</span>
             ) : (
-              'Belge bulunamadı'
+              t('ui.belge_bulunamadi')
             )}
           </DialogDescription>
         </DialogHeader>
@@ -113,11 +113,11 @@ export function DocumentPreviewDialog({ shipmentId, docKey, docLabel, open, onOp
             ) : (
               <div className="text-center text-muted-foreground p-6 space-y-2">
                 <FileText className="w-12 h-12 mx-auto opacity-40" />
-                <div>Bu dosya türü tarayıcıda önizlenemez ({ext}).</div>
+                <div>{t('ui.doc_no_preview', { ext })}</div>
                 <Button asChild variant="outline" size="sm">
                   <a href={downloadUrl} download={filename}>
                     <Download className="w-3.5 h-3.5" />
-                    İndir ({filename})
+                    {t('ui.indir')} ({filename})
                   </a>
                 </Button>
               </div>
@@ -129,7 +129,7 @@ export function DocumentPreviewDialog({ shipmentId, docKey, docLabel, open, onOp
             <div className="px-3 py-2 border-b bg-muted/30 flex items-center gap-2">
               <History className="w-3.5 h-3.5 text-muted-foreground" />
               <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Versiyonlar ({(meta?.versions.length || 0) + (meta?.current ? 1 : 0)})
+                {t('ui.doc_versions')} ({(meta?.versions.length || 0) + (meta?.current ? 1 : 0)})
               </span>
             </div>
             <div className="flex-1 overflow-y-auto divide-y">
@@ -198,7 +198,7 @@ export function DocumentPreviewDialog({ shipmentId, docKey, docLabel, open, onOp
               disabled={restoreMut.isPending}
             >
               {restoreMut.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RotateCcw className="w-3.5 h-3.5" />}
-              Bu Versiyonu Güncel Yap
+              {t('ui.doc_make_current')}
             </Button>
           )}
           {filename && (

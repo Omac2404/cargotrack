@@ -1,4 +1,5 @@
 import type { ApiResponse, ApiError } from '@/types/api'
+import i18n from '@/i18n'
 
 const TOKEN_KEY = 'ct_token'
 
@@ -65,7 +66,8 @@ export async function apiFetch<T = unknown>(path: string, opts: FetchOpts = {}):
     clearToken()
     // Listen for this dispatched event in App.tsx for redirect
     window.dispatchEvent(new CustomEvent('ct:unauthorized'))
-    throw new HttpError(401, { message: 'Oturum sona erdi' })
+    // Mesaj throw anında çevrilir (modül yüklenirken değil) — aktif dil kullanılır
+    throw new HttpError(401, { message: i18n.t('ui.api_session_ended') })
   }
 
   if (raw) {

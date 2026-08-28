@@ -13,20 +13,22 @@
 
 export interface HandlingItem {
   key: string
+  /** i18n key (ui.hnd_*) */
   label: string
   /** Eski form alan ID'leri (geriye uyumluluk) — kaydederken bunlar da güncellenir */
   legacy_sales_id?: string
   legacy_cost_id?: string
 }
 
+// label: i18n key — render sırasında t(item.label) ile çevrilir
 export const HANDLING_ITEMS: HandlingItem[] = [
-  { key: 'ellecleme_filmleme', label: 'Filmleme' },
-  { key: 'ellecleme_paletleme', label: 'Paletleme' },
-  { key: 'ellecleme_etiketleme', label: 'Etiketleme' },
-  { key: 'ellecleme_depo_giris', label: 'Depo Giriş (İndi)' },
-  { key: 'ellecleme_depo_cikis', label: 'Depo Çıkış (Bindi)' },
+  { key: 'ellecleme_filmleme', label: 'ui.hnd_filming' },
+  { key: 'ellecleme_paletleme', label: 'ui.hnd_palletizing' },
+  { key: 'ellecleme_etiketleme', label: 'ui.hnd_labeling' },
+  { key: 'ellecleme_depo_giris', label: 'ui.hnd_wh_entry' },
+  { key: 'ellecleme_depo_cikis', label: 'ui.hnd_wh_exit' },
   // Diğer: legacy compat
-  { key: 'other', label: 'Diğer', legacy_sales_id: 'other_storage_fees', legacy_cost_id: 'handling_fee' },
+  { key: 'other', label: 'ui.hnd_other', legacy_sales_id: 'other_storage_fees', legacy_cost_id: 'handling_fee' },
 ]
 
 export type HandlingData = Record<string, string | number>

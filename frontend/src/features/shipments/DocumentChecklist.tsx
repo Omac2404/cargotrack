@@ -24,10 +24,11 @@ interface Props {
   onStageChange?: (key: string, stage: DocStage) => void
 }
 
+// i18n key'leri — render sırasında t() ile çevrilir
 const STAGE_LABELS: Record<DocStage, string> = {
-  missing: 'Eksik',
-  uploaded: 'Yüklü',
-  approved: 'Onaylı',
+  missing: 'ui.dcl_missing',
+  uploaded: 'ui.yuklu',
+  approved: 'ui.onayli',
 }
 
 const STAGE_COLORS: Record<DocStage, string> = {
@@ -56,7 +57,7 @@ export function DocumentChecklist({ shipmentId, docList, documentsData, onStageC
     onSuccess: (_, vars) => {
       onStageChange?.(vars.docKey, vars.stage)
       qc.invalidateQueries({ queryKey: shipmentKey(shipmentId) })
-      toast.success(`${vars.docKey} → ${STAGE_LABELS[vars.stage]}`)
+      toast.success(`${vars.docKey} → ${t(STAGE_LABELS[vars.stage])}`)
     },
     onError: (err: Error) => toast.error(err.message),
   })
@@ -66,7 +67,7 @@ export function DocumentChecklist({ shipmentId, docList, documentsData, onStageC
       { shipmentId, docKey: key, file },
       {
         onSuccess: () => {
-          toast.success(`${file.name} yüklendi`)
+          toast.success(t('ui.dcl_file_uploaded', { name: file.name }))
           qc.invalidateQueries({ queryKey: shipmentKey(shipmentId) })
         },
         onError: (err: Error) => toast.error(err.message),
@@ -75,7 +76,7 @@ export function DocumentChecklist({ shipmentId, docList, documentsData, onStageC
   }
 
   const handleDelete = (key: string) => {
-    if (!confirm(`${key} belgesi silinecek. Emin misin?`)) return
+    if (!confirm(t('ui.dcl_delete_confirm', { key }))) return
     deleteMut.mutate(
       { shipmentId, docKey: key },
       {
@@ -121,7 +122,7 @@ export function DocumentChecklist({ shipmentId, docList, documentsData, onStageC
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium truncate">{t(item.label)}</span>
                   <Badge className={cn('text-[10px]', STAGE_COLORS[stage])}>
-                    {STAGE_LABELS[stage]}
+                    {t(STAGE_LABELS[stage])}
                   </Badge>
                 </div>
                 {doc?.filename && (
@@ -138,7 +139,7 @@ export function DocumentChecklist({ shipmentId, docList, documentsData, onStageC
                   active={stage === 'missing'}
                   onClick={() => updateStageMut.mutate({ docKey: item.key, stage: 'missing' })}
                   color="destructive"
-                  title="Eksik"
+                  title={t('ui.dcl_missing')}
                 />
                 <StageButton
                   active={stage === 'uploaded'}
@@ -192,7 +193,7 @@ export function DocumentChecklist({ shipmentId, docList, documentsData, onStageC
                         onClick={() => fileInputs.current[item.key]?.click()}
                         disabled={uploadMut.isPending}>
                   {uploadMut.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
-                  {hasFile ? 'Değiştir' : 'Yükle'}
+                  {hasFile ? t('ui.dcl_replace') : t('ui.dcl_upload')}
                 </Button>
               </div>
             </div>

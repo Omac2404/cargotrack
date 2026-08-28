@@ -16,14 +16,15 @@ import { ExportButton } from '@/components/shared/ExportButton'
 import { exportFormatters } from '@/lib/export'
 import { useTranslation } from 'react-i18next'
 
-const ENTITY_LABELS: Record<string, string> = {
-  shipments: 'Sevkiyat',
-  partners: 'Partner',
-  warehouses: 'Depo',
-  vehicles: 'Araç',
-  assignments: 'Atama',
-  documents: 'Belge',
-  users: 'Kullanıcı',
+// i18n anahtarları — t() render anında çağrılır
+const ENTITY_LABEL_KEYS: Record<string, string> = {
+  shipments: 'statistics.table.shipment',
+  partners: 'ui.aud_entity_partner',
+  warehouses: 'statistics.table.warehouse',
+  vehicles: 'statistics.table.vehicle',
+  assignments: 'statistics.table.assignment',
+  documents: 'ui.aud_entity_document',
+  users: 'audit.user',
 }
 
 const ACTION_VARIANTS: Record<string, 'default' | 'success' | 'warning' | 'destructive' | 'secondary'> = {
@@ -36,14 +37,14 @@ const ACTION_VARIANTS: Record<string, 'default' | 'success' | 'warning' | 'destr
   download: 'default',
 }
 
-const ACTION_LABELS: Record<string, string> = {
-  create: 'Oluştur',
-  update: 'Güncelle',
-  delete: 'Sil',
-  login: 'Giriş',
-  logout: 'Çıkış',
-  upload: 'Yükleme',
-  download: 'İndirme',
+const ACTION_LABEL_KEYS: Record<string, string> = {
+  create: 'audit.actions.create',
+  update: 'audit.actions.update',
+  delete: 'audit.actions.delete',
+  login: 'audit.actions.login',
+  logout: 'audit.actions.logout',
+  upload: 'audit.actions.upload',
+  download: 'audit.actions.download',
 }
 
 export function AuditLogPage() {
@@ -75,8 +76,8 @@ export function AuditLogPage() {
             <SelectTrigger className="h-8 w-[180px]"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="__all__">{t('common.all')}</SelectItem>
-              {Object.entries(ENTITY_LABELS).map(([k, label]) => (
-                <SelectItem key={k} value={k}>{label}</SelectItem>
+              {Object.entries(ENTITY_LABEL_KEYS).map(([k, labelKey]) => (
+                <SelectItem key={k} value={k}>{t(labelKey)}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -89,16 +90,16 @@ export function AuditLogPage() {
         <ExportButton
           data={entries as unknown as Record<string, unknown>[]}
           filename="audit_log"
-          sheetName="Audit Log"
+          sheetName={t('audit.title')}
           columns={[
-            { header: 'Zaman', key: 'created_at', format: exportFormatters.dateTime },
-            { header: 'Kullanıcı', key: 'username' },
-            { header: 'İşlem', key: 'action', format: (v) => ACTION_LABELS[v as string] || String(v ?? '') },
-            { header: 'Varlık Tipi', key: 'entity_type', format: (v) => ENTITY_LABELS[v as string] || String(v ?? '') },
-            { header: 'Varlık ID', key: 'entity_id' },
-            { header: 'Tanımlayıcı', key: 'entity_label' },
-            { header: 'IP', key: 'ip_address' },
-            { header: 'Değişiklikler', key: 'changes', format: (v) => v ? JSON.stringify(v) : '' },
+            { header: t('audit.time'), key: 'created_at', format: exportFormatters.dateTime },
+            { header: t('audit.user'), key: 'username' },
+            { header: t('audit.action'), key: 'action', format: (v) => { const k = ACTION_LABEL_KEYS[v as string]; return k ? t(k) : String(v ?? '') } },
+            { header: t('audit.entity_type'), key: 'entity_type', format: (v) => { const k = ENTITY_LABEL_KEYS[v as string]; return k ? t(k) : String(v ?? '') } },
+            { header: t('ui.aud_entity_id'), key: 'entity_id' },
+            { header: t('audit.identifier'), key: 'entity_label' },
+            { header: t('audit.ip'), key: 'ip_address' },
+            { header: t('ui.aud_changes'), key: 'changes', format: (v) => v ? JSON.stringify(v) : '' },
           ]}
         />
       </Card>
@@ -135,8 +136,8 @@ export function AuditLogPage() {
                 <TableRow key={e.id}>
                   <TableCell className="text-xs">{formatDate(e.created_at, true)}</TableCell>
                   <TableCell className="font-mono text-xs">{e.username || '-'}</TableCell>
-                  <TableCell><Badge variant={ACTION_VARIANTS[e.action] || 'secondary'}>{ACTION_LABELS[e.action] || e.action}</Badge></TableCell>
-                  <TableCell className="text-xs">{ENTITY_LABELS[e.entity_type] || e.entity_type}</TableCell>
+                  <TableCell><Badge variant={ACTION_VARIANTS[e.action] || 'secondary'}>{ACTION_LABEL_KEYS[e.action] ? t(ACTION_LABEL_KEYS[e.action]) : e.action}</Badge></TableCell>
+                  <TableCell className="text-xs">{ENTITY_LABEL_KEYS[e.entity_type] ? t(ENTITY_LABEL_KEYS[e.entity_type]) : e.entity_type}</TableCell>
                   <TableCell className="font-mono text-xs">
                     {e.entity_label || (e.entity_id ? `#${e.entity_id}` : '-')}
                   </TableCell>

@@ -60,7 +60,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
             {this.state.error && (
               <details className="text-xs bg-muted/50 rounded p-3 border">
-                <summary className="cursor-pointer font-medium select-none">Teknik detay</summary>
+                <summary className="cursor-pointer font-medium select-none">{i18n.t('ui.err_technical_detail')}</summary>
                 <pre className="mt-2 overflow-auto max-h-48 text-[10px] whitespace-pre-wrap break-all">
                   {this.state.error.message}
                   {this.state.error.stack && '\n\n' + this.state.error.stack}
@@ -75,7 +75,7 @@ export class ErrorBoundary extends Component<Props, State> {
               </Button>
               <Button onClick={this.handleHome} variant="outline">
                 <Home className="w-4 h-4" />
-                Ana Sayfa
+                {i18n.t('ui.err_home')}
               </Button>
             </div>
           </Card>

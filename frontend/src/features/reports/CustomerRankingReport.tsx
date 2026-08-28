@@ -65,15 +65,15 @@ export function CustomerRankingReport() {
           <ExportButton
             data={data.customers as unknown as Record<string, unknown>[]}
             filename={`musteri_siralamasi_${year}`}
-            sheetName="Müşteri Sıralaması"
+            sheetName={t('reports.customer_ranking')}
             columns={[
-              { header: 'Şirket', key: 'company_name' },
-              { header: 'Sevkiyat Sayısı', key: 'shipment_count' },
-              { header: 'Toplam Satış', key: 'total_sale', format: (v) => exportFormatters.number(v) },
-              { header: 'Toplam Alış', key: 'total_purchase', format: (v) => exportFormatters.number(v) },
-              { header: 'Kâr', key: 'profit', format: (v) => exportFormatters.number(v) },
-              { header: 'Marj %', key: 'margin', format: (v) => exportFormatters.number(v, 2) },
-              { header: 'Bekleyen Ödeme', key: 'pending_payment', format: (v) => exportFormatters.number(v) },
+              { header: t('ui.sirket'), key: 'company_name' },
+              { header: t('ui.rep_shipment_count'), key: 'shipment_count' },
+              { header: t('shipment.financial.total_sale'), key: 'total_sale', format: (v) => exportFormatters.number(v) },
+              { header: t('shipment.financial.total_purchase'), key: 'total_purchase', format: (v) => exportFormatters.number(v) },
+              { header: t('statistics.table.profit'), key: 'profit', format: (v) => exportFormatters.number(v) },
+              { header: t('transport.columns.margin'), key: 'margin', format: (v) => exportFormatters.number(v, 2) },
+              { header: t('partner.detail.pending_payment'), key: 'pending_payment', format: (v) => exportFormatters.number(v) },
             ]}
           />
         </div>
@@ -87,10 +87,10 @@ export function CustomerRankingReport() {
               <TableHead>{t('shipment.client')}</TableHead>
               <TableHead className="text-right">{t('statistics.table.shipment')}</TableHead>
               <TableHead className="text-right">{t('statistics.table.revenue')}</TableHead>
-              <TableHead className="text-right">Maliyet</TableHead>
+              <TableHead className="text-right">{t('ui.rep_cost')}</TableHead>
               <TableHead className="text-right">{t('statistics.table.profit')}</TableHead>
               <TableHead className="text-right">{t('statistics.summary.margin')}</TableHead>
-              <TableHead className="text-right">Bekleyen</TableHead>
+              <TableHead className="text-right">{t('ui.rep_pending')}</TableHead>
               <TableHead className="w-[40px]"></TableHead>
             </TableRow>
           </TableHeader>

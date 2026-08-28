@@ -37,34 +37,34 @@ export function CommandPalette({ open, onOpenChange }: Props) {
   }
 
   const navigation: CmdItem[] = [
-    { icon: <BarChart3 />, label: 'İstatistikler', shortcut: 'g i', action: () => go('/') },
-    { icon: <Truck />, label: 'Karayolu Sevkiyatları', shortcut: 'g r', action: () => go('/shipments/road') },
-    { icon: <Ship />, label: 'Denizyolu Sevkiyatları', shortcut: 'g m', action: () => go('/shipments/maritime') },
-    { icon: <Plane />, label: 'Havayolu Sevkiyatları', shortcut: 'g a', action: () => go('/shipments/air') },
-    { icon: <Package />, label: 'Depolama', shortcut: 'g s', action: () => go('/shipments/storage') },
-    { icon: <Building2 />, label: 'Partnerlar', shortcut: 'g p', action: () => go('/partners') },
-    { icon: <Warehouse />, label: 'Depolar', shortcut: 'g w', action: () => go('/warehouses') },
-    { icon: <Truck />, label: 'Araçlar', shortcut: 'g v', action: () => go('/vehicles') },
-    { icon: <ArrowRightLeft />, label: 'Atamalar', action: () => go('/assignments') },
-    { icon: <FileText />, label: 'Belgeler', action: () => go('/documents') },
-    { icon: <BookOpen />, label: 'Nasıl Kullanılır — Kullanım Kılavuzu', action: () => go('/guide') },
+    { icon: <BarChart3 />, label: t('nav.dashboard'), shortcut: 'g i', action: () => go('/') },
+    { icon: <Truck />, label: t('ui.cmd_road_shipments'), shortcut: 'g r', action: () => go('/shipments/road') },
+    { icon: <Ship />, label: t('ui.cmd_maritime_shipments'), shortcut: 'g m', action: () => go('/shipments/maritime') },
+    { icon: <Plane />, label: t('ui.cmd_air_shipments'), shortcut: 'g a', action: () => go('/shipments/air') },
+    { icon: <Package />, label: t('nav.storage'), shortcut: 'g s', action: () => go('/shipments/storage') },
+    { icon: <Building2 />, label: t('nav.partners'), shortcut: 'g p', action: () => go('/partners') },
+    { icon: <Warehouse />, label: t('nav.warehouses'), shortcut: 'g w', action: () => go('/warehouses') },
+    { icon: <Truck />, label: t('nav.vehicles'), shortcut: 'g v', action: () => go('/vehicles') },
+    { icon: <ArrowRightLeft />, label: t('nav.assignments'), action: () => go('/assignments') },
+    { icon: <FileText />, label: t('nav.documents'), action: () => go('/documents') },
+    { icon: <BookOpen />, label: t('ui.cmd_guide'), action: () => go('/guide') },
   ]
 
   const create: CmdItem[] = [
-    { icon: <Plus />, label: 'Yeni Karayolu Sevkiyatı', shortcut: 'n r', action: () => go('/shipments/road/new') },
-    { icon: <Plus />, label: 'Yeni Denizyolu Sevkiyatı', action: () => go('/shipments/maritime/new') },
-    { icon: <Plus />, label: 'Yeni Havayolu Sevkiyatı', action: () => go('/shipments/air/new') },
-    { icon: <Plus />, label: 'Yeni Depolama', action: () => go('/shipments/storage/new') },
+    { icon: <Plus />, label: t('ui.cmd_new_road'), shortcut: 'n r', action: () => go('/shipments/road/new') },
+    { icon: <Plus />, label: t('ui.cmd_new_maritime'), action: () => go('/shipments/maritime/new') },
+    { icon: <Plus />, label: t('ui.cmd_new_air'), action: () => go('/shipments/air/new') },
+    { icon: <Plus />, label: t('ui.cmd_new_storage'), action: () => go('/shipments/storage/new') },
   ]
 
   const admin: CmdItem[] = [
-    { icon: <Users />, label: 'Kullanıcılar', visible: hasRole('super_admin'), action: () => go('/users') },
-    { icon: <Settings />, label: 'Ayarlar', action: () => go('/settings') },
+    { icon: <Users />, label: t('nav.users'), visible: hasRole('super_admin'), action: () => go('/users') },
+    { icon: <Settings />, label: t('nav.settings'), action: () => go('/settings') },
   ].filter((i) => i.visible !== false)
 
   const account: CmdItem[] = [
-    { icon: <User />, label: 'Profil', action: () => go('/profile') },
-    { icon: <LogOut />, label: 'Çıkış Yap', action: () => { logout(); navigate('/login') } },
+    { icon: <User />, label: t('auth.profile'), action: () => go('/profile') },
+    { icon: <LogOut />, label: t('auth.logout'), action: () => { logout(); navigate('/login') } },
   ]
 
   return (
@@ -73,7 +73,7 @@ export function CommandPalette({ open, onOpenChange }: Props) {
       <CommandList>
         <CommandEmpty>{t('ui.sonuc_bulunamadi')}</CommandEmpty>
 
-        <CommandGroup heading="Gezinme">
+        <CommandGroup heading={t('ui.cmd_group_navigation')}>
           {navigation.map((item) => (
             <CommandItem key={item.label} onSelect={item.action}>
               {item.icon}
@@ -85,7 +85,7 @@ export function CommandPalette({ open, onOpenChange }: Props) {
 
         <CommandSeparator />
 
-        <CommandGroup heading="Hızlı Oluştur">
+        <CommandGroup heading={t('ui.cmd_group_create')}>
           {create.map((item) => (
             <CommandItem key={item.label} onSelect={item.action}>
               {item.icon}
@@ -97,7 +97,7 @@ export function CommandPalette({ open, onOpenChange }: Props) {
 
         <CommandSeparator />
 
-        <CommandGroup heading="Yönetim">
+        <CommandGroup heading={t('nav.management')}>
           {admin.map((item) => (
             <CommandItem key={item.label} onSelect={item.action}>
               {item.icon}
@@ -108,7 +108,7 @@ export function CommandPalette({ open, onOpenChange }: Props) {
 
         <CommandSeparator />
 
-        <CommandGroup heading="Hesap">
+        <CommandGroup heading={t('ui.cmd_group_account')}>
           {account.map((item) => (
             <CommandItem key={item.label} onSelect={item.action}>
               {item.icon}

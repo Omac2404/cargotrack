@@ -69,7 +69,7 @@ export function PartnersListPage() {
     if (!deleteTarget) return
     deleteMut.mutate(deleteTarget.id, {
       onSuccess: () => {
-        toast.success(`${deleteTarget.company_name} silindi`)
+        toast.success(t('ui.prt_deleted', { name: deleteTarget.company_name }))
         setDeleteTarget(null)
       },
       onError: (err: Error) => toast.error(err.message),
@@ -116,23 +116,23 @@ export function PartnersListPage() {
         <ExportButton
           data={filtered}
           filename="partnerler"
-          sheetName="Partnerler"
+          sheetName={t('partner.title')}
           columns={[
-            { header: 'Kod', key: 'partner_code' },
+            { header: t('partner.code'), key: 'partner_code' },
             { header: t('partner.company_name'), key: 'company_name' },
             { header: t('partner.type'), key: 'type', format: (v) => t(`partner.types.${v as PartnerType}`, { defaultValue: String(v ?? '') }) },
             { header: t('shipment.fields.contact_person'), key: 'contact_person' },
-            { header: 'Telefon', key: 'contact_phone' },
-            { header: 'E-posta', key: 'contact_email' },
-            { header: 'Adres', key: 'physical_address' },
-            { header: 'Posta Kodu', key: 'postal_code' },
+            { header: t('partner.phone'), key: 'contact_phone' },
+            { header: t('partner.email'), key: 'contact_email' },
+            { header: t('partner.address'), key: 'physical_address' },
+            { header: t('partner.postal_code'), key: 'postal_code' },
             { header: t('partner.city'), key: 'city' },
             { header: t('partner.country'), key: 'country' },
-            { header: 'VKN', key: 'tax_number' },
-            { header: 'EORI', key: 'eori_number' },
+            { header: t('partner.tax_number'), key: 'tax_number' },
+            { header: t('partner.eori_number'), key: 'eori_number' },
             { header: t('partner.mersis_number'), key: 'mersis_number' },
-            { header: 'Fatura Adresi', key: 'billing_address' },
-            { header: 'Fatura E-posta', key: 'billing_email' },
+            { header: t('partner.billing_address'), key: 'billing_address' },
+            { header: t('ui.fatura_e_posta'), key: 'billing_email' },
           ]}
         />
       </Card>

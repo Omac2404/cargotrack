@@ -104,7 +104,7 @@ export function ShipmentsListPage() {
       { id: deleteTarget.id, expected_transport_type: config.key },
       {
         onSuccess: () => {
-          toast.success(`${deleteTarget.shipment_no} silindi`)
+          toast.success(t('ui.shp_deleted_toast', { no: deleteTarget.shipment_no }))
           setDeleteTarget(null)
         },
         onError: (err: Error) => toast.error(err.message),
@@ -246,7 +246,7 @@ export function ShipmentsListPage() {
         {error ? (
           <div className="p-8 text-center text-destructive">
             <AlertCircle className="w-8 h-8 mx-auto mb-2" />
-            <div className="font-medium">Hata: {(error as Error).message}</div>
+            <div className="font-medium">{t('common.error')}: {(error as Error).message}</div>
           </div>
         ) : isLoading ? (
           <div className="p-12 text-center text-muted-foreground">
@@ -291,13 +291,13 @@ export function ShipmentsListPage() {
                 {/* Mode-spesifik kolonlar */}
                 {(config.key === 'maritime') && (
                   <>
-                    <TableHead>Vessel / Voyage</TableHead>
+                    <TableHead>{t('transport.columns.vessel')}</TableHead>
                     <TableHead>{t('transport.columns.bl_no')}</TableHead>
                   </>
                 )}
                 {(config.key === 'air') && (
                   <>
-                    <TableHead>Flight</TableHead>
+                    <TableHead>{t('transport.columns.flight')}</TableHead>
                     <TableHead>{t('transport.columns.awb_no')}</TableHead>
                   </>
                 )}
@@ -322,7 +322,7 @@ export function ShipmentsListPage() {
                       <Checkbox
                         checked={sel.isSelected(s.id)}
                         onCheckedChange={() => sel.toggle(s.id)}
-                        aria-label={`${s.shipment_no} seç`}
+                        aria-label={t('ui.shp_select_row_aria', { no: s.shipment_no })}
                       />
                     </TableCell>
                     <TableCell className="font-mono font-medium">{s.shipment_no}</TableCell>

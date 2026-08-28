@@ -14,11 +14,12 @@ import { AssignmentFormDialog } from '@/features/assignments/AssignmentFormDialo
 import { getVehicleManifestUrl, openPdf } from '@/features/pdf/hooks'
 import { useVehicleLoad } from './hooks'
 
+// label = i18n key (t() ile çevrilir)
 const STATUS_LABELS: Record<string, { label: string; variant: 'default' | 'secondary' | 'warning' | 'success' }> = {
-  draft: { label: 'Taslak', variant: 'secondary' },
-  in_progress: { label: 'Devam Ediyor', variant: 'default' },
-  to_invoice: { label: 'Faturalanacak', variant: 'warning' },
-  closed: { label: 'Kapalı', variant: 'success' },
+  draft: { label: 'shipment.status.draft', variant: 'secondary' },
+  in_progress: { label: 'shipment.status.in_progress', variant: 'default' },
+  to_invoice: { label: 'shipment.status.to_invoice', variant: 'warning' },
+  closed: { label: 'shipment.status.closed', variant: 'success' },
 }
 
 interface Props {
@@ -62,12 +63,12 @@ export function VehicleLoadPanel({ vehicleId }: Props) {
           <Stat
             label={t('ui.atama_sayisi')}
             value={String(summary.assignment_count)}
-            sub={summary.assignment_count === 0 ? 'Henüz yük yok' : 'sevkiyat'}
+            sub={summary.assignment_count === 0 ? t('ui.veh_no_load_yet') : t('ui.veh_shipment_unit')}
           />
           <Stat
             label={t('ui.toplam_kap')}
             value={formatNumber(summary.total_quantity, 0)}
-            sub="kap"
+            sub={t('ui.asg_pkg_unit')}
           />
           <Stat
             label={t('ui.toplam_agirlik')}
@@ -75,7 +76,7 @@ export function VehicleLoadPanel({ vehicleId }: Props) {
             sub={`/ ${formatNumber(vehicle.capacity_kg, 0)} kg`}
           />
           <Stat
-            label="Kalan Kapasite"
+            label={t('ui.veh_remaining_capacity')}
             value={formatNumber(summary.remaining_capacity_kg, 0)}
             sub="kg"
             highlight={overCapacity ? 'destructive' : undefined}
@@ -89,7 +90,7 @@ export function VehicleLoadPanel({ vehicleId }: Props) {
               <span className="text-muted-foreground">{t('ui.kapasite_kullanimi')}</span>
               <span className={cn('font-semibold tabular-nums', overCapacity && 'text-destructive')}>
                 %{summary.load_percent.toFixed(1)}
-                {overCapacity && ' (aşıldı!)'}
+                {overCapacity && ` ${t('ui.veh_exceeded')}`}
               </span>
             </div>
             <div className="h-2.5 bg-muted rounded-full overflow-hidden">
@@ -104,7 +105,7 @@ export function VehicleLoadPanel({ vehicleId }: Props) {
         <div className="px-4 py-3 border-b bg-muted/30 flex items-center gap-2">
           <Package className="w-4 h-4 text-muted-foreground" />
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Yüklenen Sevkiyatlar ({assignments.length})
+            {t('ui.veh_loaded_shipments')} ({assignments.length})
           </h3>
           {/* Aynı araca birden fazla sevkiyat yüklenebilir — buradan tek tıkla ekle */}
           <div className="ml-auto flex items-center gap-1.5">
@@ -163,7 +164,7 @@ export function VehicleLoadPanel({ vehicleId }: Props) {
                 <TableHead className="text-right">{t('assignment.assigned_quantity')}</TableHead>
                 <TableHead className="text-right">{t('assignment.assigned_weight')}</TableHead>
                 <TableHead>{t('common.status')}</TableHead>
-                <TableHead className="w-[60px] text-right">Aç</TableHead>
+                <TableHead className="w-[60px] text-right">{t('common.open')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -196,7 +197,7 @@ export function VehicleLoadPanel({ vehicleId }: Props) {
                       <div className="text-[10px] text-muted-foreground">/ {formatNumber(a.shipment_total_weight, 0)} kg</div>
                     </TableCell>
                     <TableCell>
-                      {status && <Badge variant={status.variant}>{status.label}</Badge>}
+                      {status && <Badge variant={status.variant}>{t(status.label)}</Badge>}
                     </TableCell>
                     <TableCell className="text-right">
                       {editLink && (

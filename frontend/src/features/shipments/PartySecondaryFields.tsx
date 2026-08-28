@@ -32,10 +32,11 @@ interface Props {
 }
 
 const FIELD_LABELS: Record<PartyKey, { label: string; addressKey: 'delivery_address_2' | 'address'; addressLabel: string }> = {
-  client:   { label: 'Müşteri',  addressKey: 'delivery_address_2', addressLabel: '2. Teslim Adresi' },
-  sender:   { label: 'Gönderici', addressKey: 'address',           addressLabel: 'Bu Sevkiyat İçin Adres' },
-  receiver: { label: 'Alıcı',     addressKey: 'address',           addressLabel: 'Bu Sevkiyat İçin Adres' },
-  agent:    { label: 'Acente',    addressKey: 'address',           addressLabel: 'Bu Sevkiyat İçin Adres' },
+  // i18n key'leri — render sırasında t() ile çevrilir
+  client:   { label: 'partner.types.customer', addressKey: 'delivery_address_2', addressLabel: 'ui.pty_delivery_address_2' },
+  sender:   { label: 'partner.types.sender',   addressKey: 'address',            addressLabel: 'ui.pty_address_for_shipment' },
+  receiver: { label: 'partner.types.receiver', addressKey: 'address',            addressLabel: 'ui.pty_address_for_shipment' },
+  agent:    { label: 'partner.types.agent',    addressKey: 'address',            addressLabel: 'ui.pty_address_for_shipment' },
 }
 
 /**
@@ -76,7 +77,7 @@ export function PartySecondaryFields({ partyKey, data, onChange }: Props) {
     <div className="mt-2 rounded-md border-2 border-dashed border-primary/40 bg-primary/5 p-3 space-y-3">
       <div className="flex items-center justify-between">
         <div className="text-xs font-semibold text-primary uppercase tracking-wider">
-          {cfg.label} — Sevkiyata Özel Ek Bilgi
+          {t('ui.pty_shipment_specific_info', { party: t(cfg.label) })}
         </div>
         <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={clearAll} title={t('ui.temizle_ve_kapat')}>
           <X className="w-3.5 h-3.5" />
@@ -90,13 +91,13 @@ export function PartySecondaryFields({ partyKey, data, onChange }: Props) {
       <div className="space-y-1.5">
         <Label className="text-xs flex items-center gap-1">
           <MapPin className="w-3 h-3" />
-          {cfg.addressLabel}
+          {t(cfg.addressLabel)}
         </Label>
         <Textarea
           rows={2}
           value={(data[cfg.addressKey] as string) || ''}
           onChange={(e) => update({ [cfg.addressKey]: e.target.value })}
-          placeholder="Tam adres..."
+          placeholder={t('ui.pty_full_address_ph')}
           className="text-xs"
         />
       </div>
@@ -130,7 +131,7 @@ export function PartySecondaryFields({ partyKey, data, onChange }: Props) {
       </div>
 
       <div className="space-y-1.5">
-        <Label className="text-xs">Notlar</Label>
+        <Label className="text-xs">{t('ui.pty_notes')}</Label>
         <Textarea
           rows={2}
           value={data.notes || ''}

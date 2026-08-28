@@ -95,8 +95,9 @@ export interface StorageCostResult {
   weekly_total: number
   monthly_total: number
   selected_total: number   // pricing_type'a göre seçili tarife
-  selected_label: string
-  formula: string          // "5 kap × €10/gün × 30 gün = €1.500,00"
+  selected_label: string   // i18n key: ui.stg_unit_day | ui.stg_unit_week | ui.stg_unit_month
+  /** Formül parametreleri — render: t('ui.stg_cost_formula', { ...formula_params, unit: t(formula_params.unit) }); hesaplanamıyorsa null */
+  formula_params: { kap: number; rate: string; unit: string; count: number; total: string } | null
 }
 
 export function calcStorageCost(input: StorageCostInput): StorageCostResult {
@@ -121,7 +122,7 @@ export function calcStorageCost(input: StorageCostInput): StorageCostResult {
   const selectedTotal = pricing === 'gun' ? dailyTotal : pricing === 'hafta' ? weeklyTotal : monthlyTotal
   const perRate = pricing === 'gun' ? r.day : pricing === 'hafta' ? r.week : r.month
   const perCount = pricing === 'gun' ? days : pricing === 'hafta' ? weeks : months
-  const perLabel = pricing === 'gun' ? 'gün' : pricing === 'hafta' ? 'hafta' : 'ay'
+  const perLabel = pricing === 'gun' ? 'ui.stg_unit_day' : pricing === 'hafta' ? 'ui.stg_unit_week' : 'ui.stg_unit_month'
 
   return {
     days,
@@ -132,9 +133,9 @@ export function calcStorageCost(input: StorageCostInput): StorageCostResult {
     monthly_total: monthlyTotal,
     selected_total: selectedTotal,
     selected_label: perLabel,
-    formula: kap > 0 && perRate > 0 && perCount > 0
-      ? `${kap} kap × ${perRate.toFixed(2)}/${perLabel} × ${perCount} ${perLabel} = ${selectedTotal.toFixed(2)}`
-      : '',
+    formula_params: kap > 0 && perRate > 0 && perCount > 0
+      ? { kap, rate: perRate.toFixed(2), unit: perLabel, count: perCount, total: selectedTotal.toFixed(2) }
+      : null,
   }
 }
 
@@ -153,7 +154,9 @@ export interface TransitAlert {
   severity: 'info' | 'warning' | 'danger'
   days_remaining: number | null
   expiry_date: string | null
-  message: string
+  /** i18n key (ui.stg_transit_expired | ui.stg_transit_expiring); render: t(message_key, message_params) */
+  message_key: string
+  message_params: Record<string, string | number>
 }
 
 const TRANSIT_LIMITS_DAYS: Record<string, number> = {
@@ -163,7 +166,7 @@ const TRANSIT_LIMITS_DAYS: Record<string, number> = {
 
 export function computeTransitAlert(input: TransitAlertInput): TransitAlert {
   const inactive: TransitAlert = {
-    active: false, severity: 'info', days_remaining: null, expiry_date: null, message: '',
+    active: false, severity: 'info', days_remaining: null, expiry_date: null, message_key: '', message_params: {},
   }
 
   if (input.transit_alert_dismissed) return inactive
@@ -191,26 +194,33 @@ export function computeTransitAlert(input: TransitAlertInput): TransitAlert {
   else if (remaining <= 7) severity = 'danger'
   else if (remaining <= 15) severity = 'warning'
 
-  const message = remaining <= 0
-    ? `Transit süresi DOLMUŞ (${Math.abs(remaining)} gün geçti). Tip ${type} depoda azami ${TRANSIT_LIMITS_DAYS[type]} gün.`
-    : `Transit süresi bitiyor — ${remaining} gün kaldı (${expiry}). Tip ${type} depoda azami ${TRANSIT_LIMITS_DAYS[type]} gün.`
+  const message_key = remaining <= 0 ? 'ui.stg_transit_expired' : 'ui.stg_transit_expiring'
+  const message_params = {
+    overdue: Math.abs(remaining),
+    remaining,
+    expiry,
+    type,
+    limit: TRANSIT_LIMITS_DAYS[type],
+  }
 
   return {
     active: true,
     severity,
     days_remaining: remaining,
     expiry_date: expiry,
-    message,
+    message_key,
+    message_params,
   }
 }
 
 // === Depo tipleri (CGI uyumlu) — referans için frontend de listede ===
+// label / description: i18n key'leri — render sırasında t() ile çevrilir
 export const WAREHOUSE_TYPE_DESC: Record<string, { label: string; description: string; transit_limit_days?: number }> = {
-  R: { label: 'Entrepôt Public Type I', description: 'Kamuya açık depo, ortaklaşa kullanım' },
-  S: { label: 'Entrepôt Public Type II (T)', description: 'Geçici antrepo - 45 gün limit', transit_limit_days: 45 },
-  T: { label: 'Entrepôt Public Type II', description: 'Müşterek antrepo (kamu) - 45 gün', transit_limit_days: 45 },
-  U: { label: 'Entrepôt Privé', description: 'Özel antrepo, tek kullanıcı' },
-  V: { label: 'Geçici Stoklama (V)', description: 'Installation de stockage temporaire - 90 gün', transit_limit_days: 90 },
-  Y: { label: 'Diğer Depo', description: 'Antrepo dışı depolama' },
-  Z: { label: 'Serbest Bölge', description: 'Zone Franche - vergi muafiyetli' },
+  R: { label: 'ui.stg_wh_type_r_label', description: 'ui.stg_wh_type_r_desc' },
+  S: { label: 'ui.stg_wh_type_s_label', description: 'ui.stg_wh_type_s_desc', transit_limit_days: 45 },
+  T: { label: 'ui.stg_wh_type_t_label', description: 'ui.stg_wh_type_t_desc', transit_limit_days: 45 },
+  U: { label: 'ui.stg_wh_type_u_label', description: 'ui.stg_wh_type_u_desc' },
+  V: { label: 'ui.stg_wh_type_v_label', description: 'ui.stg_wh_type_v_desc', transit_limit_days: 90 },
+  Y: { label: 'ui.stg_wh_type_y_label', description: 'ui.stg_wh_type_y_desc' },
+  Z: { label: 'ui.stg_wh_type_z_label', description: 'ui.stg_wh_type_z_desc' },
 }

@@ -21,7 +21,7 @@ function buildShortcuts(t: (k: string) => string): ShortcutGroup[] {
     {
       title: t('shortcuts.general'),
       items: [
-        { keys: ['Ctrl', 'K'], description: 'Komut paleti' },
+        { keys: ['Ctrl', 'K'], description: t('ui.sc_command_palette') },
         { keys: ['?'], description: t('shortcuts.title') },
         { keys: ['Esc'], description: t('common.close') },
       ],
@@ -47,53 +47,14 @@ function buildShortcuts(t: (k: string) => string): ShortcutGroup[] {
     {
       title: t('shortcuts.list_table'),
       items: [
-        { keys: ['J'], description: '↓' },
-        { keys: ['K'], description: '↑' },
+        { keys: ['J'], description: t('ui.sc_next_row') },
+        { keys: ['K'], description: t('ui.sc_prev_row') },
         { keys: ['Enter'], description: t('common.open') },
         { keys: ['/'], description: t('common.search') },
       ],
     },
   ]
 }
-
-// Eski SHORTCUTS (geriye dönük; artık kullanılmıyor, build için import dependency kalması)
-const SHORTCUTS_LEGACY: ShortcutGroup[] = [
-  {
-    title: 'Genel',
-    items: [
-      { keys: ['Ctrl', 'K'], description: 'Komut paleti (sayfaya git, ara)' },
-      { keys: ['?'], description: 'Bu yardımı aç/kapat' },
-      { keys: ['Esc'], description: 'Açık modal / dialog / arama kapat' },
-    ],
-  },
-  {
-    title: 'Navigasyon',
-    items: [
-      { keys: ['G', 'sonra', 'H'], description: 'Ana sayfa (Dashboard)' },
-      { keys: ['G', 'sonra', 'S'], description: 'Sevkiyatlar (karayolu)' },
-      { keys: ['G', 'sonra', 'P'], description: 'Partnerler' },
-      { keys: ['G', 'sonra', 'A'], description: 'Atamalar' },
-      { keys: ['G', 'sonra', 'V'], description: 'Araçlar' },
-      { keys: ['G', 'sonra', 'D'], description: 'Belgeler' },
-    ],
-  },
-  {
-    title: 'Formlar',
-    items: [
-      { keys: ['Ctrl', 'S'], description: 'Kaydet (sevkiyat / araç / partner formunda)' },
-      { keys: ['Ctrl', 'N'], description: 'Yeni kayıt (bulunduğun sayfada)' },
-    ],
-  },
-  {
-    title: 'Liste / Tablo',
-    items: [
-      { keys: ['J'], description: 'Sonraki satır' },
-      { keys: ['K'], description: 'Önceki satır' },
-      { keys: ['Enter'], description: 'Seçili satırı aç' },
-      { keys: ['/'], description: 'Arama kutusuna odaklan' },
-    ],
-  },
-]
 
 interface Props {
   open: boolean
@@ -180,9 +141,10 @@ export function GlobalShortcutsProvider() {
         } else if (path === '/vehicles') {
           navigate('/vehicles/new')
         } else {
-          // Genel: "Yeni" butonunu ara ve tıkla
+          // Genel: "Yeni" butonunu ara ve tıkla — dört dilin de karşılığı
+          // (Yeni / Nouveau·Nouvelle / New / Neu); önceden yalnızca Türkçe eşleşiyordu
           const btn = Array.from(document.querySelectorAll('button')).find((b) =>
-            /yeni/i.test(b.textContent || '')
+            /(yeni|nouve|new|neu)/i.test(b.textContent || '')
           )
           btn?.click()
         }
@@ -205,7 +167,10 @@ export function GlobalShortcutsProvider() {
     {
       combo: '/',
       handler: () => {
-        const search = document.querySelector<HTMLInputElement>('input[placeholder*="ara" i], input[type="search"]')
+        // Arama kutusu: placeholder dört dilde de "ara/recherch/search/such" içerir
+        const search = document.querySelector<HTMLInputElement>(
+          'input[placeholder*="ara" i], input[placeholder*="recherch" i], input[placeholder*="search" i], input[placeholder*="such" i], input[type="search"]'
+        )
         search?.focus()
       },
     },

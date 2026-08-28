@@ -133,7 +133,7 @@ export function Sidebar() {
         <div
           className="fixed inset-0 bg-black/50 z-40 md:hidden"
           onClick={() => setMobileOpen(false)}
-          aria-label="Sidebar kapat"
+          aria-label={t('ui.sb_close')}
         />
       )}
 
@@ -162,7 +162,7 @@ export function Sidebar() {
             type="button"
             onClick={() => setMobileOpen(false)}
             className="ml-auto md:hidden p-1 hover:bg-accent rounded shrink-0"
-            aria-label="Sidebar kapat"
+            aria-label={t('ui.sb_close')}
           >
             <X className="w-4 h-4" />
           </button>

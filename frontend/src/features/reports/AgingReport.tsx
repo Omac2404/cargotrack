@@ -55,22 +55,22 @@ export function AgingReport() {
         <div className="text-sm">
           <span className="text-muted-foreground">{t('ui.toplam_bekleyen')} </span>
           <strong className="text-destructive text-base">{formatMoney(data.total_unpaid, 'EUR')}</strong>
-          <span className="text-muted-foreground ml-2">({data.total_count} fatura)</span>
+          <span className="text-muted-foreground ml-2">({t('ui.rep_invoice_count', { count: data.total_count })})</span>
         </div>
         <div className="ml-auto">
           <ExportButton
             data={allItems as unknown as Record<string, unknown>[]}
             filename="yaslanan_alacak"
-            sheetName="Yaşlanan Alacak"
+            sheetName={t('reports.aging')}
             columns={[
-              { header: 'Sevkiyat', key: 'shipment_no' },
-              { header: 'Müşteri', key: 'client' },
-              { header: 'Fatura No', key: 'invoice_no' },
-              { header: 'Fatura Tarihi', key: 'invoice_date', format: exportFormatters.date },
-              { header: 'Tutar', key: 'amount', format: (v) => exportFormatters.number(v) },
-              { header: 'Para Birimi', key: 'currency' },
-              { header: 'Gün', key: 'days_overdue' },
-              { header: 'Yaş Grubu', key: 'bucket' },
+              { header: t('statistics.table.shipment'), key: 'shipment_no' },
+              { header: t('shipment.client'), key: 'client' },
+              { header: t('statistics.table.invoice_no'), key: 'invoice_no' },
+              { header: t('ui.fatura_tarihi'), key: 'invoice_date', format: exportFormatters.date },
+              { header: t('statistics.table.amount'), key: 'amount', format: (v) => exportFormatters.number(v) },
+              { header: t('shipment.fields.currency'), key: 'currency' },
+              { header: t('ui.gun'), key: 'days_overdue' },
+              { header: t('ui.rep_age_bucket'), key: 'bucket' },
             ]}
           />
         </div>
@@ -87,7 +87,7 @@ export function AgingReport() {
               <div className="text-xl font-bold tabular-nums mt-1" style={{ color: BUCKET_COLORS[b.key] }}>
                 {formatMoney(b.total, 'EUR')}
               </div>
-              <div className="text-[10px] text-muted-foreground">{b.items.length} fatura</div>
+              <div className="text-[10px] text-muted-foreground">{t('ui.rep_invoice_count', { count: b.items.length })}</div>
             </Card>
           ))}
         </div>
@@ -121,7 +121,7 @@ export function AgingReport() {
             <div className="px-4 py-2.5 border-b bg-muted/30 flex items-center gap-2">
               <AlertTriangle className="w-3.5 h-3.5" style={{ color: BUCKET_COLORS[b.key] }} />
               <h3 className="text-xs font-semibold uppercase tracking-wider">
-                {b.label} — {formatMoney(b.total, 'EUR')} ({b.items.length} fatura)
+                {b.label} — {formatMoney(b.total, 'EUR')} ({t('ui.rep_invoice_count', { count: b.items.length })})
               </h3>
             </div>
             <Table>
@@ -145,7 +145,7 @@ export function AgingReport() {
                     <TableCell className="text-xs">{formatDate(it.invoice_date)}</TableCell>
                     <TableCell className="text-right tabular-nums font-medium">{formatMoney(it.amount, it.currency)}</TableCell>
                     <TableCell className="text-right">
-                      <Badge variant={BUCKET_VARIANTS[b.key]}>{it.days_overdue}g</Badge>
+                      <Badge variant={BUCKET_VARIANTS[b.key]}>{t('ui.rep_days_short', { count: it.days_overdue })}</Badge>
                     </TableCell>
                     <TableCell>
                       <Button asChild variant="ghost" size="icon" className="h-7 w-7">

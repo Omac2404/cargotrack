@@ -75,14 +75,14 @@ export function PartyInfoCard({ partner, showCustomerExtras = false }: Props) {
           {partner.tax_number && (
             <span className="inline-flex items-center gap-1 text-muted-foreground">
               <FileText className="w-3 h-3" />
-              <span className="font-semibold">VKN:</span>
+              <span className="font-semibold">{t('ui.pty_vkn')}</span>
               <span className="font-mono">{partner.tax_number}</span>
             </span>
           )}
           {partner.eori_number && (
             <span className="inline-flex items-center gap-1 text-muted-foreground">
               <Globe className="w-3 h-3" />
-              <span className="font-semibold">EORI:</span>
+              <span className="font-semibold">{t('ui.pty_eori')}</span>
               <span className="font-mono">{partner.eori_number}</span>
             </span>
           )}
@@ -109,7 +109,7 @@ export function PartyInfoCard({ partner, showCustomerExtras = false }: Props) {
 
       <div className="pt-1 text-[10px] text-muted-foreground italic flex items-center gap-1">
         <ExternalLink className="w-3 h-3" />
-        Partner kaydından otomatik. Bu sevkiyat için farklı bilgi gerekiyorsa aşağıdaki "Sevkiyata Özel Ek Bilgi" panelini kullanın.
+        {t('ui.pty_auto_from_partner_hint')}
       </div>
     </div>
   )

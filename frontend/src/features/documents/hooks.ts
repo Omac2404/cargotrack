@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { api, getToken } from '@/lib/api'
 import { shipmentKey } from '@/features/shipments/hooks'
+import i18n from '@/i18n'
 
 interface UploadResp {
   message: string
@@ -46,7 +47,7 @@ export async function downloadDocument(shipmentId: number, docKey: string, filen
     headers: token ? { Authorization: `Bearer ${token}` } : {},
   })
   if (!resp.ok) {
-    throw new Error('Dosya indirilemedi: HTTP ' + resp.status)
+    throw new Error(i18n.t('ui.doc_download_failed', { status: resp.status }))
   }
   const blob = await resp.blob()
   const url = URL.createObjectURL(blob)
@@ -61,24 +62,26 @@ export async function downloadDocument(shipmentId: number, docKey: string, filen
 
 /**
  * Standart lojistik belge tipleri — UI slot listesi
+ * label / description = i18n key (render'da t() ile çevrilir); raw=true ise label ham metindir (özel slot)
  */
 export interface DocSlot {
   key: string
   label: string
   description?: string
+  raw?: boolean
 }
 
 export const STANDARD_DOC_SLOTS: DocSlot[] = [
-  { key: 'invoice', label: 'Fatura', description: 'Ticari fatura' },
-  { key: 'packing_list', label: 'Çeki Listesi', description: 'Packing list' },
-  { key: 'bl', label: 'BL', description: 'Bill of Lading (denizyolu)' },
-  { key: 'awb', label: 'AWB', description: 'Air Waybill (havayolu)' },
-  { key: 'cmr', label: 'CMR', description: 'CMR konşimentosu (karayolu)' },
-  { key: 'atr', label: 'ATR', description: 'A.TR Dolaşım Belgesi' },
-  { key: 'eur1', label: 'EUR.1', description: 'EUR.1 Dolaşım Belgesi' },
-  { key: 'certificate_origin', label: 'Menşe Şahadetnamesi', description: 'Certificate of Origin' },
-  { key: 'customs_declaration', label: 'Gümrük Beyannamesi', description: '' },
-  { key: 'insurance_policy', label: 'Sigorta Poliçesi', description: '' },
-  { key: 'weight_certificate', label: 'Ağırlık Belgesi', description: '' },
-  { key: 'fumigation', label: 'Fümigasyon', description: '' },
+  { key: 'invoice', label: 'ui.doc_slot_invoice', description: 'ui.doc_slot_invoice_desc' },
+  { key: 'packing_list', label: 'transport.documents.packing_list', description: 'ui.doc_slot_packing_list_desc' },
+  { key: 'bl', label: 'ui.doc_slot_bl', description: 'ui.doc_slot_bl_desc' },
+  { key: 'awb', label: 'ui.doc_slot_awb', description: 'ui.doc_slot_awb_desc' },
+  { key: 'cmr', label: 'ui.doc_slot_cmr', description: 'ui.doc_slot_cmr_desc' },
+  { key: 'atr', label: 'ui.doc_slot_atr', description: 'ui.doc_slot_atr_desc' },
+  { key: 'eur1', label: 'ui.doc_slot_eur1', description: 'ui.doc_slot_eur1_desc' },
+  { key: 'certificate_origin', label: 'transport.documents.cert_origin', description: 'ui.doc_slot_cert_origin_desc' },
+  { key: 'customs_declaration', label: 'transport.documents.customs_dec', description: '' },
+  { key: 'insurance_policy', label: 'transport.documents.insurance', description: '' },
+  { key: 'weight_certificate', label: 'ui.doc_slot_weight_cert', description: '' },
+  { key: 'fumigation', label: 'ui.doc_slot_fumigation', description: '' },
 ]

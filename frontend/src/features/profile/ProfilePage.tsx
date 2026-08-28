@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { useMutation } from '@tanstack/react-query'
@@ -19,24 +20,27 @@ import { useAuth } from '@/stores/auth'
 import { ROLE_LABELS } from '@/features/users/hooks'
 import { formatDate } from '@/lib/utils'
 
-const passwordSchema = z.object({
-  current_password: z.string().min(1, 'Mevcut şifre zorunludur'),
-  new_password: z.string().min(12, 'Yeni şifre en az 12 karakter olmalıdır'),
-  confirm_password: z.string().min(1, 'Şifreyi tekrar girin'),
+type TFn = (k: string, opts?: Record<string, unknown>) => string
+
+// Hata mesajları i18n'den gelir — şema bileşen içinde t() ile kurulur
+const buildPasswordSchema = (t: TFn) => z.object({
+  current_password: z.string().min(1, t('ui.prof_err_current_required')),
+  new_password: z.string().min(12, t('ui.prof_err_new_min')),
+  confirm_password: z.string().min(1, t('ui.prof_err_confirm_required')),
 }).refine((d) => d.new_password === d.confirm_password, {
-  message: 'Şifreler eşleşmiyor',
+  message: t('ui.prof_err_mismatch'),
   path: ['confirm_password'],
 })
-type PasswordValues = z.infer<typeof passwordSchema>
+type PasswordValues = z.infer<ReturnType<typeof buildPasswordSchema>>
 
 /** Şifre kuvvet skoru — backend ile aynı mantık (basit subset) */
-function calcStrength(password: string, username?: string): { score: number; tips: string[] } {
+function calcStrength(password: string, username: string | undefined, t: TFn): { score: number; tips: string[] } {
   const tips: string[] = []
-  if (!password) return { score: 0, tips: ['Şifre girin'] }
+  if (!password) return { score: 0, tips: [t('ui.prof_tip_enter')] }
   let score = 0
   if (password.length >= 8) score++
   if (password.length >= 12) score++
-  else tips.push('En az 12 karakter olmalı')
+  else tips.push(t('ui.prof_tip_min12'))
   if (password.length >= 16) score++
   const hasLower = /[a-z]/.test(password)
   const hasUpper = /[A-Z]/.test(password)
@@ -45,19 +49,19 @@ function calcStrength(password: string, username?: string): { score: number; tip
   const types = [hasLower, hasUpper, hasDigit, hasSym].filter(Boolean).length
   if (types >= 3) score++
   if (types === 4 && password.length >= 12) score++
-  if (!hasLower) tips.push('Küçük harf ekleyin (a-z)')
-  if (!hasUpper) tips.push('Büyük harf ekleyin (A-Z)')
-  if (!hasDigit) tips.push('Rakam ekleyin (0-9)')
-  if (!hasSym) tips.push('Sembol ekleyin (!@#$ vs.)')
-  if (/(.)\1{3,}/.test(password)) { tips.push('Aynı karakter 4+ tekrarlamasın'); score = Math.max(0, score - 1) }
+  if (!hasLower) tips.push(t('ui.prof_tip_lower'))
+  if (!hasUpper) tips.push(t('ui.prof_tip_upper'))
+  if (!hasDigit) tips.push(t('ui.prof_tip_digit'))
+  if (!hasSym) tips.push(t('ui.prof_tip_symbol'))
+  if (/(.)\1{3,}/.test(password)) { tips.push(t('ui.prof_tip_repeat')); score = Math.max(0, score - 1) }
   const lower = password.toLowerCase()
   if (username && username.length >= 3 && lower.includes(username.toLowerCase())) {
-    tips.push('Kullanıcı adınızı kullanmayın')
+    tips.push(t('ui.prof_tip_username'))
     score = Math.max(0, score - 2)
   }
   const blacklistSubstrings = ['password', 'admin', 'qwerty', '123456', 'cargotrack', 'welcome', 'letmein']
   for (const b of blacklistSubstrings) {
-    if (lower.includes(b)) { tips.push(`"${b}" yaygın bir kelime, kullanmayın`); score = 0; break }
+    if (lower.includes(b)) { tips.push(t('ui.prof_tip_common', { word: b })); score = 0; break }
   }
   return { score: Math.min(4, Math.max(0, score)), tips }
 }
@@ -66,6 +70,7 @@ export function ProfilePage() {
   const { t } = useTranslation()
   const user = useAuth((s) => s.user)
   const role = user ? ROLE_LABELS[user.role] : null
+  const passwordSchema = useMemo(() => buildPasswordSchema(t), [t])
 
   const form = useForm<PasswordValues>({
     resolver: zodResolver(passwordSchema),
@@ -73,7 +78,7 @@ export function ProfilePage() {
   })
   const { register, handleSubmit, reset, watch, formState: { errors } } = form
   const newPwd = watch('new_password')
-  const strength = calcStrength(newPwd || '', user?.username)
+  const strength = calcStrength(newPwd || '', user?.username, t)
 
   const login = useAuth((s) => s.login)
   const passwordMut = useMutation({
@@ -124,7 +129,7 @@ export function ProfilePage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <UserIcon className="w-4 h-4" />
-            Hesap Bilgileri
+            {t('ui.prof_account_info')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -138,7 +143,7 @@ export function ProfilePage() {
               {role && (
                 <Badge variant={role.variant} className="mt-1">
                   <Shield className="w-3 h-3" />
-                  {role.label}
+                  {t(role.label)}
                 </Badge>
               )}
             </div>
@@ -146,17 +151,14 @@ export function ProfilePage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t">
             <InfoRow label={t('shipment.fields.email')} value={user?.email || '—'} />
-            <InfoRow label={t('auth.role')} value={role?.label || user?.role} />
-            <InfoRow label={t('common.status')} value={user?.status === 'active' ? 'Aktif' : 'Pasif'} />
+            <InfoRow label={t('auth.role')} value={role ? t(role.label) : user?.role} />
+            <InfoRow label={t('common.status')} value={user?.status === 'active' ? t('users.status_active') : t('users.status_inactive')} />
             <InfoRow label={t('users.last_login')} value={user?.last_login ? formatDate(user.last_login, true) : '—'} />
           </div>
 
           <div className="p-3 rounded-md bg-muted/30 border text-xs flex items-start gap-2 text-muted-foreground">
             <Info className="w-3.5 h-3.5 mt-0.5 shrink-0" />
-            <span>
-              Ad, e-posta veya rol değişikliği için sistem yöneticinizle iletişime geçin.
-              Sadece şifre kendiniz değiştirebilirsiniz.
-            </span>
+            <span>{t('ui.prof_contact_admin_hint')}</span>
           </div>
         </CardContent>
       </Card>
@@ -193,7 +195,7 @@ export function ProfilePage() {
                 id="new_password"
                 type="password"
                 autoComplete="new-password"
-                placeholder="Min 12 karakter, harf + rakam + sembol"
+                placeholder={t('ui.prof_new_password_ph')}
                 {...register('new_password')}
               />
               {errors.new_password && (
@@ -226,7 +228,7 @@ export function ProfilePage() {
                         : strength.score === 3 ? 'text-primary'
                         : 'text-success'
                     }`}>
-                      {['', 'Çok zayıf', 'Zayıf', 'Orta', 'Güçlü'][strength.score]}
+                      {['', t('ui.prof_strength_1'), t('ui.prof_strength_2'), t('ui.prof_strength_3'), t('ui.prof_strength_4')][strength.score]}
                     </span>
                   </div>
                   {strength.tips.length > 0 && (
@@ -255,7 +257,7 @@ export function ProfilePage() {
 
             <Button type="submit" disabled={passwordMut.isPending}>
               {passwordMut.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-              Şifreyi Güncelle
+              {t('ui.prof_update_password_btn')}
             </Button>
           </form>
         </CardContent>

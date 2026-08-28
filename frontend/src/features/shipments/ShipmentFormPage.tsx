@@ -403,8 +403,8 @@ export function ShipmentFormPage() {
     const list = fields.map((f) => labelForField(f)).join(', ')
     const firstMsg = (errs as Record<string, { message?: string }>)[fields[0]]?.message
     toast.error(
-      fields.length === 1 ? `${list}: ${firstMsg || 'geçersiz değer'}` : `Hatalı alanlar: ${list}`,
-      { description: 'Kayıt yapılmadı — ilgili sekmeye götürüldünüz.' }
+      fields.length === 1 ? `${list}: ${firstMsg || t('ui.shp_invalid_value')}` : t('ui.shp_invalid_fields', { list }),
+      { description: t('ui.shp_not_saved_moved_to_tab') }
     )
   }
 
@@ -462,7 +462,7 @@ export function ShipmentFormPage() {
                 <button
                   type="button"
                   onClick={goToFirstError}
-                  title={`Sorunlu alan(lar): ${errorFieldLabels.join(', ')} — tıklayınca ilgili sekmeye gider`}
+                  title={t('ui.shp_problem_fields_title', { list: errorFieldLabels.join(', ') })}
                   className="hidden md:flex items-center gap-1 text-xs text-destructive hover:underline max-w-[340px]"
                 >
                   <AlertCircle className="w-3.5 h-3.5 shrink-0" />
@@ -763,9 +763,8 @@ export function ShipmentFormPage() {
                 <div className="rounded-md border border-primary/30 bg-primary/5 p-3 flex items-start gap-2 text-xs">
                   <Boxes className="w-4 h-4 text-primary shrink-0 mt-0.5" />
                   <div>
-                    <strong className="text-primary">{goodsItems.length} kalemlik ürün listesi kullanılıyor.</strong>{' '}
-                    Kap adedi, ağırlıklar, hacim ve mal değeri aşağıdaki listeden otomatik hesaplanıyor;
-                    bu alanlar elle değiştirilemez. Değiştirmek için ürün listesindeki kalemleri düzenle.
+                    <strong className="text-primary">{t('ui.shp_goods_list_in_use', { n: goodsItems.length })}</strong>{' '}
+                    {t('ui.shp_goods_list_in_use_hint')}
                   </div>
                 </div>
               )}
@@ -774,8 +773,8 @@ export function ShipmentFormPage() {
                 {/* HS Kodu + Fransız Gümrük lookup butonu */}
                 <div className="space-y-1.5">
                   <Label htmlFor="hs_code">
-                    HS Kodu
-                    {hasGoodsItems && <span className="text-[10px] text-muted-foreground ml-1">(1. kalem)</span>}
+                    {t('ui.gds_hs_code')}
+                    {hasGoodsItems && <span className="text-[10px] text-muted-foreground ml-1">{t('ui.shp_first_item_suffix')}</span>}
                   </Label>
                   <div className="flex items-center gap-1">
                     <Input id="hs_code" {...register('hs_code')} placeholder={t('ui.orn_8703_23_10')} />
@@ -838,7 +837,7 @@ export function ShipmentFormPage() {
                   </div>
                 </div>
 
-                <Field label="Boyutlar" name="dimensions" register={register} errors={errors} placeholder="120x80x100 cm" />
+                <Field label={t('ui.shp_dimensions')} name="dimensions" register={register} errors={errors} placeholder="120x80x100 cm" />
                 <Field label={t('ui.kap_adedi')} name="quantity" register={register} errors={errors} type="number" readOnly={hasGoodsItems} />
                 <Field label={t('ui.paket_sayisi')} name="package_count" register={register} errors={errors} type="number" />
                 {/* Yukleme listesinde kap sayisinin altinda gosterilir */}
@@ -847,7 +846,7 @@ export function ShipmentFormPage() {
 
               {/* Paket Tipi — Combobox (UN R21 standart 377 kod) */}
               <div className="space-y-1.5">
-                <Label>Paket / Ambalaj Tipi</Label>
+                <Label>{t('ui.gds_package_type')}</Label>
                 <PackageTypeCombobox
                   value={watch('package_type') as string}
                   onChange={(v) => setValue('package_type', v, { shouldDirty: true })}
@@ -869,12 +868,12 @@ export function ShipmentFormPage() {
 
               <SectionTitle className="pt-4 border-t">{t('shipment.sections.special_conditions')}</SectionTitle>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <CheckboxField label="Tehlikeli Madde (ADR)" name="dangerous_goods" form={form} />
+                <CheckboxField label={t('ui.shp_dangerous_goods_adr')} name="dangerous_goods" form={form} />
                 <CheckboxField label={t('ui.sicaklik_kontrollu')} name="temperature_controlled" form={form} />
                 <CheckboxField label={t('ui.sigortali')} name="insurance" form={form} />
                 {watch('dangerous_goods') ? (
                   <div className="space-y-1.5 md:col-span-3">
-                    <Label>ADR / UN Kodu</Label>
+                    <Label>{t('ui.shp_adr_un_code')}</Label>
                     <ADRCodeCombobox
                       value={watch('adr_code') as string}
                       onChange={(v) => {
@@ -906,7 +905,7 @@ export function ShipmentFormPage() {
                     setValue('quantity', qty, { shouldDirty: true })
                     setValue('gross_weight', Number(weight.toFixed(2)), { shouldDirty: true })
                     if (volume > 0) setValue('volume_cbm', Number(volume.toFixed(3)), { shouldDirty: true })
-                    toast.success(`Yük alanları güncellendi: ${qty} kap / ${weight.toFixed(1)} kg`)
+                    toast.success(t('ui.shp_cargo_fields_updated', { qty, weight: weight.toFixed(1) }))
                   }}
                 />
               </div>
@@ -938,7 +937,7 @@ export function ShipmentFormPage() {
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-3">
                   <Field label={t('ui.toplam_alis_ozet')} name="purchase_price" register={register} errors={errors} type="number" step="0.01" />
                   <Field label={t('ui.toplam_satis_ozet')} name="sale_price" register={register} errors={errors} type="number" step="0.01" />
-                  <ReadonlyField label="Net (otomatik)" value={
+                  <ReadonlyField label={t('ui.shp_net_auto')} value={
                     ((Number(watch('sale_price')) || 0) - (Number(watch('purchase_price')) || 0)).toFixed(2)
                   } currency={watch('currency_code') || 'EUR'} />
                 </div>
@@ -977,11 +976,11 @@ export function ShipmentFormPage() {
                         <FileWarning className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
                         <div>
                           <div className="font-semibold text-destructive">
-                            {missingRequired.length} zorunlu belge eksik:
+                            {t('ui.shp_required_docs_missing', { n: missingRequired.length })}
                           </div>
                           <ul className="mt-1 text-xs space-y-0.5">
                             {missingRequired.map((d) => (
-                              <li key={d.key}>• {d.label}</li>
+                              <li key={d.key}>• {t(d.label)}</li>
                             ))}
                           </ul>
                         </div>
@@ -1100,17 +1099,17 @@ export function ShipmentFormPage() {
                       <div>
                         <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">{t('ui.toplam_adet')}</div>
                         <div className="text-2xl font-bold">{dispatchSummary.totalQty}</div>
-                        <div className="text-[10px] text-muted-foreground">kap</div>
+                        <div className="text-[10px] text-muted-foreground">{t('ui.shp_unit_pkg')}</div>
                       </div>
                       <div>
                         <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">{t('ui.atanmis')}</div>
                         <div className="text-2xl font-bold text-success">{dispatchSummary.assignedQty}</div>
-                        <div className="text-[10px] text-muted-foreground">kap</div>
+                        <div className="text-[10px] text-muted-foreground">{t('ui.shp_unit_pkg')}</div>
                       </div>
                       <div>
                         <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">{t('ui.atanmamis')}</div>
                         <div className="text-2xl font-bold text-warning">{dispatchSummary.unassignedQty}</div>
-                        <div className="text-[10px] text-muted-foreground">kap</div>
+                        <div className="text-[10px] text-muted-foreground">{t('ui.shp_unit_pkg')}</div>
                       </div>
                       <div>
                         <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">{t('ui.ilerleme')}</div>
@@ -1124,7 +1123,7 @@ export function ShipmentFormPage() {
 
                   <Card className="p-5 space-y-3">
                     <div className="flex items-center justify-between">
-                      <SectionTitle>Araç Atamaları ({assignments.length})</SectionTitle>
+                      <SectionTitle>{t('ui.shp_vehicle_assignments_count', { n: assignments.length })}</SectionTitle>
                       <Button asChild type="button" size="sm" variant="outline">
                         <Link to="/assignments" target="_blank">
                           <ExternalLink className="w-3.5 h-3.5" />
@@ -1144,11 +1143,11 @@ export function ShipmentFormPage() {
                             <div className="flex-1 min-w-0">
                               <div className="text-sm font-mono font-medium">{a.plate}</div>
                               <div className="text-xs text-muted-foreground">
-                                {a.driver_name || '—'} · {a.loading_date || 'Yükleme tarihi yok'}
+                                {a.driver_name || '—'} · {a.loading_date || t('ui.shp_no_loading_date')}
                               </div>
                             </div>
                             <div className="text-right text-xs">
-                              <div className="font-medium">{a.assigned_quantity} kap</div>
+                              <div className="font-medium">{a.assigned_quantity} {t('ui.shp_unit_pkg')}</div>
                               <div className="text-muted-foreground">{Number(a.assigned_weight).toFixed(0)} kg</div>
                             </div>
                           </div>
@@ -1236,12 +1235,13 @@ type FieldProps = {
 }
 
 function Field({ label, name, register, errors, className, readOnly, ...rest }: FieldProps) {
+  const { t } = useTranslation()
   const err = (errors as Record<string, { message?: string } | undefined>)[name as string]
   return (
     <div className={cn('space-y-1.5', className)}>
       <Label htmlFor={name as string}>
         {label}
-        {readOnly && <span className="text-[10px] text-muted-foreground ml-1">(otomatik)</span>}
+        {readOnly && <span className="text-[10px] text-muted-foreground ml-1">{t('ui.shp_auto_suffix')}</span>}
       </Label>
       <Input
         id={name as string}
@@ -1285,7 +1285,7 @@ function TabSaveBar({
           className="flex items-center gap-1 text-xs text-destructive mr-auto hover:underline text-left"
         >
           <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-          <span>Düzeltilmesi gereken: {errorLabels.join(', ')}</span>
+          <span>{t('ui.shp_needs_fix', { list: errorLabels.join(', ') })}</span>
         </button>
       )}
       <span className="text-xs text-muted-foreground hidden sm:inline">
@@ -1305,12 +1305,13 @@ function TabSaveBar({
 function FieldWithSuffix({
   label, name, register, errors, suffix, type, step, placeholder, className, readOnly,
 }: FieldProps & { suffix: string }) {
+  const { t } = useTranslation()
   const err = (errors as Record<string, { message?: string } | undefined>)[name as string]
   return (
     <div className={cn('space-y-1.5', className)}>
       <Label htmlFor={name as string}>
         {label}
-        {readOnly && <span className="text-[10px] text-muted-foreground ml-1">(otomatik)</span>}
+        {readOnly && <span className="text-[10px] text-muted-foreground ml-1">{t('ui.shp_auto_suffix')}</span>}
       </Label>
       <div className="relative">
         <Input
@@ -1337,6 +1338,7 @@ function FieldWithSuffix({
  * (DB her zaman m³ saklar). UI hangi birimde girildiğini kullanıcıya gösterir.
  */
 function VolumeField({ form, readOnly }: { form: ReturnType<typeof useForm<ShipmentFormValues>>; readOnly?: boolean }) {
+  const { t } = useTranslation()
   const { watch, setValue, register } = form
   const [unit, setUnit] = useState<'m3' | 'litre' | 'ft3'>('m3')
   const currentM3 = Number(watch('volume_cbm') || 0)
@@ -1348,8 +1350,8 @@ function VolumeField({ form, readOnly }: { form: ReturnType<typeof useForm<Shipm
   return (
     <div className="space-y-1.5">
       <Label htmlFor="volume_cbm">
-        Hacim
-        {readOnly && <span className="text-[10px] text-muted-foreground ml-1">(otomatik)</span>}
+        {t('vehicle.volume')}
+        {readOnly && <span className="text-[10px] text-muted-foreground ml-1">{t('ui.shp_auto_suffix')}</span>}
       </Label>
       <div className="flex items-center gap-1">
         <div className="relative flex-1">
@@ -1373,14 +1375,14 @@ function VolumeField({ form, readOnly }: { form: ReturnType<typeof useForm<Shipm
           <SelectTrigger className="w-[80px] h-9 shrink-0"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="m3">m³</SelectItem>
-            <SelectItem value="litre">litre</SelectItem>
+            <SelectItem value="litre">{t('ui.shp_unit_litre')}</SelectItem>
             <SelectItem value="ft3">ft³</SelectItem>
           </SelectContent>
         </Select>
       </div>
       {unit !== 'm3' && currentM3 > 0 && (
         <p className="text-[10px] text-muted-foreground">
-          = {currentM3.toFixed(3)} m³ (depolama)
+          {t('ui.shp_volume_stored_hint', { value: currentM3.toFixed(3) })}
         </p>
       )}
     </div>
@@ -1451,8 +1453,8 @@ function TransitStorageCard({
             <SelectContent>
               <SelectItem value="__inherit__">
                 {warehouseTypeFromDb
-                  ? `Depodan otomatik (${warehouseTypeFromDb})`
-                  : 'Belirtilmedi'}
+                  ? t('ui.shp_auto_from_warehouse', { code: warehouseTypeFromDb })
+                  : t('shipment.not_specified')}
               </SelectItem>
               {WAREHOUSE_TYPES_REF.map((w) => (
                 <SelectItem key={w.code} value={w.code}>
@@ -1470,7 +1472,7 @@ function TransitStorageCard({
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="transit_doc_no">Transit Evrak No</Label>
+          <Label htmlFor="transit_doc_no">{t('ui.shp_transit_doc_no')}</Label>
           <Input
             id="transit_doc_no"
             value={(storageData.transit_doc_no as string) || ''}
@@ -1497,7 +1499,7 @@ function TransitStorageCard({
           <div className="text-xs">
             <div className="font-semibold text-destructive">{t('ui.transit_suresi_doldu')}</div>
             <div className="text-muted-foreground">
-              Son tarih {formatDateTr(expiryAlert.expDate)} — {Math.abs(expiryAlert.daysLeft)} gün gecikme
+              {t('ui.shp_transit_expired_detail', { date: formatDateTr(expiryAlert.expDate), days: Math.abs(expiryAlert.daysLeft) })}
             </div>
           </div>
         </div>
@@ -1509,8 +1511,8 @@ function TransitStorageCard({
             <div className="font-semibold text-warning">{t('ui.transit_suresi_yakinda_doluyor')}</div>
             <div className="text-muted-foreground">
               {expiryAlert.daysLeft === 0
-                ? 'Bugün son gün'
-                : `${expiryAlert.daysLeft} gün kaldı`}
+                ? t('ui.shp_today_last_day')
+                : t('ui.shp_days_left', { days: expiryAlert.daysLeft })}
               {' '}({formatDateTr(expiryAlert.expDate)})
             </div>
           </div>

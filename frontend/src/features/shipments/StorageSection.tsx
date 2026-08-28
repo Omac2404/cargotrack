@@ -125,7 +125,7 @@ export function StorageSection({
             transitAlert.severity === 'info' && 'text-primary',
           )} />
           <div className="flex-1">
-            <div className="font-semibold text-sm">{transitAlert.message}</div>
+            <div className="font-semibold text-sm">{t(transitAlert.message_key, transitAlert.message_params)}</div>
             {transitAlert.expiry_date && (
               <div className="text-xs text-muted-foreground mt-1">
                 {t('ui.son_gecerlilik')} <strong>{formatDate(transitAlert.expiry_date)}</strong>
@@ -138,7 +138,7 @@ export function StorageSection({
             variant="ghost"
             onClick={() => updateStorageData({ transit_alert_dismissed: true })}
           >
-            Tamam
+            {t('ui.stg_ok')}
           </Button>
         </Card>
       )}
@@ -149,11 +149,11 @@ export function StorageSection({
           <div className="flex items-center gap-2">
             <Package className="w-4 h-4 text-primary" />
             <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Depolama Bedeli (otomatik)
+              {t('ui.stg_storage_cost_auto')}
             </span>
           </div>
           <Badge variant="outline">
-            {storageCost.days} gün / {storageCost.weeks} hafta / {storageCost.months} ay
+            {t('ui.stg_duration_summary', { days: storageCost.days, weeks: storageCost.weeks, months: storageCost.months })}
           </Badge>
         </div>
         <div className="grid grid-cols-3 gap-3 mb-3">
@@ -161,9 +161,9 @@ export function StorageSection({
           <CostCard label={t('shipment.storage_pricing.weekly')} total={storageCost.weekly_total} active={pricingType === 'hafta'} sym={sym} />
           <CostCard label={t('shipment.storage_pricing.monthly')} total={storageCost.monthly_total} active={pricingType === 'ay'} sym={sym} />
         </div>
-        {storageCost.formula && (
+        {storageCost.formula_params && (
           <div className="text-xs text-muted-foreground italic flex items-center gap-1.5">
-            <Info className="w-3 h-3" /> {storageCost.formula}
+            <Info className="w-3 h-3" /> {t('ui.stg_cost_formula', { ...storageCost.formula_params, unit: t(storageCost.formula_params.unit) })}
           </div>
         )}
       </Card>
@@ -174,7 +174,7 @@ export function StorageSection({
           <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             {t('ui.ellecleme_kalemleri_kdv')}
           </span>
-          <Badge variant="outline">Para birimi: {currency}</Badge>
+          <Badge variant="outline">{t('fin.ui.currency')}: {currency}</Badge>
         </div>
         <div className="overflow-x-auto rounded border">
           <table className="w-full text-sm">
@@ -184,16 +184,16 @@ export function StorageSection({
                   {t('fin.ui.item')}
                 </th>
                 <th className="text-right px-2 py-2 text-[10px] font-semibold uppercase text-success">
-                  Satış ({sym})
+                  {t('ui.stg_sales_col', { sym })}
                 </th>
                 <th className="text-center px-2 py-2 text-[10px] font-semibold uppercase text-success w-[100px]">
-                  KDV %
+                  {t('ui.stg_vat_pct')}
                 </th>
                 <th className="text-right px-2 py-2 text-[10px] font-semibold uppercase text-destructive">
-                  Maliyet ({sym})
+                  {t('ui.stg_cost_col', { sym })}
                 </th>
                 <th className="text-center px-2 py-2 text-[10px] font-semibold uppercase text-destructive w-[100px]">
-                  KDV %
+                  {t('ui.stg_vat_pct')}
                 </th>
               </tr>
             </thead>
@@ -202,7 +202,7 @@ export function StorageSection({
                 <HandlingRow
                   key={item.key}
                   itemKey={item.key}
-                  label={item.label}
+                  label={t(item.label)}
                   data={handlingData}
                   onChange={(patch) => updateStorageData({ ell: { ...handlingData, ...patch } })}
                 />
@@ -241,18 +241,18 @@ export function StorageSection({
       <Card className="p-4 space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-            <Clock className="w-3.5 h-3.5" /> Stok Hareketleri
+            <Clock className="w-3.5 h-3.5" /> {t('ui.stg_stock_movements')}
           </span>
           <div className="flex items-center gap-2 text-xs">
             <Badge variant="success" className="gap-1">
               <ArrowUpCircle className="w-3 h-3" />
-              Giriş: {stockSummary.totalIn}
+              {t('ui.stg_in_label')}: {stockSummary.totalIn}
             </Badge>
             <Badge variant="destructive" className="gap-1">
               <ArrowDownCircle className="w-3 h-3" />
-              Çıkış: {stockSummary.totalOut}
+              {t('ui.stg_out_label')}: {stockSummary.totalOut}
             </Badge>
-            <Badge variant="default">Bakiye: {stockSummary.currentStock}</Badge>
+            <Badge variant="default">{t('ui.stg_balance')}: {stockSummary.currentStock}</Badge>
           </div>
         </div>
 
@@ -378,11 +378,11 @@ function StockLogEditor({ log, onChange }: { log: StockMovement[]; onChange: (ne
     const outN = parseInt(outQty || '0', 10) || 0
     if (!entryDate && !inN && !outN) return
     if (!inN && !outN) {
-      alert('Giriş veya çıkış miktarı girin')
+      alert(t('ui.stg_err_enter_qty'))
       return
     }
     if (exitDate && entryDate && exitDate < entryDate) {
-      alert('Çıkış tarihi giriş tarihinden önce olamaz')
+      alert(t('ui.stg_err_exit_before_entry'))
       return
     }
     const next = [...log, {
@@ -436,7 +436,7 @@ function StockLogEditor({ log, onChange }: { log: StockMovement[]; onChange: (ne
           <Input type="number" min="0" value={outQty} onChange={(e) => setOutQty(e.target.value)} className="h-8 text-right tabular-nums" />
         </div>
         <div className="space-y-1 col-span-2 md:col-span-1">
-          <Label className="text-[10px]">Not (ops.)</Label>
+          <Label className="text-[10px]">{t('ui.stg_note_optional')}</Label>
           <Input value={note} onChange={(e) => setNote(e.target.value)} className="h-8 text-xs" placeholder="..." />
         </div>
         <div className="flex items-end">
@@ -457,13 +457,13 @@ function StockLogEditor({ log, onChange }: { log: StockMovement[]; onChange: (ne
           <table className="w-full text-xs">
             <thead className="bg-muted/40 border-b">
               <tr>
-                <th className="text-left px-2 py-1.5 text-success font-semibold">{t('audit.actions.login')}</th>
-                <th className="text-left px-2 py-1.5 text-destructive font-semibold">{t('audit.actions.logout')}</th>
-                <th className="text-center px-2 py-1.5 text-teal-600 font-semibold">Bekleme</th>
+                <th className="text-left px-2 py-1.5 text-success font-semibold">{t('ui.stg_in_label')}</th>
+                <th className="text-left px-2 py-1.5 text-destructive font-semibold">{t('ui.stg_out_label')}</th>
+                <th className="text-center px-2 py-1.5 text-teal-600 font-semibold">{t('ui.stg_waiting')}</th>
                 <th className="text-center px-2 py-1.5 text-success font-semibold">{t('ui.giris_kap')}</th>
                 <th className="text-center px-2 py-1.5 text-destructive font-semibold">{t('ui.cikis_kap')}</th>
-                <th className="text-center px-2 py-1.5 text-primary font-semibold">Bakiye</th>
-                <th className="text-left px-2 py-1.5 text-muted-foreground font-semibold">Not</th>
+                <th className="text-center px-2 py-1.5 text-primary font-semibold">{t('ui.stg_balance')}</th>
+                <th className="text-left px-2 py-1.5 text-muted-foreground font-semibold">{t('ui.stg_note')}</th>
                 <th className="w-8"></th>
               </tr>
             </thead>
@@ -479,7 +479,7 @@ function StockLogEditor({ log, onChange }: { log: StockMovement[]; onChange: (ne
                   <td className="px-2 py-1 text-center">
                     {r.days !== null ? (
                       <span className={r.ongoing ? 'text-warning font-medium' : 'text-teal-600 font-medium'}>
-                        {r.days} gün {r.ongoing && '⏱'}
+                        {t('ui.stg_days_n', { n: r.days })} {r.ongoing && '⏱'}
                       </span>
                     ) : <span className="text-muted-foreground">—</span>}
                   </td>

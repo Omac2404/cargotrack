@@ -23,7 +23,10 @@ function defaultDates() {
   }
 }
 
-const MODE_LABELS: Record<string, string> = { road: 'Karayolu', sea: 'Denizyolu', air: 'Havayolu' }
+// i18n anahtarları — t() render anında çağrılır
+const MODE_LABEL_KEYS: Record<string, string> = {
+  road: 'transport.modes.road', sea: 'transport.modes.sea', air: 'transport.modes.air',
+}
 
 export function VehicleUtilReport() {
   const { t } = useTranslation()
@@ -46,22 +49,22 @@ export function VehicleUtilReport() {
           <Input type="date" value={end} onChange={(e) => setRange((r) => ({ ...r, end: e.target.value }))} className="h-8 w-[160px]" />
         </div>
         <div className="text-xs text-muted-foreground">
-          {data.vehicles.length} araç · {data.vehicles.reduce((s, v) => s + v.assignment_count, 0)} toplam atama
+          {t('ui.rep_vehicles_summary', { vehicles: data.vehicles.length, count: data.vehicles.reduce((s, v) => s + v.assignment_count, 0) })}
         </div>
         <div className="ml-auto">
           <ExportButton
             data={data.vehicles as unknown as Record<string, unknown>[]}
             filename={`arac_doluluk_${start}_${end}`}
-            sheetName="Araç Doluluk"
+            sheetName={t('reports.vehicle_utilization')}
             columns={[
-              { header: 'Kod', key: 'vehicle_code' },
-              { header: 'Plaka', key: 'plate' },
-              { header: 'Mod', key: 'transport_type', format: (v) => MODE_LABELS[v as string] || String(v ?? '') },
-              { header: 'Kapasite (kg)', key: 'capacity_kg', format: (v) => exportFormatters.number(v) },
-              { header: 'Atama Sayısı', key: 'assignment_count' },
-              { header: 'Toplam Kap', key: 'total_quantity' },
-              { header: 'Toplam Ağırlık (kg)', key: 'total_weight', format: (v) => exportFormatters.number(v) },
-              { header: 'Ortalama Doluluk %', key: 'avg_utilization', format: (v) => exportFormatters.number(v, 1) },
+              { header: t('archive.columns.code'), key: 'vehicle_code' },
+              { header: t('vehicle.plate'), key: 'plate' },
+              { header: t('reports.mode'), key: 'transport_type', format: (v) => { const k = MODE_LABEL_KEYS[v as string]; return k ? t(k) : String(v ?? '') } },
+              { header: t('transport.vehicle_labels.capacity'), key: 'capacity_kg', format: (v) => exportFormatters.number(v) },
+              { header: t('ui.atama_sayisi'), key: 'assignment_count' },
+              { header: t('ui.toplam_kap'), key: 'total_quantity' },
+              { header: t('ui.rep_total_weight_kg'), key: 'total_weight', format: (v) => exportFormatters.number(v) },
+              { header: t('ui.rep_avg_util_pct'), key: 'avg_utilization', format: (v) => exportFormatters.number(v, 1) },
             ]}
           />
         </div>
@@ -77,7 +80,7 @@ export function VehicleUtilReport() {
               <TableHead className="text-right">{t('statistics.table.assignment')}</TableHead>
               <TableHead className="text-right">{t('ui.toplam_kap')}</TableHead>
               <TableHead className="text-right">{t('ui.toplam_agirlik')}</TableHead>
-              <TableHead className="w-[180px]">Ortalama Doluluk</TableHead>
+              <TableHead className="w-[180px]">{t('ui.rep_avg_util')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -91,7 +94,7 @@ export function VehicleUtilReport() {
                     <div className="text-[10px] text-muted-foreground">{v.vehicle_code}</div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline" className="text-xs">{MODE_LABELS[v.transport_type] || v.transport_type}</Badge>
+                    <Badge variant="outline" className="text-xs">{MODE_LABEL_KEYS[v.transport_type] ? t(MODE_LABEL_KEYS[v.transport_type]) : v.transport_type}</Badge>
                   </TableCell>
                   <TableCell className="text-right tabular-nums text-xs">{formatNumber(v.capacity_kg, 0)} kg</TableCell>
                   <TableCell className="text-right tabular-nums">{v.assignment_count}</TableCell>

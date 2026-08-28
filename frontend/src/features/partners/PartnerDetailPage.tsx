@@ -174,26 +174,26 @@ export function PartnerDetailPage() {
         <TabsContent value="shipments" className="mt-4 space-y-4">
           <Card className="p-3 flex items-center justify-between gap-2 text-xs text-muted-foreground">
             <div>
-              {shipments.length} sevkiyat ·
-              Ciro: <strong className="text-foreground">{formatMoney(summary?.total_sale || 0, 'EUR')}</strong> ·
+              {t('ui.prt_shipments_count', { count: shipments.length })} ·
+              {t('statistics.table.revenue')}: <strong className="text-foreground">{formatMoney(summary?.total_sale || 0, 'EUR')}</strong> ·
               {t('ui.faturali')}: <strong className="text-foreground">{formatMoney(summary?.total_invoiced || 0, 'EUR')}</strong>
             </div>
             <ExportButton
               data={shipments as unknown as Record<string, unknown>[]}
               filename={`partner_${partner.company_name.replace(/[^a-zA-Z0-9]/g, '_')}_sevkiyatlar`}
-              sheetName="Sevkiyatlar"
+              sheetName={t('nav.shipments')}
               columns={[
-                { header: 'Sevkiyat No', key: 'shipment_no' },
-                { header: 'Tarih', key: 'created_date', format: exportFormatters.date },
+                { header: t('shipment.shipment_no'), key: 'shipment_no' },
+                { header: t('common.date'), key: 'created_date', format: exportFormatters.date },
                 { header: t('vehicle.transport_type'), key: 'transport_type', format: (v) => t(`transport.modes.${MODE_I18N[v as string] || v}`, { defaultValue: String(v ?? '') }) },
-                { header: 'Durum', key: 'status', format: (v) => STATUS_LABELS[v as string]?.label || String(v ?? '') },
+                { header: t('common.status'), key: 'status', format: (v) => { const k = STATUS_LABELS[v as string]?.label; return k ? t(k) : String(v ?? '') } },
                 { header: t('shipment.fields.departure_country'), key: 'departure_country' },
                 { header: t('shipment.fields.arrival_country'), key: 'arrival_country' },
                 { header: t('shipment.financial.total_purchase'), key: 'purchase_price', format: (v) => exportFormatters.number(v) },
                 { header: t('shipment.financial.total_sale'), key: 'sale_price', format: (v) => exportFormatters.number(v) },
-                { header: 'Para Birimi', key: 'currency_code' },
-                { header: 'Fatura No', key: 'invoice_no' },
-                { header: 'Fatura Tarihi', key: 'invoice_date', format: exportFormatters.date },
+                { header: t('shipment.fields.currency'), key: 'currency_code' },
+                { header: t('invoice.invoice_no'), key: 'invoice_no' },
+                { header: t('invoice.invoice_date'), key: 'invoice_date', format: exportFormatters.date },
                 { header: t('ui.odendi'), key: 'payment_received', format: exportFormatters.yesNo },
               ]}
             />
@@ -241,7 +241,7 @@ export function PartnerDetailPage() {
                     if (s.client_billing === partner.company_name) roles.push(t('partner.types.customer'))
                     if (s.sender === partner.company_name) roles.push(t('partner.types.sender'))
                     if (s.receiver === partner.company_name) roles.push(t('partner.types.receiver'))
-                    if (s.agent === partner.company_name) roles.push('Acente')
+                    if (s.agent === partner.company_name) roles.push(t('partner.types.agent'))
                     return (
                       <TableRow
                         key={s.id}
@@ -271,7 +271,7 @@ export function PartnerDetailPage() {
                           {formatMoney(profit, s.currency_code || 'EUR')}
                         </TableCell>
                         <TableCell>
-                          {status && <Badge variant={status.variant}>{status.label}</Badge>}
+                          {status && <Badge variant={status.variant}>{t(status.label)}</Badge>}
                         </TableCell>
                         <TableCell className="text-xs">
                           {s.invoice_generated ? (

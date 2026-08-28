@@ -21,14 +21,15 @@ import { formatMoney, formatNumber } from '@/lib/utils'
 const CURRENT_YEAR = new Date().getFullYear()
 const YEARS = Array.from({ length: 5 }, (_, i) => CURRENT_YEAR - i)
 
+// i18n anahtarları — t() render anında çağrılır
 const MODES = [
-  { value: '__all__', label: 'Tüm Modlar' },
-  { value: 'road', label: 'Karayolu' },
-  { value: 'maritime', label: 'Denizyolu' },
-  { value: 'air', label: 'Havayolu' },
-  { value: 'storage', label: 'Depolama' },
-  { value: 'import', label: 'İthalat' },
-  { value: 'export', label: 'İhracat' },
+  { value: '__all__', labelKey: 'reports.all_modes' },
+  { value: 'road', labelKey: 'transport.modes.road' },
+  { value: 'maritime', labelKey: 'transport.modes.maritime' },
+  { value: 'air', labelKey: 'transport.modes.air' },
+  { value: 'storage', labelKey: 'transport.modes.storage' },
+  { value: 'import', labelKey: 'transport.modes.import' },
+  { value: 'export', labelKey: 'transport.modes.export' },
 ]
 
 export function MonthlyRevenueReport() {
@@ -62,7 +63,7 @@ export function MonthlyRevenueReport() {
           <Select value={mode} onValueChange={setMode}>
             <SelectTrigger className="h-8 w-[140px]"><SelectValue /></SelectTrigger>
             <SelectContent>
-              {MODES.map((m) => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
+              {MODES.map((m) => <SelectItem key={m.value} value={m.value}>{t(m.labelKey)}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
@@ -70,14 +71,14 @@ export function MonthlyRevenueReport() {
           <ExportButton
             data={series as unknown as Record<string, unknown>[]}
             filename={`aylik_ciro_${year}_${mode === '__all__' ? 'tumu' : mode}`}
-            sheetName="Aylık Ciro"
+            sheetName={t('reports.monthly_revenue')}
             columns={[
-              { header: 'Ay', key: 'month_name' },
-              { header: 'Sevkiyat Sayısı', key: 'shipment_count' },
-              { header: 'Toplam Satış (EUR)', key: 'total_sale', format: (v) => exportFormatters.number(v) },
-              { header: 'Toplam Alış (EUR)', key: 'total_purchase', format: (v) => exportFormatters.number(v) },
-              { header: 'Kâr (EUR)', key: 'profit', format: (v) => exportFormatters.number(v) },
-              { header: 'Marj %', key: 'margin', format: (v) => exportFormatters.number(v, 2) },
+              { header: t('ui.rep_month'), key: 'month_name' },
+              { header: t('ui.rep_shipment_count'), key: 'shipment_count' },
+              { header: t('ui.rep_total_sale_eur'), key: 'total_sale', format: (v) => exportFormatters.number(v) },
+              { header: t('ui.rep_total_purchase_eur'), key: 'total_purchase', format: (v) => exportFormatters.number(v) },
+              { header: t('ui.rep_profit_eur'), key: 'profit', format: (v) => exportFormatters.number(v) },
+              { header: t('transport.columns.margin'), key: 'margin', format: (v) => exportFormatters.number(v, 2) },
             ]}
           />
         </div>
@@ -85,9 +86,9 @@ export function MonthlyRevenueReport() {
 
       {/* Özet kartlar */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        <SummaryCard label={t('statistics.table.shipment')} value={String(totals.shipment_count)} sub="adet" />
+        <SummaryCard label={t('statistics.table.shipment')} value={String(totals.shipment_count)} sub={t('ui.rep_unit_pcs')} />
         <SummaryCard label={t('statistics.table.revenue')} value={formatMoney(totals.total_sale, 'EUR')} variant="success" />
-        <SummaryCard label="Maliyet" value={formatMoney(totals.total_purchase, 'EUR')} variant="destructive" />
+        <SummaryCard label={t('ui.rep_cost')} value={formatMoney(totals.total_purchase, 'EUR')} variant="destructive" />
         <SummaryCard label={t('statistics.table.profit')} value={formatMoney(totals.profit, 'EUR')} variant={totals.profit >= 0 ? 'success' : 'destructive'} />
         <SummaryCard label={t('statistics.summary.margin')} value={`%${formatNumber(totals.margin, 1)}`} variant={totals.margin >= 15 ? 'success' : totals.margin >= 5 ? 'warning' : 'destructive'} />
       </div>
@@ -95,7 +96,7 @@ export function MonthlyRevenueReport() {
       {/* Bar grafik: aylık ciro vs maliyet */}
       <Card className="p-4">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-          Aylık Ciro / Maliyet / Kâr ({year})
+          {t('ui.rep_monthly_rev_cost_profit', { year })}
         </h3>
         <ResponsiveContainer width="100%" height={280}>
           <BarChart data={series}>
@@ -104,9 +105,9 @@ export function MonthlyRevenueReport() {
             <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `${Math.round(v / 1000)}K`} />
             <Tooltip formatter={((v: unknown) => formatMoney(Number(v), 'EUR')) as never} />
             <Legend wrapperStyle={{ fontSize: 11 }} />
-            <Bar dataKey="total_sale" name="Ciro" fill="hsl(var(--primary))" />
-            <Bar dataKey="total_purchase" name="Maliyet" fill="hsl(var(--destructive) / 0.7)" />
-            <Bar dataKey="profit" name="Kâr" fill="hsl(var(--success))" />
+            <Bar dataKey="total_sale" name={t('statistics.table.revenue')} fill="hsl(var(--primary))" />
+            <Bar dataKey="total_purchase" name={t('ui.rep_cost')} fill="hsl(var(--destructive) / 0.7)" />
+            <Bar dataKey="profit" name={t('statistics.table.profit')} fill="hsl(var(--success))" />
           </BarChart>
         </ResponsiveContainer>
       </Card>
@@ -114,7 +115,7 @@ export function MonthlyRevenueReport() {
       {/* Line grafik: marj trendi */}
       <Card className="p-4">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-          Marj Trendi (%) — {year}
+          {t('ui.rep_margin_trend', { year })}
         </h3>
         <ResponsiveContainer width="100%" height={200}>
           <LineChart data={series}>
@@ -122,7 +123,7 @@ export function MonthlyRevenueReport() {
             <XAxis dataKey="month_name" tick={{ fontSize: 11 }} />
             <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `%${v.toFixed(0)}`} />
             <Tooltip formatter={((v: unknown) => `%${Number(v).toFixed(2)}`) as never} />
-            <Line type="monotone" dataKey="margin" name="Marj" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 4 }} />
+            <Line type="monotone" dataKey="margin" name={t('statistics.summary.margin')} stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 4 }} />
           </LineChart>
         </ResponsiveContainer>
       </Card>
@@ -132,10 +133,10 @@ export function MonthlyRevenueReport() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Ay</TableHead>
+              <TableHead>{t('ui.rep_month')}</TableHead>
               <TableHead className="text-right">{t('statistics.table.shipment')}</TableHead>
               <TableHead className="text-right">{t('statistics.table.revenue')}</TableHead>
-              <TableHead className="text-right">Maliyet</TableHead>
+              <TableHead className="text-right">{t('ui.rep_cost')}</TableHead>
               <TableHead className="text-right">{t('statistics.table.profit')}</TableHead>
               <TableHead className="text-right">{t('statistics.summary.margin')}</TableHead>
             </TableRow>

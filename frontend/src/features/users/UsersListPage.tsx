@@ -45,7 +45,7 @@ export function UsersListPage() {
     if (!deleteTarget) return
     deleteMut.mutate(deleteTarget.id, {
       onSuccess: () => {
-        toast.success(`${deleteTarget.full_name} silindi`)
+        toast.success(t('ui.usr_deleted', { name: deleteTarget.full_name }))
         setDeleteTarget(null)
       },
       onError: (err: Error) => toast.error(err.message),
@@ -124,7 +124,7 @@ export function UsersListPage() {
                     </TableCell>
                     <TableCell className="font-medium">{u.full_name}</TableCell>
                     <TableCell className="text-xs text-muted-foreground">{u.email || '—'}</TableCell>
-                    <TableCell><Badge variant={role.variant}>{t(`auth.roles.${u.role}`, role.label)}</Badge></TableCell>
+                    <TableCell><Badge variant={role.variant}>{t(role.label)}</Badge></TableCell>
                     <TableCell>
                       <Badge variant={u.status === 'active' ? 'success' : 'secondary'}>
                         {u.status === 'active' ? t('users.status_active') : t('users.status_inactive')}

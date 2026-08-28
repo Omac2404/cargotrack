@@ -45,7 +45,7 @@ export function ADRCodeCombobox({
         opts.push({
           value: info.code,
           label: `${info.code} — ${info.name}`,
-          description: `★ Son kullanılan · ${ADR_CLASS_LABELS[info.class] || `Sınıf ${info.class}`}`,
+          description: `★ ${t('ui.shp_adr_recent')} · ${ADR_CLASS_LABELS[info.class] || t('ui.shp_adr_class', { cls: info.class })}`,
         })
       }
     }
@@ -56,11 +56,11 @@ export function ADRCodeCombobox({
       opts.push({
         value: code.code,
         label: `${code.code} — ${code.name}`,
-        description: ADR_CLASS_LABELS[code.class] || `Sınıf ${code.class}`,
+        description: ADR_CLASS_LABELS[code.class] || t('ui.shp_adr_class', { cls: code.class }),
       })
     }
     return opts
-  }, [])
+  }, [t])
 
   return (
     <Combobox
@@ -69,7 +69,7 @@ export function ADRCodeCombobox({
       options={options}
       placeholder={placeholder}
       searchPlaceholder={t('ui.un_kodu_veya_madde_ismi_ara')}
-      emptyMessage="Listede yok — kendi kodunuzu yazıp Enter'a basın"
+      emptyMessage={t('ui.listede_yok_kendi_kodunuzu_yazip_enter')}
       disabled={disabled}
       className={className}
       allowCustom

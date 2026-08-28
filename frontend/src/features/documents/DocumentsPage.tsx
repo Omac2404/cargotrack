@@ -72,7 +72,7 @@ export function DocumentsPage() {
     uploadMut.mutate(
       { shipmentId: selectedId, docKey, file },
       {
-        onSuccess: () => toast.success(`${file.name} yüklendi`),
+        onSuccess: () => toast.success(t('ui.doc_uploaded', { name: file.name })),
         onError: (err: Error) => toast.error(err.message),
       }
     )
@@ -106,7 +106,7 @@ export function DocumentsPage() {
     const extras = Object.keys(docs).filter((k) => !stdKeys.has(k))
     return [
       ...STANDARD_DOC_SLOTS,
-      ...extras.map((k) => ({ key: k, label: k, description: 'Özel belge' })),
+      ...extras.map((k) => ({ key: k, label: k, description: 'ui.doc_custom', raw: true })),
     ]
   }, [docs])
 
@@ -188,10 +188,10 @@ export function DocumentsPage() {
                       <div className="space-y-0.5 min-w-0 flex-1">
                         <div className="flex items-center gap-1.5">
                           <FileText className={cn('w-3.5 h-3.5 shrink-0', hasFile ? 'text-success' : 'text-muted-foreground')} />
-                          <span className="font-semibold text-sm">{slot.label}</span>
+                          <span className="font-semibold text-sm">{slot.raw ? slot.label : t(slot.label)}</span>
                         </div>
                         {slot.description && (
-                          <p className="text-[10px] text-muted-foreground truncate">{slot.description}</p>
+                          <p className="text-[10px] text-muted-foreground truncate">{t(slot.description)}</p>
                         )}
                       </div>
                       {hasFile && <Badge variant="success">{t('common.yes')}</Badge>}
@@ -299,7 +299,7 @@ export function DocumentsPage() {
           <Input
             value={customKey}
             onChange={(e) => setCustomKey(e.target.value.replace(/[^a-z0-9_]/gi, '_').toLowerCase())}
-            placeholder="slot_adi"
+            placeholder={t('ui.doc_slot_ph')}
           />
           <AlertDialogFooter>
             <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
@@ -310,7 +310,7 @@ export function DocumentsPage() {
                   // Boş slot eklemek için backend'e şipment güncelleme: documents_data'ya boş entry
                   // En basit yaklaşım: localde UI gösterme, asıl ekleme upload anında olur
                   // Burada sadece dialog kapatıyoruz, yeni slot otomatik gelecek upload sonrası
-                  toast.info(`"${customKey}" slotuna dosya yükleyebilirsin`, { duration: 4000 })
+                  toast.info(t('ui.doc_custom_slot_ready', { key: customKey }), { duration: 4000 })
                   // Slot'u görünür yapmak için docs.* içine boş entry kaydet (PATCH değil tam shipment yüklemek lazım — bunun yerine fileInput tıklatalım)
                   setCustomKeyOpen(false)
                   // Kullanıcı dosya seçer → upload olur → slot oluşur
@@ -329,7 +329,7 @@ export function DocumentsPage() {
               }}
               disabled={!customKey}
             >
-              Devam Et
+              {t('ui.doc_continue')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -352,7 +352,7 @@ export function DocumentsPage() {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {deleteMut.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-              Sil
+              {t('common.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useForm, type UseFormRegister, type FieldErrors } from 'react-hook-form'
@@ -24,9 +24,10 @@ import { useVehicle, useSaveVehicle, EQUIPMENT_BY_MODE } from './hooks'
 import { VehicleLoadPanel } from './VehicleLoadPanel'
 import type { VehicleTransport } from '@/types/api'
 
-const schema = z.object({
+// Hata mesajları i18n'den gelir — şema bileşen içinde t() ile kurulur
+const buildSchema = (t: (k: string) => string) => z.object({
   transport_type: z.enum(['road', 'sea', 'air']),
-  plate: z.string().min(1, 'Plaka / Tanıtıcı zorunludur'),
+  plate: z.string().min(1, t('ui.veh_err_plate_required')),
   trailer_plate: z.string().optional().or(z.literal('')),
   equipment_type: z.string().min(1),
   volume_m3: z.union([z.string(), z.number()]).optional(),
@@ -40,7 +41,7 @@ const schema = z.object({
   notes: z.string().optional().or(z.literal('')),
   status: z.enum(['active', 'inactive', 'maintenance']),
 })
-type FormValues = z.infer<typeof schema>
+type FormValues = z.infer<ReturnType<typeof buildSchema>>
 
 // label = i18n key (t() ile çevrilir)
 const MODE_CONFIG: Record<VehicleTransport, { label: string; icon: React.ReactNode; gradient: string }> = {
@@ -54,6 +55,7 @@ export function VehicleFormPage() {
   const { id } = useParams<{ id?: string }>()
   const navigate = useNavigate()
   const isEdit = !!id
+  const schema = useMemo(() => buildSchema(t), [t])
 
   const { data: existing, isLoading: loadingExisting } = useVehicle(isEdit ? id : undefined)
   const saveMut = useSaveVehicle()
@@ -108,7 +110,7 @@ export function VehicleFormPage() {
     }
     saveMut.mutate(payload, {
       onSuccess: (data) => {
-        toast.success(isEdit ? 'Araç güncellendi' : `Araç eklendi: ${data.vehicle_code || ''}`)
+        toast.success(isEdit ? t('ui.veh_updated') : t('ui.veh_added', { code: data.vehicle_code || '' }))
         if (!isEdit && data.id) {
           navigate(`/vehicles/${data.id}/edit`)
         } else {
@@ -167,7 +169,7 @@ export function VehicleFormPage() {
               </Button>
               <Button type="submit" size="sm" disabled={saveMut.isPending}>
                 {saveMut.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                {isEdit ? 'Güncelle' : 'Kaydet'}
+                {isEdit ? t('common.update') : t('common.save')}
               </Button>
             </div>
           </div>
@@ -207,7 +209,7 @@ export function VehicleFormPage() {
                   {isEdit && <p className="text-[10px] text-muted-foreground">{t('ui.duzenleme_sirasinda_degistirilemez')}</p>}
                 </div>
                 <div className="space-y-1.5 md:col-span-2">
-                  <Label>Ekipman Tipi *</Label>
+                  <Label>{t('ui.veh_equipment_type_req')}</Label>
                   <Select value={watch('equipment_type')} onValueChange={(v) => setValue('equipment_type', v)}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -225,7 +227,7 @@ export function VehicleFormPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label htmlFor="plate">
-                    {currentMode === 'road' ? 'Plaka *' : currentMode === 'sea' ? 'Gemi Adı *' : 'Uçuş No / Kuyruk *'}
+                    {currentMode === 'road' ? t('ui.veh_plate_req') : currentMode === 'sea' ? t('ui.veh_vessel_name_req') : t('ui.veh_flight_tail_req')}
                   </Label>
                   <Input id="plate" {...register('plate')} />
                   {errors.plate && <p className="text-xs text-destructive">{errors.plate.message}</p>}
@@ -262,7 +264,7 @@ export function VehicleFormPage() {
             </Card>
 
             <Card className="p-5 mt-4 space-y-4">
-              <SectionTitle>Marka / Tescil</SectionTitle>
+              <SectionTitle>{t('ui.veh_brand_registration')}</SectionTitle>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Field label={t('vehicle.brand_model')} name="brand_model" register={register} errors={errors} />
                 <Field label={t('vehicle.registration_date')} name="registration_date" register={register} errors={errors} type="date" />
@@ -276,9 +278,9 @@ export function VehicleFormPage() {
 
             {currentMode !== 'air' && (
               <Card className="p-5 mt-4 space-y-4">
-                <SectionTitle>{currentMode === 'sea' ? 'Kaptan' : 'Sürücü'}</SectionTitle>
+                <SectionTitle>{currentMode === 'sea' ? t('ui.veh_captain') : t('vehicle.driver')}</SectionTitle>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Field label={currentMode === 'sea' ? 'Kaptan' : 'Sürücü Adı'} name="driver_name" register={register} errors={errors} />
+                  <Field label={currentMode === 'sea' ? t('ui.veh_captain') : t('ui.veh_driver_name')} name="driver_name" register={register} errors={errors} />
                   <Field label={t('shipment.fields.phone')} name="driver_phone" register={register} errors={errors} />
                 </div>
               </Card>
@@ -299,7 +301,7 @@ export function VehicleFormPage() {
             )}
 
             <Card className="p-5 mt-4 space-y-3">
-              <SectionTitle>Notlar</SectionTitle>
+              <SectionTitle>{t('ui.asg_notes')}</SectionTitle>
               <Textarea rows={3} {...register('notes')} />
             </Card>
 
@@ -368,7 +370,7 @@ function TabSaveBar({ isEdit, isPending, hasErrors }: { isEdit: boolean; isPendi
       )}
       <Button type="submit" size="sm" disabled={isPending}>
         {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-        {isEdit ? 'Güncelle' : 'Kaydet'}
+        {isEdit ? t('common.update') : t('common.save')}
       </Button>
     </div>
   )

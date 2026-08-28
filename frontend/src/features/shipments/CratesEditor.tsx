@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 import { Plus, Trash2, Package, Calculator, ArrowUp, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -91,7 +91,7 @@ export function CratesEditor({ value, onChange, onApplyTotals, currentQty, curre
         </Label>
         {crates.length > 0 && (
           <div className="flex items-center gap-2 text-xs">
-            <Badge variant="outline">{totals.totalQty} adet</Badge>
+            <Badge variant="outline">{t('ui.gds_units_count', { n: totals.totalQty })}</Badge>
             <Badge variant="outline">{formatNumber(totals.totalWeight, 1)} kg</Badge>
             <Badge variant="outline">{formatNumber(totals.totalVolume, 3)} m³</Badge>
           </div>
@@ -115,9 +115,16 @@ export function CratesEditor({ value, onChange, onApplyTotals, currentQty, curre
             {mismatch ? (
               <>
                 <strong className="text-warning">{t('ui.kap_listesi_ile_yuk_bilgileri_uyusmuyor')}</strong>{' '}
-                Listede <strong>{totals.totalQty} kap / {formatNumber(totals.totalWeight, 1)} kg</strong>,
-                formda <strong>{currentQty || 0} kap / {formatNumber(currentWeight || 0, 1)} kg</strong> yazıyor.
-                Araç ataması formdaki değerlere göre yapılır.
+                <Trans
+                  i18nKey="ui.gds_mismatch_detail"
+                  values={{
+                    listQty: totals.totalQty,
+                    listWeight: formatNumber(totals.totalWeight, 1),
+                    formQty: currentQty || 0,
+                    formWeight: formatNumber(currentWeight || 0, 1),
+                  }}
+                  components={{ b: <strong /> }}
+                />
               </>
             ) : (
               <>{t('ui.kap_listesi_toplamlari_yuk_alanlariyla_uyuml')}</>
@@ -147,7 +154,7 @@ export function CratesEditor({ value, onChange, onApplyTotals, currentQty, curre
             <thead className="bg-muted/40 border-b">
               <tr>
                 <th className="text-center px-2 py-1.5 w-[60px]">{t('ui.adet')}</th>
-                <th className="text-center px-2 py-1.5">Boyut (cm)</th>
+                <th className="text-center px-2 py-1.5">{t('ui.gds_dimensions_cm')}</th>
                 <th className="text-right px-2 py-1.5 w-[100px]">{t('ui.birim_agr_kg')}</th>
                 <th className="text-right px-2 py-1.5 w-[100px]">{t('ui.toplam_kg')}</th>
                 <th className="text-right px-2 py-1.5 w-[90px]">{t('transport.vehicle_labels.volume')}</th>
@@ -216,7 +223,7 @@ export function CratesEditor({ value, onChange, onApplyTotals, currentQty, curre
             <Input type="number" min="1" value={draft.qty || ''} onChange={(e) => setDraftField('qty', e.target.value)} className="h-8 text-center tabular-nums" />
           </div>
           <div className="space-y-1">
-            <Label className="text-[10px]">Uzunluk (cm)</Label>
+            <Label className="text-[10px]">{t('ui.gds_length_cm')}</Label>
             <Input type="number" value={draft.length || ''} onChange={(e) => setDraftField('length', e.target.value)} className="h-8 text-right tabular-nums" />
           </div>
           <div className="space-y-1">
@@ -241,7 +248,7 @@ export function CratesEditor({ value, onChange, onApplyTotals, currentQty, curre
             size="sm"
             onClick={addCrate}
             disabled={!draft.qty || draft.qty <= 0}
-            title={!draft.qty || draft.qty <= 0 ? 'Önce adet gir' : 'Kap listesine ekle'}
+            title={!draft.qty || draft.qty <= 0 ? t('ui.gds_enter_qty_first') : t('ui.gds_add_to_crate_list')}
             className="h-8"
           >
             <Plus className="w-3.5 h-3.5" />
@@ -251,10 +258,10 @@ export function CratesEditor({ value, onChange, onApplyTotals, currentQty, curre
         {(draft.length && draft.width && draft.height) ? (
           <div className="mt-2 text-xs text-muted-foreground flex items-center gap-1">
             <Calculator className="w-3 h-3" />
-            Hacim önizleme: {formatNumber(
+            {t('ui.gds_volume_preview', { value: formatNumber(
               (draft.qty || 0) * (draft.length || 0) * (draft.width || 0) * (draft.height || 0) / 1_000_000,
               3
-            )} m³
+            ) })}
           </div>
         ) : null}
       </Card>
