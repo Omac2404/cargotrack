@@ -3,7 +3,21 @@ import * as SelectPrimitive from '@radix-ui/react-select'
 import { Check, ChevronDown, ChevronUp } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-const Select = SelectPrimitive.Root
+/**
+ * Radix Select 2.1+, secili deger o an kayitli item'lar arasinda bulunmuyorsa
+ * onValueChange('') atesler. Kayit verisi, item'lar portal'a kaydolmadan ONCE
+ * forma yazilirsa (dosya acilisindaki reset) bu bos cagri kayitli degeri
+ * (durum, incoterm, odeme tipi...) silip formu kirli isaretliyordu — dosya
+ * acilinca "Taslak / Belirtilmedi" gorunmesinin kok nedeni. Gercek bir
+ * kullanici secimi asla '' uretemez (SelectItem value='' zaten yasak),
+ * bu yuzden bos cagrilar guvenle yutulur.
+ */
+const Select = ({ onValueChange, ...props }: React.ComponentProps<typeof SelectPrimitive.Root>) => (
+  <SelectPrimitive.Root
+    {...props}
+    onValueChange={onValueChange ? (v) => { if (v !== '') onValueChange(v) } : undefined}
+  />
+)
 const SelectGroup = SelectPrimitive.Group
 const SelectValue = SelectPrimitive.Value
 
