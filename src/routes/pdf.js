@@ -821,10 +821,12 @@ router.get('/proforma/:shipmentId', verifyTokenFlexible, async (req, res) => {
     // satira sariyor ve alttaki aciklama/TVA satirlarinin ustune biniyordu.
     doc.fontSize(19).font(F.bold).fillColor(COLORS.primary)
        .text('FACTURE PROFORMA', 260, 46, { width: W - 300, align: 'right', lineBreak: false });
+    // Aciklama metni dar alanda iki satira sarabilir; TVA/SIRET satirlari
+    // sabit y yerine metnin OLCULEN yuksekliginin altina yerlesir (ust uste binmez)
+    const headNote = 'Ce document est fourni à titre informatif et ne constitue pas une facture officielle.';
     doc.fontSize(7.5).font(F.regular).fillColor(COLORS.textMuted)
-       .text('Ce document est fourni à titre informatif et ne constitue pas une facture officielle.',
-             260, 68, { width: W - 300, align: 'right' });
-    let rightY = 82;
+       .text(headNote, 260, 68, { width: W - 300, align: 'right' });
+    let rightY = 68 + doc.heightOfString(headNote, { width: W - 300 }) + 3;
     if (idLines.length > 0) {
       doc.fontSize(7.5).fillColor(COLORS.textLight);
       for (const line of idLines) {
