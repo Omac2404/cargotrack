@@ -97,7 +97,7 @@
     "route": "Route",
     "weight_pkg": "Gewicht / Stück",
     "sale": "Verkauf",
-    "search_placeholder": "Akten-Nr., Kunde, Absender, Empfänger...",
+    "search_placeholder": "Akten-Nr., Kunde, Absender, Empfänger, Kennzeichen...",
     "select_placeholder": "Auswählen...",
     "not_specified": "Nicht angegeben",
     "sections": {
@@ -1283,7 +1283,9 @@
     "perm_statistics_view": "Statistiken anzeigen",
     "perm_archive_view": "Archivierte Datensätze anzeigen",
     "perm_archive_restore": "Aus dem Archiv wiederherstellen",
-    "perm_archive_purge": "Endgültig aus dem Archiv löschen"
+    "perm_archive_purge": "Endgültig aus dem Archiv löschen",
+    "list_change_status": "Status ändern",
+    "list_status_changed": "Status aktualisiert"
   },
   "invoice": {
     "invoice_no": "Rechnungsnr.",

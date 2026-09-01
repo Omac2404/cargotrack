@@ -97,7 +97,7 @@
     "route": "Itinéraire",
     "weight_pkg": "Poids / Colis",
     "sale": "Vente",
-    "search_placeholder": "N° dossier, client, expéditeur, destinataire...",
+    "search_placeholder": "N° dossier, client, expéditeur, destinataire, plaque...",
     "select_placeholder": "Sélectionner...",
     "not_specified": "Non spécifié",
     "sections": {
@@ -1283,7 +1283,9 @@
     "perm_statistics_view": "Voit les statistiques",
     "perm_archive_view": "Voit les enregistrements archivés",
     "perm_archive_restore": "Restaure depuis les archives",
-    "perm_archive_purge": "Supprime définitivement des archives"
+    "perm_archive_purge": "Supprime définitivement des archives",
+    "list_change_status": "Changer le statut",
+    "list_status_changed": "Statut mis à jour"
   },
   "invoice": {
     "invoice_no": "N° de facture",

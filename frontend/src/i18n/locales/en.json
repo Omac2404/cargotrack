@@ -97,7 +97,7 @@
     "route": "Route",
     "weight_pkg": "Weight / Package",
     "sale": "Sale",
-    "search_placeholder": "File no, customer, sender, receiver...",
+    "search_placeholder": "File no, client, sender, receiver, plate...",
     "select_placeholder": "Select...",
     "not_specified": "Not specified",
     "sections": {
@@ -1283,7 +1283,9 @@
     "perm_statistics_view": "View statistics",
     "perm_archive_view": "View archived records",
     "perm_archive_restore": "Restore from archive",
-    "perm_archive_purge": "Permanently delete from archive"
+    "perm_archive_purge": "Permanently delete from archive",
+    "list_change_status": "Change status",
+    "list_status_changed": "Status updated"
   },
   "invoice": {
     "invoice_no": "Invoice No",

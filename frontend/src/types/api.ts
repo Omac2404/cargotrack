@@ -292,6 +292,8 @@ export interface GoodsItem {
 }
 
 export interface Shipment {
+  /** Liste endpoint'i doldurur: atanan araclarin plakalari (plaka aramasi icin) */
+  assigned_plates?: string | null
   id: number
   shipment_no: string
   transport_type: TransportType

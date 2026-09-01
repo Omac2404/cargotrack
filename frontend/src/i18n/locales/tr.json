@@ -97,7 +97,7 @@
     "route": "Güzergah",
     "weight_pkg": "Ağırlık / Kap",
     "sale": "Satış",
-    "search_placeholder": "Dosya no, müşteri, gönderici, alıcı...",
+    "search_placeholder": "Dosya no, müşteri, gönderici, alıcı, plaka...",
     "select_placeholder": "Seçiniz...",
     "not_specified": "Belirtilmedi",
     "sections": {
@@ -1283,7 +1283,9 @@
     "perm_statistics_view": "İstatistikleri görür",
     "perm_archive_view": "Arşivlenen kayıtları görür",
     "perm_archive_restore": "Arşivden geri yükler",
-    "perm_archive_purge": "Arşivden kalıcı siler"
+    "perm_archive_purge": "Arşivden kalıcı siler",
+    "list_change_status": "Durumu değiştir",
+    "list_status_changed": "Durum güncellendi"
   },
   "invoice": {
     "invoice_no": "Fatura No",

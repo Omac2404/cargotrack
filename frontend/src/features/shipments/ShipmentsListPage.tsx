@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next'
 import {
   Plus, Search, Pencil, Trash2, Loader2, ArrowUpDown, ArrowUp, ArrowDown,
   Inbox, AlertCircle,
+  ChevronDown,
 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -21,13 +22,16 @@ import {
 } from '@/components/ui/alert-dialog'
 import { cn, formatDate, formatMoney } from '@/lib/utils'
 import { getModeConfig, STATUS_LABELS } from './modeConfig'
-import { useShipments, useDeleteShipment, useBulkShipmentAction, type BulkActionParams } from './hooks'
+import { useShipments, useDeleteShipment, useBulkShipmentAction, useSaveShipment, type BulkActionParams } from './hooks'
 import { useBulkSelection } from '@/hooks/useBulkSelection'
 import { BulkActionBar } from '@/components/shared/BulkActionBar'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select'
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import type { Shipment } from '@/types/api'
 import { ExportButton } from '@/components/shared/ExportButton'
 import { exportFormatters } from '@/lib/export'
@@ -61,6 +65,8 @@ export function ShipmentsListPage() {
   const { data: shipments = [], isLoading, error } = useShipments(config.key)
   const deleteMut = useDeleteShipment()
   const bulkMut = useBulkShipmentAction()
+  // Listeden hizli durum degisikligi — normal kayit guncellemesi (sahiplik + audit ayni)
+  const statusMut = useSaveShipment()
   const [bulkConfirm, setBulkConfirm] = useState<{ action: BulkActionParams['action']; status?: BulkActionParams['status'] } | null>(null)
 
   const filteredSorted = useMemo(() => {
@@ -71,6 +77,7 @@ export function ShipmentsListPage() {
           const blob = [
             s.shipment_no, s.client_billing, s.sender, s.receiver, s.agent,
             s.departure_country, s.arrival_country, s.invoice_no,
+            s.assigned_plates,
           ]
             .filter(Boolean)
             .join(' ')
@@ -369,8 +376,35 @@ export function ShipmentsListPage() {
                     <TableCell className="text-right tabular-nums font-medium">
                       {formatMoney(s.sale_price, s.currency_code || 'EUR')}
                     </TableCell>
-                    <TableCell>
-                      <Badge variant={status.variant}>{t(status.label)}</Badge>
+                    <TableCell onClick={(e) => e.stopPropagation()}>
+                      {/* Durum rozetine tiklayinca dosyaya girmeden durum degistirilebilir */}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button type="button" className="inline-flex items-center gap-1 group" title={t('ui.list_change_status')}>
+                            <Badge variant={status.variant}>{t(status.label)}</Badge>
+                            <ChevronDown className="w-3 h-3 text-muted-foreground opacity-50 group-hover:opacity-100" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start">
+                          {Object.entries(STATUS_LABELS).map(([value, st]) => (
+                            <DropdownMenuItem
+                              key={value}
+                              disabled={value === s.status || statusMut.isPending}
+                              onClick={() =>
+                                statusMut.mutate(
+                                  { id: s.id, status: value as Shipment['status'] },
+                                  {
+                                    onSuccess: () => toast.success(t('ui.list_status_changed')),
+                                    onError: (err: Error) => toast.error(err.message),
+                                  }
+                                )
+                              }
+                            >
+                              <Badge variant={st.variant} className="pointer-events-none">{t(st.label)}</Badge>
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                     <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-end gap-1">

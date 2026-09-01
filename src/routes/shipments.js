@@ -214,13 +214,20 @@ async function insertShipmentWithRetry(conn, record, type) {
 router.get('/', verifyToken, async (req, res) => {
   try {
     const type = normalizeTransportType(req.query.transport_type || 'road');
-    let sql = 'SELECT * FROM shipments WHERE transport_type = ? AND deleted_at IS NULL';
+    // Atanan araclarin plakalari da doner — listede plakayla arama yapilabilsin
+    let sql = `SELECT s.*, (
+        SELECT GROUP_CONCAT(DISTINCT CONCAT_WS(' / ', v.plate, NULLIF(v.trailer_plate, '')) SEPARATOR ', ')
+        FROM vehicle_assignments a
+        JOIN vehicles v ON v.id = a.vehicle_id AND v.deleted_at IS NULL
+        WHERE a.shipment_id = s.id AND a.deleted_at IS NULL
+      ) AS assigned_plates
+      FROM shipments s WHERE s.transport_type = ? AND s.deleted_at IS NULL`;
     const params = [type];
     if (!hasRole(req.user, 'admin')) {
-      sql += ' AND created_by = ?';
+      sql += ' AND s.created_by = ?';
       params.push(req.user.id);
     }
-    sql += ' ORDER BY created_at DESC';
+    sql += ' ORDER BY s.created_at DESC';
     const [rows] = await pool.execute(sql, params);
     sendSuccess(res, rows);
   } catch (err) {
