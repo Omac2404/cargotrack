@@ -607,7 +607,7 @@ router.get('/air-waybill/:shipmentId', verifyTokenFlexible, async (req, res) => 
     for (const r of rows.slice(0, 10)) {
       doc.text(String(r.quantity || ''), cols[0].x + 3, ry, { width: cols[0].w - 6, align: 'right', lineBreak: false });
       doc.text(r.gross_weight ? Number(r.gross_weight).toFixed(1) : '', cols[1].x + 3, ry, { width: cols[1].w - 6, align: 'right', lineBreak: false });
-      doc.text(clip(`${r.description || ''}${r.hs_code ? '  (HS ' + r.hs_code + ')' : ''}${r.volume_cbm ? '  ' + Number(r.volume_cbm).toFixed(2) + ' m3' : ''}`, 62),
+      doc.text(clip(`${r.description || ''}${r.hs_code ? '  (HS ' + r.hs_code + ')' : ''}${r.volume_cbm ? '  ' + Number(r.volume_cbm).toFixed(2) + ' m3' : ''}`, 54),
         cols[6].x + 3, ry, { lineBreak: false });
       ry += 13;
     }
