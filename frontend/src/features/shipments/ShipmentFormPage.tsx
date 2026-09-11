@@ -30,7 +30,7 @@ import { usePartners } from '@/features/partners/hooks'
 import { useWarehouses } from '@/features/warehouses/hooks'
 import { useAssignments } from '@/features/assignments/hooks'
 import { getTransportMode } from '@/lib/constants/transportModes'
-import { getProformaUrl, getStorageReportUrl, getBarcodesUrl, openPdf } from '@/features/pdf/hooks'
+import { getProformaUrl, getStorageReportUrl, getBarcodesUrl, getCmrUrl, getBillOfLadingUrl, getAirWaybillUrl, openPdf } from '@/features/pdf/hooks'
 import { FileBadge2, FileCheck2, Barcode, FileSpreadsheet } from 'lucide-react'
 import { FinancialTable } from './FinancialTable'
 import { StorageSection } from './StorageSection'
@@ -483,6 +483,25 @@ export function ShipmentFormPage() {
                   {config.key === 'storage' && (
                     <Button type="button" variant="outline" size="sm" onClick={() => openPdf(getStorageReportUrl(Number(id)))} title={t('ui.depo_raporu_pdf')}>
                       <FileSpreadsheet className="w-4 h-4" />
+                    </Button>
+                  )}
+                  {/* Tasima belgesi — moda gore CMR / B-L / AWB (musteri istegi) */}
+                  {(config.key === 'road' || config.key === 'import' || config.key === 'export') && (
+                    <Button type="button" variant="outline" size="sm" onClick={() => openPdf(getCmrUrl(Number(id)))} title={t('ui.cmr_pdf')}>
+                      <FileText className="w-4 h-4" />
+                      CMR
+                    </Button>
+                  )}
+                  {config.key === 'maritime' && (
+                    <Button type="button" variant="outline" size="sm" onClick={() => openPdf(getBillOfLadingUrl(Number(id)))} title={t('ui.bl_pdf')}>
+                      <FileText className="w-4 h-4" />
+                      B/L
+                    </Button>
+                  )}
+                  {config.key === 'air' && (
+                    <Button type="button" variant="outline" size="sm" onClick={() => openPdf(getAirWaybillUrl(Number(id)))} title={t('ui.awb_pdf')}>
+                      <FileText className="w-4 h-4" />
+                      AWB
                     </Button>
                   )}
                 </>

@@ -14,6 +14,17 @@ export function getFileCoverUrl(shipmentId: number) {
   return makePdfUrl(`/api/pdf/file-cover/${shipmentId}`)
 }
 
+/** Tasima belgeleri — moda gore: karayolu CMR, deniz B/L, hava AWB */
+export function getCmrUrl(shipmentId: number) {
+  return makePdfUrl(`/api/pdf/cmr/${shipmentId}`)
+}
+export function getBillOfLadingUrl(shipmentId: number) {
+  return makePdfUrl(`/api/pdf/bill-of-lading/${shipmentId}`)
+}
+export function getAirWaybillUrl(shipmentId: number) {
+  return makePdfUrl(`/api/pdf/air-waybill/${shipmentId}`)
+}
+
 export function getProformaUrl(shipmentId: number) {
   return makePdfUrl(`/api/pdf/proforma/${shipmentId}`)
 }

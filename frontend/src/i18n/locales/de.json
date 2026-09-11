@@ -1285,7 +1285,10 @@
     "perm_archive_restore": "Aus dem Archiv wiederherstellen",
     "perm_archive_purge": "Endgültig aus dem Archiv löschen",
     "list_change_status": "Status ändern",
-    "list_status_changed": "Status aktualisiert"
+    "list_status_changed": "Status aktualisiert",
+    "cmr_pdf": "CMR-Frachtbrief (PDF)",
+    "bl_pdf": "Konnossement B/L (PDF)",
+    "awb_pdf": "Luftfrachtbrief AWB (PDF)"
   },
   "invoice": {
     "invoice_no": "Rechnungsnr.",

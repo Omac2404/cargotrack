@@ -1285,7 +1285,10 @@
     "perm_archive_restore": "Restaure depuis les archives",
     "perm_archive_purge": "Supprime définitivement des archives",
     "list_change_status": "Changer le statut",
-    "list_status_changed": "Statut mis à jour"
+    "list_status_changed": "Statut mis à jour",
+    "cmr_pdf": "Lettre de voiture CMR (PDF)",
+    "bl_pdf": "Connaissement B/L (PDF)",
+    "awb_pdf": "Lettre de transport aérien AWB (PDF)"
   },
   "invoice": {
     "invoice_no": "N° de facture",

@@ -1285,7 +1285,10 @@
     "perm_archive_restore": "Arşivden geri yükler",
     "perm_archive_purge": "Arşivden kalıcı siler",
     "list_change_status": "Durumu değiştir",
-    "list_status_changed": "Durum güncellendi"
+    "list_status_changed": "Durum güncellendi",
+    "cmr_pdf": "CMR Taşıma Senedi (PDF)",
+    "bl_pdf": "Konşimento B/L (PDF)",
+    "awb_pdf": "Hava Konşimentosu AWB (PDF)"
   },
   "invoice": {
     "invoice_no": "Fatura No",

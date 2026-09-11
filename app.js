@@ -110,6 +110,7 @@ const routeRegistry = [
   { path: '/api/audit', file: './src/routes/audit' },
   { path: '/api/storage-orders', file: './src/routes/storage-orders' },
   { path: '/api/pdf', file: './src/routes/pdf' },
+  { path: '/api/pdf', file: './src/routes/pdfDocs' },
   { path: '/api/lookup', file: './src/routes/lookup' },
   { path: '/api/notifications', file: './src/routes/notifications' },
   { path: '/api/reports', file: './src/routes/reports' },

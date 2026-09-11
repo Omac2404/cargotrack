@@ -1461,3 +1461,8 @@ router.get('/barcodes/:shipmentId', verifyTokenFlexible, async (req, res) => {
 });
 
 module.exports = router;
+// pdfDocs.js (CMR / B-L / AWB) ayni yardimcilari kullanir
+module.exports.shared = {
+  verifyTokenFlexible, setupFonts, setupPdfHeaders,
+  parseJsonField, parseGoodsItems, loadShipment,
+};
