@@ -14,7 +14,13 @@ const { pool } = require('../config/database');
 const { COMPANY, addressLines } = require('../config/company');
 const { logAudit } = require('../helpers/audit');
 const { sendError, toInt } = require('../helpers/utils');
+const fs = require('fs');
+const path = require('path');
 const pdfShared = require('./pdf').shared;
+
+// Genis Inter Trans logosu (695x163) — CMR ve B/L basliklarinda kullanilir
+const LOGO_WIDE = path.join(__dirname, '..', '..', 'assets', 'logo-wide.png');
+const hasLogo = () => { try { return fs.existsSync(LOGO_WIDE); } catch (e) { return false; } };
 
 const {
   verifyTokenFlexible, setupFonts, setupPdfHeaders,
@@ -176,15 +182,26 @@ router.get('/cmr/:shipmentId', verifyTokenFlexible, async (req, res) => {
     content(X0, y + 18, parties.sender.slice(0, 6));
 
     box(MID, y, RW, 78);
-    doc.font(F.bold).fontSize(13).fillColor(CMR_RED).text('CMR', MID + 8, y + 6, { lineBreak: false });
-    doc.font(F.bold).fontSize(8.5).fillColor(INK)
-      .text('LETTRE DE VOITURE INTERNATIONALE', MID + 46, y + 6, { width: RW - 52 });
-    doc.font(F.regular).fontSize(6.5).fillColor(MUTED)
-      .text('INTERNATIONAL CONSIGNMENT NOTE', MID + 46, y + 17, { width: RW - 52 });
-    doc.font(F.bold).fontSize(9).fillColor(INK).text(`N° ${ship.shipment_no}`, MID + 8, y + 30, { lineBreak: false });
+    if (hasLogo()) {
+      // 695x163 -> 110pt genislik = ~26pt yukseklik
+      doc.image(LOGO_WIDE, MID + 8, y + 5, { width: 110 });
+      doc.font(F.bold).fontSize(9.5).fillColor(INK)
+        .text(`N° ${ship.shipment_no}`, MID + 124, y + 12, { width: RW - 130, align: 'right', lineBreak: false });
+      doc.font(F.bold).fontSize(8).fillColor(CMR_RED)
+        .text('CMR — LETTRE DE VOITURE INTERNATIONALE', MID + 8, y + 36, { width: RW - 16, lineBreak: false, ellipsis: true });
+      doc.font(F.regular).fontSize(6).fillColor(MUTED)
+        .text('INTERNATIONAL CONSIGNMENT NOTE', MID + 8, y + 46, { lineBreak: false });
+    } else {
+      doc.font(F.bold).fontSize(13).fillColor(CMR_RED).text('CMR', MID + 8, y + 6, { lineBreak: false });
+      doc.font(F.bold).fontSize(8.5).fillColor(INK)
+        .text('LETTRE DE VOITURE INTERNATIONALE', MID + 46, y + 6, { width: RW - 52 });
+      doc.font(F.regular).fontSize(6.5).fillColor(MUTED)
+        .text('INTERNATIONAL CONSIGNMENT NOTE', MID + 46, y + 17, { width: RW - 52 });
+      doc.font(F.bold).fontSize(9).fillColor(INK).text(`N° ${ship.shipment_no}`, MID + 8, y + 30, { lineBreak: false });
+    }
     doc.font(F.regular).fontSize(5.4).fillColor(MUTED).text(
       "Ce transport est soumis, nonobstant toute clause contraire, à la Convention relative au contrat de transport international de marchandises par route (CMR). / This carriage is subject to the Convention on the Contract for the International Carriage of Goods by Road (CMR).",
-      MID + 8, y + 44, { width: RW - 16, lineGap: 0.4 });
+      MID + 8, hasLogo() ? y + 55 : y + 44, { width: RW - 16, lineGap: 0.2, height: hasLogo() ? 21 : 33, ellipsis: true });
 
     // ---- 2 | 16 ----
     y = 102;
@@ -339,7 +356,9 @@ router.get('/bill-of-lading/:shipmentId', verifyTokenFlexible, async (req, res) 
     const containers = await loadVehicles(id);
     const rows = goodsRows(ship);
     const tot = totalsOf(rows);
-    const blNo = md.mbl_no || md.hbl_no || ship.shipment_no;
+    // Musteri istegi: B/L numarasi dosya numarasiyla ayni olsun.
+    // Girilmis MBL/HBL kaybolmasin diye referans kutusunda gosterilir.
+    const blNo = ship.shipment_no;
 
     setupPdfHeaders(res, `BL_${ship.shipment_no}.pdf`);
     await logAudit(req, 'download', 'documents', id, `bill-of-lading/${ship.shipment_no}`);
@@ -367,16 +386,21 @@ router.get('/bill-of-lading/:shipmentId', verifyTokenFlexible, async (req, res) 
     box(X0, y, LW, 84); lab(X0, y, 'Shipper / Expéditeur');
     content(X0, y + 14, parties.sender.slice(0, 6));
 
-    doc.font(F.bold).fontSize(12).fillColor(NAVY).text(COMPANY.name, MID + 6, y + 2, { width: RW - 10 });
-    if (COMPANY.tagline) doc.font(F.regular).fontSize(6.5).fillColor(MUTED)
-      .text(COMPANY.tagline, MID + 6, y + 17, { width: RW - 10, characterSpacing: 1 });
+    if (hasLogo()) {
+      // 695x163 -> 110pt genislik = ~26pt yukseklik (B/L No. kutusuna degmesin)
+      doc.image(LOGO_WIDE, MID + 6, y + 5, { width: 110 });
+    } else {
+      doc.font(F.bold).fontSize(12).fillColor(NAVY).text(COMPANY.name, MID + 6, y + 2, { width: RW - 10 });
+      if (COMPANY.tagline) doc.font(F.regular).fontSize(6.5).fillColor(MUTED)
+        .text(COMPANY.tagline, MID + 6, y + 17, { width: RW - 10, characterSpacing: 1 });
+    }
     box(MID + RW - 130, y, 130, 26); lab(MID + RW - 130, y, 'B/L No.', 130);
     doc.font(F.bold).fontSize(9).fillColor(INK).text(blNo, MID + RW - 126, y + 12, { lineBreak: false });
     doc.font(F.bold).fontSize(10).fillColor(INK)
-      .text('SEA WAYBILL / BILL OF LADING', MID + 6, y + 36, { width: RW - 10 });
+      .text('SEA WAYBILL / BILL OF LADING', MID + 6, y + 40, { width: RW - 10 });
     doc.font(F.regular).fontSize(7).fillColor(MUTED)
-      .text('for Multimodal Transport or Ocean Transport', MID + 6, y + 50, { width: RW - 10 });
-    doc.font(F.bold).fontSize(8).fillColor(CMR_RED).text('NON-NEGOTIABLE — COPY', MID + 6, y + 62, { lineBreak: false });
+      .text('for Multimodal Transport or Ocean Transport', MID + 6, y + 54, { width: RW - 10 });
+    doc.font(F.bold).fontSize(8).fillColor(CMR_RED).text('NON-NEGOTIABLE — COPY', MID + 6, y + 66, { lineBreak: false });
 
     // ---- Consignee | referanslar ----
     y = 108;
@@ -385,7 +409,7 @@ router.get('/bill-of-lading/:shipmentId', verifyTokenFlexible, async (req, res) 
     box(MID, y, RW, 35); lab(MID, y, "Export/Import Reference (for the Merchant's reference only)", RW);
     content(MID, y + 14, [ship.client_reference || ''], RW);
     box(MID, y + 35, RW, 35); lab(MID, y + 35, "Forwarding Agent Reference", RW);
-    content(MID, y + 49, [parties.agent[0] || ''], RW);
+    content(MID, y + 49, [parties.agent[0], md.mbl_no ? `MBL: ${md.mbl_no}` : (md.hbl_no ? `HBL: ${md.hbl_no}` : '')].filter(Boolean).slice(0, 2), RW, 7);
 
     // ---- Notify | menşe ----
     y = 178;
