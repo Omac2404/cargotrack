@@ -20,7 +20,8 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
-import { useVehicle, useSaveVehicle, EQUIPMENT_BY_MODE } from './hooks'
+import { useVehicle, useVehicles, useSaveVehicle, EQUIPMENT_BY_MODE } from './hooks'
+import { Combobox } from '@/components/shared/Combobox'
 import { VehicleLoadPanel } from './VehicleLoadPanel'
 import type { VehicleTransport } from '@/types/api'
 
@@ -71,6 +72,18 @@ export function VehicleFormPage() {
     },
   })
   const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = form
+
+  // Nakliyeci onerileri: tum kayitli araclardaki benzersiz nakliyeci adlari.
+  // Onceden duz metin alaniydi; ayni nakliyeci her aracta elle yeniden yaziliyordu.
+  const { data: allVehicles = [] } = useVehicles()
+  const carrierOptions = useMemo(() => {
+    const names = new Set<string>()
+    for (const v of allVehicles) {
+      const n = (v.carrier_name || '').trim()
+      if (n) names.add(n)
+    }
+    return Array.from(names).sort((a, b) => a.localeCompare(b, 'tr')).map((n) => ({ value: n, label: n }))
+  }, [allVehicles])
   const currentMode = watch('transport_type')
   const equipmentOptions = EQUIPMENT_BY_MODE[currentMode] || []
   const modeCfg = MODE_CONFIG[currentMode]
@@ -269,9 +282,16 @@ export function VehicleFormPage() {
                 <Field label={t('vehicle.brand_model')} name="brand_model" register={register} errors={errors} />
                 <Field label={t('vehicle.registration_date')} name="registration_date" register={register} errors={errors} type="date" />
                 {/* Yukleme listesinin (feuille de chargement) baslik satirinda gorunur */}
-                <div className="md:col-span-2">
-                  <Field label={t('vehicle.carrier_name')} name="carrier_name" register={register} errors={errors}
-                         placeholder={t('vehicle.carrier_ph')} />
+                <div className="md:col-span-2 space-y-1.5">
+                  <Label>{t('vehicle.carrier_name')}</Label>
+                  {/* Kayitli nakliyecilerden secilir; listede yoksa yazilan ad aynen kaydedilir */}
+                  <Combobox
+                    value={watch('carrier_name') || ''}
+                    onChange={(v) => setValue('carrier_name', v, { shouldDirty: true })}
+                    options={carrierOptions}
+                    placeholder={t('vehicle.carrier_ph')}
+                    allowCustom
+                  />
                 </div>
               </div>
             </Card>
