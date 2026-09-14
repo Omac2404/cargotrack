@@ -28,17 +28,19 @@ export function PackageTypeCombobox({
   value, onChange, placeholder = 'Ambalaj tipi seçin...',
   className, disabled = false, filterCategories, allowCustom = true,
 }: Props) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const options = useMemo(() => {
     const filtered = filterCategories
       ? PACKAGE_TYPES.filter((p) => filterCategories.includes(p.category))
       : PACKAGE_TYPES
+    const frUI = i18n.language.startsWith('fr')
     return filtered.map((p) => ({
       value: p.code,
-      label: `${p.code} — ${p.tr}`,
-      description: `${PACKAGE_CATEGORY_LABELS[p.category]} · ${p.fr}`,
+      // FR arayuzde Fransizca ad one gecer (aciklamada Turkcesi kalir)
+      label: `${p.code} — ${frUI ? p.fr : p.tr}`,
+      description: `${PACKAGE_CATEGORY_LABELS[p.category]} · ${frUI ? p.tr : p.fr}`,
     }))
-  }, [filterCategories])
+  }, [filterCategories, i18n.language])
 
   // value bir kod ise (örn "4G") - Combobox value olarak kod kullanır
   // ama kullanıcı eski tarz serbest metin de girmiş olabilir (örn "Karton Kutu")

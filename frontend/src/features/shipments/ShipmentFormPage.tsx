@@ -59,9 +59,14 @@ import type { PartnerType, DocumentsData } from '@/types/api'
 
 // Incoterm kodları (sıralı) — açıklamalar customs/incoterms.ts'den gelir
 const INCOTERMS = ['EXW', 'FCA', 'FAS', 'FOB', 'CFR', 'CIF', 'CPT', 'CIP', 'DPU', 'DAP', 'DDP']
-function incotermLabel(code: string): { code: string; tr: string } {
+// Aciklama arayuz diline gore: FR resmi isim, EN uluslararasi isim, TR yerel.
+// Veri dosyasinda uc dil de mevcut; onceden hep .tr basiliyordu ve Fransizca
+// arayuzde Incoterm aciklamalari Turkce kaliyordu.
+function incotermLabel(code: string, lang: string): { code: string; desc: string } {
   const info = INCOTERMS_INFO.find((i) => i.code === code)
-  return { code, tr: info?.tr || code }
+  if (!info) return { code, desc: code }
+  const desc = lang.startsWith('fr') ? info.fr : (lang.startsWith('tr') ? info.tr : info.en)
+  return { code, desc }
 }
 // i18n key'leri — UI'de t() ile çevrilir
 const STATUSES = [
@@ -135,7 +140,7 @@ const REQUIRED_DOCS_FALLBACK = [
 ]
 
 export function ShipmentFormPage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { mode, id } = useParams<{ mode: string; id?: string }>()
   const navigate = useNavigate()
   const config = getModeConfig(mode)
@@ -581,11 +586,11 @@ export function ShipmentFormPage() {
                     <SelectContent>
                       <SelectItem value="__none__">{t('shipment.not_specified')}</SelectItem>
                       {INCOTERMS.map((c) => {
-                        const info = incotermLabel(c)
+                        const info = incotermLabel(c, i18n.language)
                         return (
                           <SelectItem key={c} value={c}>
                             <span className="font-mono font-semibold">{info.code}</span>
-                            <span className="text-muted-foreground ml-2">— {info.tr}</span>
+                            <span className="text-muted-foreground ml-2">— {info.desc}</span>
                           </SelectItem>
                         )
                       })}
@@ -1422,7 +1427,7 @@ function TransitStorageCard({
   form: ReturnType<typeof useForm<ShipmentFormValues>>
   warehouseTypeFromDb?: string | null
 }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { watch, setValue } = form
   const storageDataStr = watch('storage_data') as string | undefined
 
@@ -1478,7 +1483,7 @@ function TransitStorageCard({
               {WAREHOUSE_TYPES_REF.map((w) => (
                 <SelectItem key={w.code} value={w.code}>
                   <span className="font-mono font-semibold">{w.code}</span>
-                  <span className="ml-2">— {w.tr}</span>
+                  <span className="ml-2">— {i18n.language.startsWith('tr') ? w.tr : w.fr}</span>
                 </SelectItem>
               ))}
             </SelectContent>
