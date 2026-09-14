@@ -74,10 +74,13 @@ export const TRANSPORT_MODES: Record<string, TransportModeConfig> = {
       { key: 'cmr_signed', label: 'transport.documents.cmr_signed' },
       { key: 'invoice', label: 'transport.documents.invoice' },
       { key: 'packing_list', label: 'transport.documents.packing_list' },
-      { key: 'customs_dec', label: 'transport.documents.customs_dec' },
+      // Musteri istegi: gumruk beyannamesi ihracat/ithalat olarak ayrildi
+      { key: 'customs_dec_export', label: 'transport.documents.customs_dec_export' },
+      { key: 'customs_dec_import', label: 'transport.documents.customs_dec_import' },
       { key: 'eur1', label: 'transport.documents.eur1' },
       { key: 'insurance', label: 'transport.documents.insurance' },
       { key: 'transit', label: 'transport.documents.transit' },
+      { key: 'other_docs', label: 'transport.documents.other_docs' },
     ],
     equipmentTypes: {
       tilt: { label: 'transport.equipment.tilt', icon: '🚛' },
@@ -129,6 +132,7 @@ export const TRANSPORT_MODES: Record<string, TransportModeConfig> = {
       { key: 'insurance', label: 'transport.documents.insurance' },
       { key: 'cert_origin', label: 'transport.documents.cert_origin' },
       { key: 'container_list', label: 'transport.documents.container_list' },
+      { key: 'other_docs', label: 'transport.documents.other_docs' },
     ],
     equipmentTypes: {
       container_20: { label: 'transport.equipment.container_20', icon: '📦' },
@@ -182,6 +186,7 @@ export const TRANSPORT_MODES: Record<string, TransportModeConfig> = {
       { key: 'insurance', label: 'transport.documents.insurance' },
       { key: 'cert_origin', label: 'transport.documents.cert_origin' },
       { key: 'security', label: 'transport.documents.security' },
+      { key: 'other_docs', label: 'transport.documents.other_docs' },
     ],
     equipmentTypes: {
       passenger: { label: 'transport.equipment.passenger', icon: '✈️' },

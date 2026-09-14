@@ -540,7 +540,10 @@
       "hawb": "HAWB (House Airway Bill)",
       "cargo_manifest": "Cargo Manifest",
       "dgd": "Dangerous Goods Declaration (DGD)",
-      "security": "Security Declaration"
+      "security": "Security Declaration",
+      "customs_dec_export": "Export Customs Declaration",
+      "customs_dec_import": "Import Customs Declaration",
+      "other_docs": "Other Documents"
     },
     "equipment": {
       "tilt": "Tilt",

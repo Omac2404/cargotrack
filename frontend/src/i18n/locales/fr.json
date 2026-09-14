@@ -540,7 +540,10 @@
       "hawb": "HAWB (House Airway Bill)",
       "cargo_manifest": "Manifeste de Cargaison",
       "dgd": "Déclaration de Marchandises Dangereuses (DGD)",
-      "security": "Déclaration de Sécurité"
+      "security": "Déclaration de Sécurité",
+      "customs_dec_export": "Déclaration en Douane Export",
+      "customs_dec_import": "Déclaration en Douane Import",
+      "other_docs": "Autres Documents"
     },
     "equipment": {
       "tilt": "Bâché",

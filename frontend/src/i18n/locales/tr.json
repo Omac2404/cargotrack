@@ -540,7 +540,10 @@
       "hawb": "HAWB (House Airway Bill)",
       "cargo_manifest": "Cargo Manifest",
       "dgd": "Tehlikeli Madde Beyanı (DGD)",
-      "security": "Güvenlik Beyanı"
+      "security": "Güvenlik Beyanı",
+      "customs_dec_export": "Gümrük Beyannamesi (İhracat)",
+      "customs_dec_import": "Gümrük Beyannamesi (İthalat)",
+      "other_docs": "Diğer Belgeler"
     },
     "equipment": {
       "tilt": "Tenteli",

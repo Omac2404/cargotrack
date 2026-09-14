@@ -540,7 +540,10 @@
       "hawb": "HAWB (House Airway Bill)",
       "cargo_manifest": "Frachtmanifest",
       "dgd": "Gefahrgutdeklaration (DGD)",
-      "security": "Sicherheitserklärung"
+      "security": "Sicherheitserklärung",
+      "customs_dec_export": "Ausfuhrzollanmeldung",
+      "customs_dec_import": "Einfuhrzollanmeldung",
+      "other_docs": "Sonstige Dokumente"
     },
     "equipment": {
       "tilt": "Planenaufbau",

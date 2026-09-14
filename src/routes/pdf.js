@@ -853,12 +853,19 @@ router.get('/proforma/:shipmentId', verifyTokenFlexible, async (req, res) => {
       doc.fontSize(8).font(F.bold).fillColor(COLORS.textLight)
          .text(text.toUpperCase(), x, y, { characterSpacing: 0.5 });
     };
-    const infoValue = (text, x, y) => {
-      doc.fontSize(12).font(F.bold).fillColor(COLORS.text)
-         .text(text || '—', x, y + 12);
-    };
-
     const colL = 60, colR = W / 2 + 20;
+    // Deger kolon sinirini asamaz: once yazi tipi kucultulur (12 -> 7),
+    // yine sigmiyorsa tek satirda kirpilir. Onceden uzun musteri adi sag
+    // kolonun ve alt satirin ustune biniyordu.
+    const infoValue = (text, x, y) => {
+      const maxW = (x < colR ? colR - 12 : 40 + W - 80) - x;
+      const str = String(text || '—');
+      let size = 12;
+      doc.font(F.bold);
+      while (size > 7 && doc.fontSize(size).widthOfString(str) > maxW) size -= 0.5;
+      doc.fontSize(size).fillColor(COLORS.text)
+         .text(str, x, y + 12, { width: maxW, lineBreak: false, ellipsis: true });
+    };
     let infoY = cardY + 15;
     // Row 1
     infoLabel('N° DE FACTURE', colL, infoY);
