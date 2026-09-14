@@ -809,12 +809,8 @@ export function ShipmentFormPage() {
                       className="h-9 w-9 shrink-0"
                       title={t('ui.fransiz_gumruk_hs_kodu_arama_rita')}
                       onClick={() => {
-                        const today = new Date()
-                        const d = String(today.getDate()).padStart(2, '0')
-                        const m = String(today.getMonth() + 1).padStart(2, '0')
-                        const y = today.getFullYear()
-                        const url = `https://www.douane.gouv.fr/rita-encyclopedie/public/nomenclatures/popupNomenclature.action?date=${d}%2F${m}%2F${y}&nomenclatureCritere=`
-                        window.open(url, '_blank', 'noopener,noreferrer')
+                        // RITA nomenklatur arama ana sayfasi (popup URL'si oturum istiyor, bos sayfaya dusuyordu)
+                        window.open('https://www.douane.gouv.fr/rita-encyclopedie/public/nomenclatures/init.action', '_blank', 'noopener,noreferrer')
                       }}
                     >
                       <Search className="w-4 h-4" />

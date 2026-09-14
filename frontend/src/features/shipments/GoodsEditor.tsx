@@ -184,13 +184,8 @@ export function GoodsEditor({ value, onChange, currency }: Props) {
                             type="button" variant="outline" size="icon" className="h-8 w-8 shrink-0"
                             title={t('ui.fransiz_gumruk_hs_kodu_arama_rita')}
                             onClick={() => {
-                              const t = new Date()
-                              const d = String(t.getDate()).padStart(2, '0')
-                              const m = String(t.getMonth() + 1).padStart(2, '0')
-                              window.open(
-                                `https://www.douane.gouv.fr/rita-encyclopedie/public/nomenclatures/popupNomenclature.action?date=${d}%2F${m}%2F${t.getFullYear()}&nomenclatureCritere=`,
-                                '_blank', 'noopener,noreferrer'
-                              )
+                              // RITA nomenklatur arama ana sayfasi (popup URL'si oturum istiyor, bos sayfaya dusuyordu)
+                              window.open('https://www.douane.gouv.fr/rita-encyclopedie/public/nomenclatures/init.action', '_blank', 'noopener,noreferrer')
                             }}
                           >
                             <Search className="w-3.5 h-3.5" />
