@@ -100,7 +100,8 @@ async function loadVehicle(shipId) {
 /** Tüm atanmış araçlar (denizde konteyner listesi olarak kullanılır). */
 async function loadVehicles(shipId) {
   const [rows] = await pool.execute(
-    `SELECT v.plate, v.trailer_plate, v.equipment_type, a.assigned_quantity, a.assigned_weight
+    `SELECT v.plate, v.trailer_plate, v.equipment_type, v.container_numbers, v.container_count, v.bl_number,
+            a.assigned_quantity, a.assigned_weight
      FROM vehicle_assignments a
      JOIN vehicles v ON v.id = a.vehicle_id AND v.deleted_at IS NULL
      WHERE a.shipment_id = ? AND a.deleted_at IS NULL
@@ -462,12 +463,26 @@ router.get('/bill-of-lading/:shipmentId', verifyTokenFlexible, async (req, res) 
     }
     let ry = y + TH + 6;
     doc.font(F.regular).fontSize(7).fillColor(INK);
-    // Konteyner satırları
-    for (const c of containers.slice(0, 4)) {
-      doc.text(`${c.plate || ''}${c.trailer_plate ? ' / ' + c.trailer_plate : ''}`, cols[0].x + 3, ry, { width: cols[0].w - 6, lineBreak: false, ellipsis: true });
+    // Konteyner numaralari: gemi kaydindaki "Konteyner Numaralari" alanindan
+    // (virgul/satir ayrimli coklu numara). Alan bossa eski davranis: plaka.
+    const containerNos = [];
+    for (const c of containers) {
+      const nos = String(c.container_numbers || '').split(/[,;\n]+/).map((x) => x.trim()).filter(Boolean);
+      if (nos.length) {
+        for (const n of nos) containerNos.push(n);
+      } else if (c.plate) {
+        containerNos.push(`${c.plate}${c.trailer_plate ? ' / ' + c.trailer_plate : ''}`);
+      }
+    }
+    for (const n of containerNos.slice(0, 14)) {
+      doc.text(clip(n, 26), cols[0].x + 3, ry, { lineBreak: false });
       ry += 11;
     }
-    if (containers.length === 0) ry += 2;
+    if (containerNos.length === 0) ry += 2;
+    const containerTotal = containers.reduce((sum, c) => {
+      const parsed = String(c.container_numbers || '').split(/[,;\n]+/).map((x) => x.trim()).filter(Boolean).length;
+      return sum + (parseInt(c.container_count, 10) || parsed || 1);
+    }, 0);
     // Kalemler
     let gy = y + TH + 6;
     for (const r of rows.slice(0, 12)) {
@@ -492,7 +507,7 @@ router.get('/bill-of-lading/:shipmentId', verifyTokenFlexible, async (req, res) 
     box(X0, y, W, 20);
     lab(X0, y, 'Total Number of Containers or Packages received by the Carrier', W);
     doc.font(F.regular).fontSize(7.5).fillColor(INK).text(
-      `${containers.length ? containers.length + ' CONTAINER(S) — ' : ''}${tot.qty || ship.quantity || 0} ${ship.package_type || 'PACKAGE(S)'}`,
+      `${containerTotal ? containerTotal + ' CONTAINER(S) — ' : ''}${tot.qty || ship.quantity || 0} ${ship.package_type || 'PACKAGE(S)'}`,
       X0 + 280, y + 7, { lineBreak: false });
 
     y += 20;
