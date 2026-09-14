@@ -116,6 +116,8 @@ async function migrate() {
   await ensureColumn('vehicles', 'container_count', 'INT NULL');
   await ensureColumn('vehicles', 'bl_number', 'VARCHAR(100) NULL');
   await ensureColumn('vehicles', 'total_packages', 'INT NULL');
+  // Konteyner basina kap/kilo (JSON: [{no, packages, weight}])
+  await ensureColumn('vehicles', 'containers_data', 'LONGTEXT NULL');
 
   // Geri doldurma: finansal kalemleri girilmiş ama özet kolonu 0 kalmış kayıtlar.
   // İstatistik sayfası sale_price/purchase_price toplar; bu kolonlar boş olduğu

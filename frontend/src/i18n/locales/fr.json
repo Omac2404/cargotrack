@@ -1295,7 +1295,13 @@
     "veh_container_numbers": "Numéros de conteneurs",
     "veh_container_count": "Nombre de conteneurs",
     "veh_bl_number": "N° B/L",
-    "veh_total_packages": "Nombre total de colis"
+    "veh_total_packages": "Nombre total de colis",
+    "veh_containers_title": "Conteneurs (N° / Colis / Poids)",
+    "veh_add_container": "Ajouter un conteneur",
+    "veh_ctr_packages": "Colis",
+    "veh_ctr_weight": "Poids (kg)",
+    "veh_containers_hint": "Aucun conteneur ajouté. Saisissez le numéro, les colis et le poids par conteneur ; imprimés ligne par ligne sur le B/L.",
+    "veh_ctr_totals": "{{count2}} conteneur(s) · total {{pk}} colis · {{kg}} kg"
   },
   "invoice": {
     "invoice_no": "N° de facture",

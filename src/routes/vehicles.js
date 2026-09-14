@@ -61,6 +61,21 @@ router.post('/', verifyToken, async (req, res) => {
       return sendError(res, 'Plaka / Tanıtıcı zorunludur');
     }
 
+    // Konteyner detaylari (deniz): [{no, packages, weight}] — no'su bos satirlar atilir
+    let containersData = body.containers_data;
+    if (typeof containersData === 'string' && containersData.trim()) {
+      try { containersData = JSON.parse(containersData); } catch (e) { containersData = null; }
+    }
+    const containerRows = Array.isArray(containersData)
+      ? containersData
+          .filter((c) => c && String(c.no || '').trim())
+          .map((c) => ({
+            no: sanitizeText(String(c.no)).toUpperCase(),
+            packages: toNullableInt(c.packages),
+            weight: c.weight === '' || c.weight == null ? null : (parseFloat(c.weight) || null),
+          }))
+      : [];
+
     const transportType = whitelist(sanitizeText(body.transport_type), VALID_TRANSPORT, 'road');
     const allowedEquipment = EQUIPMENT_BY_MODE[transportType];
     const equipmentType = whitelist(sanitizeText(body.equipment_type), allowedEquipment, allowedEquipment[0]);
@@ -76,8 +91,11 @@ router.post('/', verifyToken, async (req, res) => {
       brand_model: sanitizeText(body.brand_model),
       carrier_name: sanitizeText(body.carrier_name),
       // Deniz modu: konteyner ve B/L bilgileri (diger modlarda bos gecilir)
-      container_numbers: sanitizeText(body.container_numbers),
-      container_count: toNullableInt(body.container_count),
+      container_numbers: containerRows.length
+        ? containerRows.map((c) => String(c.no).trim()).join(', ')
+        : sanitizeText(body.container_numbers),
+      container_count: containerRows.length ? containerRows.length : toNullableInt(body.container_count),
+      containers_data: containerRows.length ? JSON.stringify(containerRows) : null,
       bl_number: sanitizeText(body.bl_number),
       total_packages: toNullableInt(body.total_packages),
       driver_name: sanitizeText(body.driver_name),

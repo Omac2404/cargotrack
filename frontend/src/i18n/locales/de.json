@@ -1295,7 +1295,13 @@
     "veh_container_numbers": "Containernummern",
     "veh_container_count": "Anzahl Container",
     "veh_bl_number": "B/L-Nummer",
-    "veh_total_packages": "Gesamtkolli"
+    "veh_total_packages": "Gesamtkolli",
+    "veh_containers_title": "Container (Nr. / Kolli / Gewicht)",
+    "veh_add_container": "Container hinzufügen",
+    "veh_ctr_packages": "Kolli",
+    "veh_ctr_weight": "Gewicht (kg)",
+    "veh_containers_hint": "Noch keine Container. Nummer, Kolli und Gewicht je Container erfassen; erscheint zeilenweise auf dem B/L.",
+    "veh_ctr_totals": "{{count2}} Container · gesamt {{pk}} Kolli · {{kg}} kg"
   },
   "invoice": {
     "invoice_no": "Rechnungsnr.",

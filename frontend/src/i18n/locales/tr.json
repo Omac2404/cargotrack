@@ -1295,7 +1295,13 @@
     "veh_container_numbers": "Konteyner Numaraları",
     "veh_container_count": "Konteyner Sayısı",
     "veh_bl_number": "B/L Numarası",
-    "veh_total_packages": "Toplam Kap"
+    "veh_total_packages": "Toplam Kap",
+    "veh_containers_title": "Konteynerler (No / Kap / Kilo)",
+    "veh_add_container": "Konteyner Ekle",
+    "veh_ctr_packages": "Kap",
+    "veh_ctr_weight": "Kilo (kg)",
+    "veh_containers_hint": "Henüz konteyner eklenmedi. Her konteyner için numara, kap ve kilo girebilirsiniz; B/L üzerinde satır satır basılır.",
+    "veh_ctr_totals": "{{count2}} konteyner · toplam {{pk}} kap · {{kg}} kg"
   },
   "invoice": {
     "invoice_no": "Fatura No",

@@ -101,7 +101,7 @@ async function loadVehicle(shipId) {
 async function loadVehicles(shipId) {
   const [rows] = await pool.execute(
     `SELECT v.plate, v.trailer_plate, v.equipment_type, v.container_numbers, v.container_count, v.bl_number,
-            a.assigned_quantity, a.assigned_weight
+            v.containers_data, a.assigned_quantity, a.assigned_weight
      FROM vehicle_assignments a
      JOIN vehicles v ON v.id = a.vehicle_id AND v.deleted_at IS NULL
      WHERE a.shipment_id = ? AND a.deleted_at IS NULL
@@ -463,26 +463,38 @@ router.get('/bill-of-lading/:shipmentId', verifyTokenFlexible, async (req, res) 
     }
     let ry = y + TH + 6;
     doc.font(F.regular).fontSize(7).fillColor(INK);
-    // Konteyner numaralari: gemi kaydindaki "Konteyner Numaralari" alanindan
-    // (virgul/satir ayrimli coklu numara). Alan bossa eski davranis: plaka.
-    const containerNos = [];
+    // Konteyner satirlari: gemi kaydindaki detay tablosundan (no + kap + kilo).
+    // Detay yoksa duz numara listesi, o da yoksa plaka (eski davranis).
+    const ctrRows = [];
     for (const c of containers) {
+      let cd = c.containers_data;
+      if (typeof cd === 'string' && cd.trim()) { try { cd = JSON.parse(cd); } catch (e) { cd = null; } }
+      if (Array.isArray(cd) && cd.length) {
+        for (const r of cd) {
+          if (r && String(r.no || '').trim()) {
+            ctrRows.push({ no: String(r.no).trim(), pk: Number(r.packages) || 0, kg: Number(r.weight) || 0 });
+          }
+        }
+        continue;
+      }
       const nos = String(c.container_numbers || '').split(/[,;\n]+/).map((x) => x.trim()).filter(Boolean);
       if (nos.length) {
-        for (const n of nos) containerNos.push(n);
+        for (const n of nos) ctrRows.push({ no: n, pk: 0, kg: 0 });
       } else if (c.plate) {
-        containerNos.push(`${c.plate}${c.trailer_plate ? ' / ' + c.trailer_plate : ''}`);
+        ctrRows.push({ no: `${c.plate}${c.trailer_plate ? ' / ' + c.trailer_plate : ''}`, pk: 0, kg: 0 });
       }
     }
-    for (const n of containerNos.slice(0, 14)) {
-      doc.text(clip(n, 26), cols[0].x + 3, ry, { lineBreak: false });
+    const hasPerContainer = ctrRows.some((r) => r.pk > 0 || r.kg > 0);
+    for (const r of ctrRows.slice(0, 14)) {
+      doc.text(clip(r.no, 26), cols[0].x + 3, ry, { lineBreak: false });
+      if (hasPerContainer) {
+        if (r.pk) doc.text(`${r.pk} ${ship.package_type || 'PK'}`, cols[1].x + 3, ry, { width: cols[1].w - 6, align: 'right', lineBreak: false });
+        if (r.kg) doc.text(r.kg.toFixed(2), cols[3].x + 3, ry, { width: cols[3].w - 6, align: 'right', lineBreak: false });
+      }
       ry += 11;
     }
-    if (containerNos.length === 0) ry += 2;
-    const containerTotal = containers.reduce((sum, c) => {
-      const parsed = String(c.container_numbers || '').split(/[,;\n]+/).map((x) => x.trim()).filter(Boolean).length;
-      return sum + (parseInt(c.container_count, 10) || parsed || 1);
-    }, 0);
+    if (ctrRows.length === 0) ry += 2;
+    const containerTotal = ctrRows.length || containers.reduce((sum, c) => sum + (parseInt(c.container_count, 10) || 1), 0);
     // Kalemler
     let gy = y + TH + 6;
     for (const r of rows.slice(0, 12)) {
@@ -491,8 +503,10 @@ router.get('/bill-of-lading/:shipmentId', verifyTokenFlexible, async (req, res) 
       if (r.hs_code) { gy += 10; doc.fillColor(MUTED).fontSize(6.5).text(`HS CODE: ${r.hs_code}`, cols[2].x + 3, gy, { lineBreak: false }); doc.fillColor(INK).fontSize(7); }
       gy += 13;
     }
-    doc.text(String(tot.qty ? `${tot.qty} ${ship.package_type || 'PKG'}` : ''), cols[1].x + 3, y + TH + 6, { width: cols[1].w - 6, align: 'right', lineBreak: false });
-    doc.text(tot.gross ? Number(tot.gross).toFixed(2) : '', cols[3].x + 3, y + TH + 6, { width: cols[3].w - 6, align: 'right', lineBreak: false });
+    if (!hasPerContainer) {
+      doc.text(String(tot.qty ? `${tot.qty} ${ship.package_type || 'PKG'}` : ''), cols[1].x + 3, y + TH + 6, { width: cols[1].w - 6, align: 'right', lineBreak: false });
+      doc.text(tot.gross ? Number(tot.gross).toFixed(2) : '', cols[3].x + 3, y + TH + 6, { width: cols[3].w - 6, align: 'right', lineBreak: false });
+    }
     doc.text(tot.vol ? Number(tot.vol).toFixed(3) : '', cols[4].x + 3, y + TH + 6, { width: cols[4].w - 6, align: 'right', lineBreak: false });
     // Toplam satırı
     const tly = y + TH + TB - 14;

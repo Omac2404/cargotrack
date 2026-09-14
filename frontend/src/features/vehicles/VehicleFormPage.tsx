@@ -36,6 +36,7 @@ const buildSchema = (t: (k: string) => string) => z.object({
   brand_model: z.string().optional().or(z.literal('')),
   carrier_name: z.string().optional().or(z.literal('')),
   container_numbers: z.string().optional().or(z.literal('')),
+  containers_data: z.string().optional().or(z.literal('')),
   container_count: z.union([z.string(), z.number()]).optional(),
   bl_number: z.string().optional().or(z.literal('')),
   total_packages: z.union([z.string(), z.number()]).optional(),
@@ -104,6 +105,9 @@ export function VehicleFormPage() {
         brand_model: existing.brand_model || '',
         carrier_name: existing.carrier_name || '',
         container_numbers: existing.container_numbers || '',
+        containers_data: typeof existing.containers_data === 'string'
+          ? existing.containers_data
+          : (existing.containers_data ? JSON.stringify(existing.containers_data) : ''),
         container_count: existing.container_count || '',
         bl_number: existing.bl_number || '',
         total_packages: existing.total_packages || '',
@@ -242,16 +246,11 @@ export function VehicleFormPage() {
                 </div>
               </div>
               {currentMode === 'sea' && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-1.5 md:col-span-2">
-                    <Label htmlFor="container_numbers">{t('ui.veh_container_numbers')}</Label>
-                    <Input id="container_numbers" {...register('container_numbers')} placeholder="CMAU3913395, TCLU7654321" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="container_count">{t('ui.veh_container_count')}</Label>
-                    <Input id="container_count" type="number" {...register('container_count')} />
-                  </div>
-                </div>
+                <ContainersEditor
+                  value={(watch('containers_data') as string) || ''}
+                  legacyNumbers={(watch('container_numbers') as string) || ''}
+                  onChange={(json) => setValue('containers_data', json, { shouldDirty: true })}
+                />
               )}
             </Card>
 
@@ -424,6 +423,87 @@ function TabSaveBar({ isEdit, isPending, hasErrors }: { isEdit: boolean; isPendi
         {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
         {isEdit ? t('common.update') : t('common.save')}
       </Button>
+    </div>
+  )
+}
+
+
+// ============================================================
+// Konteyner tablosu — konteyner basina No / Kap / Kilo girilir.
+// JSON string olarak containers_data alaninda saklanir; B/L bu satirlari
+// kap/kilolariyla birlikte basar. Eski kayitlardaki duz numara listesi
+// (container_numbers) ilk acilista satirlara donusturulur.
+// ============================================================
+interface CtrRow { no: string; packages: string; weight: string }
+
+function parseCtrRows(json: string, legacyNumbers: string): CtrRow[] {
+  if (json) {
+    try {
+      const arr = JSON.parse(json)
+      if (Array.isArray(arr)) {
+        return arr.map((r) => ({
+          no: String(r?.no ?? ''),
+          packages: r?.packages == null ? '' : String(r.packages),
+          weight: r?.weight == null ? '' : String(r.weight),
+        }))
+      }
+    } catch { /* bozuk JSON — legacy'e dus */ }
+  }
+  const nos = legacyNumbers.split(/[,;]+/).map((x) => x.trim()).filter(Boolean)
+  return nos.map((no) => ({ no, packages: '', weight: '' }))
+}
+
+function ContainersEditor({ value, legacyNumbers, onChange }: {
+  value: string
+  legacyNumbers: string
+  onChange: (json: string) => void
+}) {
+  const { t } = useTranslation()
+  const rows = useMemo(() => parseCtrRows(value, legacyNumbers), [value, legacyNumbers])
+
+  const commit = (next: CtrRow[]) => {
+    onChange(next.length ? JSON.stringify(next.map((r) => ({
+      no: r.no, packages: r.packages, weight: r.weight,
+    }))) : '')
+  }
+  const update = (i: number, patch: Partial<CtrRow>) =>
+    commit(rows.map((r, idx) => (idx === i ? { ...r, ...patch } : r)))
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <Label>{t('ui.veh_containers_title')}</Label>
+        <Button type="button" variant="outline" size="sm" className="h-7"
+                onClick={() => commit([...rows, { no: '', packages: '', weight: '' }])}>
+          + {t('ui.veh_add_container')}
+        </Button>
+      </div>
+      {rows.length === 0 && (
+        <p className="text-xs text-muted-foreground">{t('ui.veh_containers_hint')}</p>
+      )}
+      {rows.map((r, i) => (
+        <div key={i} className="grid grid-cols-[1fr_110px_130px_36px] gap-2 items-center">
+          <Input value={r.no} onChange={(e) => update(i, { no: e.target.value })}
+                 placeholder="CMAU3913395" className="h-8 font-mono text-xs" />
+          <Input value={r.packages} onChange={(e) => update(i, { packages: e.target.value })}
+                 type="number" placeholder={t('ui.veh_ctr_packages')} className="h-8 text-xs" />
+          <Input value={r.weight} onChange={(e) => update(i, { weight: e.target.value })}
+                 type="number" step="0.01" placeholder={t('ui.veh_ctr_weight')} className="h-8 text-xs" />
+          <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive"
+                  onClick={() => commit(rows.filter((_, idx) => idx !== i))}>
+            ×
+          </Button>
+        </div>
+      ))}
+      {rows.length > 0 && (
+        <p className="text-[11px] text-muted-foreground">
+          {t('ui.veh_ctr_totals', {
+            count2: rows.length,
+            pk: rows.reduce((s2, r) => s2 + (Number(r.packages) || 0), 0),
+            kg: rows.reduce((s2, r) => s2 + (Number(r.weight) || 0), 0).toFixed(1),
+          })}
+        </p>
+      )}
     </div>
   )
 }

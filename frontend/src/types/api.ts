@@ -89,6 +89,7 @@ export type VehicleStatus = 'active' | 'inactive' | 'maintenance'
 export interface Vehicle {
   /** Deniz modu: konteyner/B-L bilgileri */
   container_numbers?: string | null
+  containers_data?: string | Array<{ no: string; packages?: number | string | null; weight?: number | string | null }> | null
   container_count?: number | string | null
   bl_number?: string | null
   total_packages?: number | string | null
