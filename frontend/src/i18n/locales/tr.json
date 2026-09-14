@@ -1291,7 +1291,11 @@
     "list_status_changed": "Durum güncellendi",
     "cmr_pdf": "CMR Taşıma Senedi (PDF)",
     "bl_pdf": "Konşimento B/L (PDF)",
-    "awb_pdf": "Hava Konşimentosu AWB (PDF)"
+    "awb_pdf": "Hava Konşimentosu AWB (PDF)",
+    "veh_container_numbers": "Konteyner Numaraları",
+    "veh_container_count": "Konteyner Sayısı",
+    "veh_bl_number": "B/L Numarası",
+    "veh_total_packages": "Toplam Kap"
   },
   "invoice": {
     "invoice_no": "Fatura No",

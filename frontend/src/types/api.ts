@@ -87,6 +87,11 @@ export type VehicleTransport = 'road' | 'sea' | 'air'
 export type VehicleStatus = 'active' | 'inactive' | 'maintenance'
 
 export interface Vehicle {
+  /** Deniz modu: konteyner/B-L bilgileri */
+  container_numbers?: string | null
+  container_count?: number | string | null
+  bl_number?: string | null
+  total_packages?: number | string | null
   id: number
   vehicle_code: string
   transport_type: VehicleTransport

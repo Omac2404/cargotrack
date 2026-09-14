@@ -1291,7 +1291,11 @@
     "list_status_changed": "Status aktualisiert",
     "cmr_pdf": "CMR-Frachtbrief (PDF)",
     "bl_pdf": "Konnossement B/L (PDF)",
-    "awb_pdf": "Luftfrachtbrief AWB (PDF)"
+    "awb_pdf": "Luftfrachtbrief AWB (PDF)",
+    "veh_container_numbers": "Containernummern",
+    "veh_container_count": "Anzahl Container",
+    "veh_bl_number": "B/L-Nummer",
+    "veh_total_packages": "Gesamtkolli"
   },
   "invoice": {
     "invoice_no": "Rechnungsnr.",

@@ -1291,7 +1291,11 @@
     "list_status_changed": "Statut mis à jour",
     "cmr_pdf": "Lettre de voiture CMR (PDF)",
     "bl_pdf": "Connaissement B/L (PDF)",
-    "awb_pdf": "Lettre de transport aérien AWB (PDF)"
+    "awb_pdf": "Lettre de transport aérien AWB (PDF)",
+    "veh_container_numbers": "Numéros de conteneurs",
+    "veh_container_count": "Nombre de conteneurs",
+    "veh_bl_number": "N° B/L",
+    "veh_total_packages": "Nombre total de colis"
   },
   "invoice": {
     "invoice_no": "N° de facture",

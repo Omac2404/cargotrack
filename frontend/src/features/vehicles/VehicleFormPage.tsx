@@ -35,6 +35,10 @@ const buildSchema = (t: (k: string) => string) => z.object({
   capacity_kg: z.union([z.string(), z.number()]).optional(),
   brand_model: z.string().optional().or(z.literal('')),
   carrier_name: z.string().optional().or(z.literal('')),
+  container_numbers: z.string().optional().or(z.literal('')),
+  container_count: z.union([z.string(), z.number()]).optional(),
+  bl_number: z.string().optional().or(z.literal('')),
+  total_packages: z.union([z.string(), z.number()]).optional(),
   driver_name: z.string().optional().or(z.literal('')),
   driver_phone: z.string().optional().or(z.literal('')),
   registration_date: z.string().optional().or(z.literal('')),
@@ -99,6 +103,10 @@ export function VehicleFormPage() {
         capacity_kg: existing.capacity_kg || '',
         brand_model: existing.brand_model || '',
         carrier_name: existing.carrier_name || '',
+        container_numbers: existing.container_numbers || '',
+        container_count: existing.container_count || '',
+        bl_number: existing.bl_number || '',
+        total_packages: existing.total_packages || '',
         driver_name: existing.driver_name || '',
         driver_phone: existing.driver_phone || '',
         registration_date: existing.registration_date || '',
@@ -233,6 +241,18 @@ export function VehicleFormPage() {
                   </Select>
                 </div>
               </div>
+              {currentMode === 'sea' && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-1.5 md:col-span-2">
+                    <Label htmlFor="container_numbers">{t('ui.veh_container_numbers')}</Label>
+                    <Input id="container_numbers" {...register('container_numbers')} placeholder="CMAU3913395, TCLU7654321" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="container_count">{t('ui.veh_container_count')}</Label>
+                    <Input id="container_count" type="number" {...register('container_count')} />
+                  </div>
+                </div>
+              )}
             </Card>
 
             <Card className="p-5 mt-4 space-y-4">
@@ -251,9 +271,21 @@ export function VehicleFormPage() {
                     <Input id="trailer_plate" {...register('trailer_plate')} />
                   </div>
                 )}
+                {currentMode === 'sea' && (
+                  <div className="space-y-1.5">
+                    <Label htmlFor="bl_number">{t('ui.veh_bl_number')}</Label>
+                    <Input id="bl_number" {...register('bl_number')} placeholder="ISB2044474" />
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {currentMode === 'sea' && (
+                  <div className="space-y-1.5">
+                    <Label htmlFor="total_packages">{t('ui.veh_total_packages')}</Label>
+                    <Input id="total_packages" type="number" {...register('total_packages')} />
+                  </div>
+                )}
                 <div className="space-y-1.5">
                   <Label htmlFor="capacity_kg">{t('transport.vehicle_labels.capacity')}</Label>
                   <Input id="capacity_kg" type="number" step="0.01" {...register('capacity_kg')} />

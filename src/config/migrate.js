@@ -111,6 +111,11 @@ async function migrate() {
   await ensureColumn('shipments', 'cover_data', 'LONGTEXT NULL');
   // Palet sayisi — yukleme listesinde kap sayisinin altinda gosterilir
   await ensureColumn('shipments', 'pallet_count', 'INT NULL AFTER `package_count`');
+  // Deniz araclari (gemi kaydi) icin konteyner/B-L alanlari
+  await ensureColumn('vehicles', 'container_numbers', 'TEXT NULL');
+  await ensureColumn('vehicles', 'container_count', 'INT NULL');
+  await ensureColumn('vehicles', 'bl_number', 'VARCHAR(100) NULL');
+  await ensureColumn('vehicles', 'total_packages', 'INT NULL');
 
   // Geri doldurma: finansal kalemleri girilmiş ama özet kolonu 0 kalmış kayıtlar.
   // İstatistik sayfası sale_price/purchase_price toplar; bu kolonlar boş olduğu

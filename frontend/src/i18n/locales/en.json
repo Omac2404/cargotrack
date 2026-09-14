@@ -1291,7 +1291,11 @@
     "list_status_changed": "Status updated",
     "cmr_pdf": "CMR Consignment Note (PDF)",
     "bl_pdf": "Bill of Lading (PDF)",
-    "awb_pdf": "Air Waybill (PDF)"
+    "awb_pdf": "Air Waybill (PDF)",
+    "veh_container_numbers": "Container Numbers",
+    "veh_container_count": "Number of Containers",
+    "veh_bl_number": "B/L Number",
+    "veh_total_packages": "Total Packages"
   },
   "invoice": {
     "invoice_no": "Invoice No",

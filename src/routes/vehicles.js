@@ -5,7 +5,7 @@ const { logAudit } = require('../helpers/audit');
 const {
   sanitizeText, toInt, toFloat, toNullableDate, toBool01,
   jsonStringifyOrNull, whitelist, sendSuccess, sendError
-} = require('../helpers/utils');
+, toNullableInt } = require('../helpers/utils');
 
 const router = express.Router();
 
@@ -75,6 +75,11 @@ router.post('/', verifyToken, async (req, res) => {
       adr_certified: toBool01(body.adr_certified),
       brand_model: sanitizeText(body.brand_model),
       carrier_name: sanitizeText(body.carrier_name),
+      // Deniz modu: konteyner ve B/L bilgileri (diger modlarda bos gecilir)
+      container_numbers: sanitizeText(body.container_numbers),
+      container_count: toNullableInt(body.container_count),
+      bl_number: sanitizeText(body.bl_number),
+      total_packages: toNullableInt(body.total_packages),
       driver_name: sanitizeText(body.driver_name),
       driver_phone: sanitizeText(body.driver_phone),
       registration_date: toNullableDate(body.registration_date),
