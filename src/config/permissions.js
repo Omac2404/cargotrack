@@ -63,6 +63,12 @@ const PERMISSIONS = {
   'reports.view':           'Raporları görür',
   'statistics.view':        'İstatistikleri görür',
 
+  // === Sözleşmeli depoculuk (entreposage) ===
+  'warehousing.read':       'Depo hesaplarını, stok ve dökümleri görür',
+  'warehousing.operate':    'Palet giriş/çıkış ve depo hizmeti girer',
+  'warehousing.manage':     'Depo hesabı/tarife düzenler, ay sonu kapatır',
+  'warehousing.delete':     'Depo hesabı siler',
+
   // === Arşiv ===
   'archive.view':           'Arşivlenen kayıtları görür',
   'archive.restore':        'Arşivden geri yükler',
@@ -78,6 +84,7 @@ const DEFAULT_ROLE_PERMISSIONS = {
     'partners.*',
     'vehicles.*',
     'warehouses.*',
+    'warehousing.*',
     'assignments.*',
     'documents.*',
     'audit.view',
@@ -105,6 +112,11 @@ const DEFAULT_ROLE_PERMISSIONS = {
     // Araç, depo: sadece okuma
     'vehicles.read',
     'warehouses.read',
+
+    // Sözleşmeli depoculuk: görür ve günlük hareket/hizmet girer;
+    // tarife, ay sonu kapanışı ve silme admin'de
+    'warehousing.read',
+    'warehousing.operate',
 
     // Atama: tam erişim (kendi sevkiyatları için)
     'assignments.create',

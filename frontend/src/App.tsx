@@ -29,6 +29,8 @@ const DocumentsPage = lazy(() => import('@/features/documents/DocumentsPage').th
 const UsersListPage = lazy(() => import('@/features/users/UsersListPage').then((m) => ({ default: m.UsersListPage })))
 const ProfilePage = lazy(() => import('@/features/profile/ProfilePage').then((m) => ({ default: m.ProfilePage })))
 const StorageOrdersPage = lazy(() => import('@/features/storage-orders/StorageOrdersPage').then((m) => ({ default: m.StorageOrdersPage })))
+const WarehousingListPage = lazy(() => import('@/features/warehousing/WarehousingListPage').then((m) => ({ default: m.WarehousingListPage })))
+const WarehousingAccountPage = lazy(() => import('@/features/warehousing/WarehousingAccountPage').then((m) => ({ default: m.WarehousingAccountPage })))
 const AuditLogPage = lazy(() => import('@/features/audit/AuditLogPage').then((m) => ({ default: m.AuditLogPage })))
 const ReportsPage = lazy(() => import('@/features/reports/ReportsPage').then((m) => ({ default: m.ReportsPage })))
 const ArchivePage = lazy(() => import('@/features/archive/ArchivePage').then((m) => ({ default: m.ArchivePage })))
@@ -82,6 +84,8 @@ function AppRoutes() {
           <Route path="/users" element={<Suspense fallback={<PageLoader />}><UsersListPage /></Suspense>} />
           <Route path="/profile" element={<Suspense fallback={<PageLoader />}><ProfilePage /></Suspense>} />
           <Route path="/storage-orders" element={<Suspense fallback={<PageLoader />}><StorageOrdersPage /></Suspense>} />
+          <Route path="/warehousing" element={<Suspense fallback={<PageLoader />}><WarehousingListPage /></Suspense>} />
+          <Route path="/warehousing/:id" element={<Suspense fallback={<PageLoader />}><WarehousingAccountPage /></Suspense>} />
           <Route path="/audit" element={<Suspense fallback={<PageLoader />}><AuditLogPage /></Suspense>} />
           <Route path="/reports" element={<Suspense fallback={<PageLoader />}><ReportsPage /></Suspense>} />
           <Route path="/archive" element={<Suspense fallback={<PageLoader />}><ArchivePage /></Suspense>} />

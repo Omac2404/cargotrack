@@ -300,4 +300,106 @@ CREATE TABLE IF NOT EXISTS `login_attempts` (
   INDEX `idx_login_user` (`username`,`attempted_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- ====================== SÖZLEŞMELİ DEPOCULUK (ENTREPOSAGE) ======================
+-- Müşteri bazlı sürekli depolama: palet giriş/çıkış defteri, depo hizmetleri
+-- (sipariş hazırlama, etiketleme...), ay sonu döküm ve faturalandırma.
+-- Sevkiyat dosyalarındaki geçici/transit depolamadan bağımsızdır.
+CREATE TABLE IF NOT EXISTS `wh_accounts` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `account_code` VARCHAR(30) DEFAULT NULL,
+  `client_name` VARCHAR(255) NOT NULL,
+  `warehouse` VARCHAR(255) DEFAULT '',
+  `contact_person` VARCHAR(150) DEFAULT '',
+  `contact_email` VARCHAR(150) DEFAULT '',
+  `contact_phone` VARCHAR(50) DEFAULT '',
+  `start_date` DATE DEFAULT NULL,
+  `end_date` DATE DEFAULT NULL,
+  `status` ENUM('active','suspended','closed') NOT NULL DEFAULT 'active',
+  `currency_code` VARCHAR(3) DEFAULT 'EUR',
+  `vat_rate` DECIMAL(5,2) DEFAULT 20.00,
+  `storage_billing` VARCHAR(30) DEFAULT 'pallet_day',
+  `storage_rate` DECIMAL(12,4) DEFAULT 0,
+  `fixed_monthly_fee` DECIMAL(12,2) DEFAULT 0,
+  `min_monthly_fee` DECIMAL(12,2) DEFAULT 0,
+  `in_rate` DECIMAL(12,4) DEFAULT 0,
+  `out_rate` DECIMAL(12,4) DEFAULT 0,
+  `order_prep_rate` DECIMAL(12,4) DEFAULT 0,
+  `order_line_rate` DECIMAL(12,4) DEFAULT 0,
+  `label_rate` DECIMAL(12,4) DEFAULT 0,
+  `filming_rate` DECIMAL(12,4) DEFAULT 0,
+  `palletizing_rate` DECIMAL(12,4) DEFAULT 0,
+  `unloading_rate` DECIMAL(12,4) DEFAULT 0,
+  `extra_services` LONGTEXT,
+  `payment_terms` VARCHAR(150) DEFAULT '',
+  `notes` TEXT,
+  `created_by` INT,
+  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` DATETIME NULL DEFAULT NULL,
+  INDEX `idx_wha_client` (`client_name`),
+  INDEX `idx_wha_status` (`status`),
+  CONSTRAINT `fk_wha_creator` FOREIGN KEY (`created_by`) REFERENCES `users`(`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `wh_movements` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `account_id` INT NOT NULL,
+  `movement_date` DATE NOT NULL,
+  `direction` ENUM('in','out','adjust') NOT NULL,
+  `pallets` INT NOT NULL DEFAULT 0,
+  `packages` INT DEFAULT NULL,
+  `weight_kg` DECIMAL(12,2) DEFAULT NULL,
+  `reference` VARCHAR(120) DEFAULT '',
+  `product` VARCHAR(255) DEFAULT '',
+  `notes` TEXT,
+  `created_by` INT,
+  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `deleted_at` DATETIME NULL DEFAULT NULL,
+  INDEX `idx_whm_account_date` (`account_id`, `movement_date`),
+  CONSTRAINT `fk_whm_account` FOREIGN KEY (`account_id`) REFERENCES `wh_accounts`(`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_whm_creator` FOREIGN KEY (`created_by`) REFERENCES `users`(`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `wh_services` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `account_id` INT NOT NULL,
+  `service_date` DATE NOT NULL,
+  `service_type` VARCHAR(40) NOT NULL,
+  `label` VARCHAR(255) DEFAULT '',
+  `unit` VARCHAR(50) DEFAULT '',
+  `quantity` DECIMAL(12,2) NOT NULL DEFAULT 0,
+  `unit_price` DECIMAL(12,4) NOT NULL DEFAULT 0,
+  `reference` VARCHAR(120) DEFAULT '',
+  `notes` TEXT,
+  `created_by` INT,
+  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `deleted_at` DATETIME NULL DEFAULT NULL,
+  INDEX `idx_whs_account_date` (`account_id`, `service_date`),
+  CONSTRAINT `fk_whs_account` FOREIGN KEY (`account_id`) REFERENCES `wh_accounts`(`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_whs_creator` FOREIGN KEY (`created_by`) REFERENCES `users`(`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Ay sonu kapanışı: o anki hesaplamanın donmuş kopyası (snapshot) + fatura durumu
+CREATE TABLE IF NOT EXISTS `wh_statements` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `account_id` INT NOT NULL,
+  `period` CHAR(7) NOT NULL,
+  `statement_no` VARCHAR(50) NOT NULL,
+  `status` ENUM('draft','issued','paid') NOT NULL DEFAULT 'draft',
+  `snapshot` LONGTEXT,
+  `total_ht` DECIMAL(12,2) DEFAULT 0,
+  `total_vat` DECIMAL(12,2) DEFAULT 0,
+  `total_ttc` DECIMAL(12,2) DEFAULT 0,
+  `currency_code` VARCHAR(3) DEFAULT 'EUR',
+  `invoice_no` VARCHAR(80) DEFAULT '',
+  `issued_at` DATETIME NULL DEFAULT NULL,
+  `paid_at` DATETIME NULL DEFAULT NULL,
+  `created_by` INT,
+  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY `uq_whst_account_period` (`account_id`, `period`),
+  CONSTRAINT `fk_whst_account` FOREIGN KEY (`account_id`) REFERENCES `wh_accounts`(`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_whst_creator` FOREIGN KEY (`created_by`) REFERENCES `users`(`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 SET FOREIGN_KEY_CHECKS=1;

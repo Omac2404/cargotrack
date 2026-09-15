@@ -1116,7 +1116,7 @@ router.get('/storage-report/:shipmentId', verifyTokenFlexible, async (req, res) 
     }
 
     const stockLog = parseJsonField(ship.depo_stock_log);
-    const filename = `Depo_Raporu_${ship.shipment_no}.pdf`;
+    const filename = `Rapport_Entreposage_${ship.shipment_no}.pdf`;
     setupPdfHeaders(res, filename);
     await logAudit(req, 'download', 'documents', id, `storage-report/${ship.shipment_no}`);
 
@@ -1125,19 +1125,19 @@ router.get('/storage-report/:shipmentId', verifyTokenFlexible, async (req, res) 
     const F = setupFonts(doc);
 
     doc.fontSize(22).fillColor(COLORS.text).font(F.bold)
-       .text('DEPOLAMA RAPORU', { align: 'center' });
-    doc.fontSize(10).fillColor(COLORS.primary).text(`Dosya: ${ship.shipment_no}`, { align: 'center' });
+       .text("RAPPORT D'ENTREPOSAGE", { align: 'center' });
+    doc.fontSize(10).fillColor(COLORS.primary).text(`Dossier : ${ship.shipment_no}`, { align: 'center' });
     doc.moveDown();
 
     let y = 120;
     doc.fontSize(9).fillColor(COLORS.text);
-    doc.text(`Depo: ${ship.warehouse || '—'}`, 40, y);
-    doc.text(`Müşteri: ${ship.depo_musteri || ship.client_billing || '—'}`, 300, y);
+    doc.text(`Entrepôt : ${ship.warehouse || '—'}`, 40, y);
+    doc.text(`Client : ${ship.depo_musteri || ship.client_billing || '—'}`, 300, y);
     y += 14;
-    doc.text(`Giriş: ${ship.entry_date || '—'}`, 40, y);
-    doc.text(`Çıkış: ${ship.exit_date || '—'}`, 300, y);
+    doc.text(`Entrée : ${formatDateFr(ship.entry_date) || '—'}`, 40, y);
+    doc.text(`Sortie : ${formatDateFr(ship.exit_date) || '—'}`, 300, y);
     y += 14;
-    doc.text(`Kap Sayısı: ${ship.depo_kap_sayisi || 0}`, 40, y);
+    doc.text(`Nombre de colis : ${ship.depo_kap_sayisi || 0}`, 40, y);
 
     const log = Array.isArray(stockLog) ? stockLog : [];
     const totalIn = log.reduce((s, r) => s + (parseInt(r.in, 10) || 0), 0);
@@ -1147,13 +1147,13 @@ router.get('/storage-report/:shipmentId', verifyTokenFlexible, async (req, res) 
     y += 25;
     doc.rect(40, y, 515, 30).fillColor('#ede9fe').fill();
     doc.fillColor(COLORS.primary).font(F.bold).fontSize(11);
-    doc.text(`Mevcut Stok: ${balance} kap   |   Toplam Giriş: ${totalIn}   |   Toplam Çıkış: ${totalOut}`, 50, y + 10);
+    doc.text(`Stock actuel : ${balance} colis   |   Total entrées : ${totalIn}   |   Total sorties : ${totalOut}`, 50, y + 10);
     y += 45;
 
     doc.fillColor('#fff');
     doc.rect(40, y, 515, 22).fill(COLORS.primary);
     doc.fillColor('#fff').font(F.bold).fontSize(9);
-    ['Giriş Tarihi', 'Çıkış Tarihi', 'Bekleme', 'Giriş', 'Çıkış', 'Bakiye', 'Not'].forEach((h, i) => {
+    ['Date d\'entrée', 'Date de sortie', 'Durée', 'Entrée', 'Sortie', 'Solde', 'Note'].forEach((h, i) => {
       const widths = [80, 80, 70, 50, 50, 50, 135];
       const offsets = [50, 130, 210, 280, 330, 380, 430];
       doc.text(h, offsets[i], y + 7, { width: widths[i] });
@@ -1170,13 +1170,13 @@ router.get('/storage-report/:shipmentId', verifyTokenFlexible, async (req, res) 
       let daysStr = '—';
       if (r.entry_date && r.exit_date) {
         const d = Math.round((new Date(r.exit_date) - new Date(r.entry_date)) / 86400000);
-        daysStr = `${d} gün`;
+        daysStr = `${d} j`;
       } else if (r.entry_date) {
         const d = Math.round((new Date(todayISO) - new Date(r.entry_date)) / 86400000);
-        daysStr = `${d} gün (devam)`;
+        daysStr = `${d} j (en cours)`;
       }
-      doc.text(r.entry_date || '-', 50, y + 4, { width: 80 });
-      doc.text(r.exit_date || '-', 130, y + 4, { width: 80 });
+      doc.text(formatDateFr(r.entry_date) || '-', 50, y + 4, { width: 80 });
+      doc.text(formatDateFr(r.exit_date) || '-', 130, y + 4, { width: 80 });
       doc.text(daysStr, 210, y + 4, { width: 70 });
       doc.fillColor('#10b981').text(i ? `+${i}` : '-', 280, y + 4, { width: 50, align: 'center' });
       doc.fillColor('#ef4444').text(o ? `-${o}` : '-', 330, y + 4, { width: 50, align: 'center' });
@@ -1188,11 +1188,13 @@ router.get('/storage-report/:shipmentId', verifyTokenFlexible, async (req, res) 
     }
 
     if (!log.length) {
-      doc.fillColor(COLORS.textLight).text('Henüz stok hareketi kayıtlı değil.', 40, y + 10);
+      doc.fillColor(COLORS.textLight).text('Aucun mouvement de stock enregistré.', 40, y + 10);
     }
 
+    // Alt bilgi kenar boşluğunun dışında: boşluk sıfırlanmazsa pdfkit boş ikinci sayfa açıyordu
+    doc.page.margins.bottom = 0;
     doc.fontSize(7).fillColor(COLORS.textLight)
-       .text(`Üretildi: ${new Date().toLocaleString('tr-TR')} · CargoTrack v3.0`, 40, 810, { align: 'center', width: 515 });
+       .text(`Édité le ${new Date().toLocaleString('fr-FR')} · ${COMPANY.name}`, 40, 810, { align: 'center', width: 515, lineBreak: false });
 
     doc.end();
   } catch (err) {
@@ -1472,4 +1474,5 @@ module.exports = router;
 module.exports.shared = {
   verifyTokenFlexible, setupFonts, setupPdfHeaders,
   parseJsonField, parseGoodsItems, loadShipment,
+  letterheadFile, letterheadRatio, COLORS, formatFr, formatDateFr, CURRENCY_SYMBOL,
 };

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import {
   Truck, Ship, Plane, Package, Building2, Warehouse, ArrowRightLeft, FileText,
-  Users, BarChart3, User, LogOut, Plus, Settings, BookOpen,
+  Users, BarChart3, User, LogOut, Plus, Settings, BookOpen, Container,
 } from 'lucide-react'
 import {
   CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList,
@@ -44,6 +44,7 @@ export function CommandPalette({ open, onOpenChange }: Props) {
     { icon: <Package />, label: t('nav.storage'), shortcut: 'g s', action: () => go('/shipments/storage') },
     { icon: <Building2 />, label: t('nav.partners'), shortcut: 'g p', action: () => go('/partners') },
     { icon: <Warehouse />, label: t('nav.warehouses'), shortcut: 'g w', action: () => go('/warehouses') },
+    { icon: <Container />, label: t('nav.warehousing'), action: () => go('/warehousing') },
     { icon: <Truck />, label: t('nav.vehicles'), shortcut: 'g v', action: () => go('/vehicles') },
     { icon: <ArrowRightLeft />, label: t('nav.assignments'), action: () => go('/assignments') },
     { icon: <FileText />, label: t('nav.documents'), action: () => go('/documents') },

@@ -15,11 +15,11 @@ export function ProtectedRoute({ children }: Props) {
   const location = useLocation()
   const refreshed = useRef(false)
 
-  // İlk render'da: localStorage'daki user objesi yeni alanları (permissions) içermiyorsa
-  // /me endpoint'inden refresh et. Token zaten var.
+  // Sayfa her yüklendiğinde bir kez /me ile kullanıcı ve izinler tazelenir.
+  // Yalnızca izin listesi boşken tazelemek, sonradan eklenen modül izinlerinin
+  // (örn. warehousing.*) mevcut oturumlara hiç ulaşmamasına yol açıyordu.
   useEffect(() => {
     if (!isAuthenticated || refreshed.current) return
-    if (user && user.permissions && user.permissions.length > 0) return
     refreshed.current = true
     api.get<{ user: User }>('/api/auth/me')
       .then((data) => {

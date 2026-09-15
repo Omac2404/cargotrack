@@ -29,6 +29,15 @@ export function getProformaUrl(shipmentId: number) {
   return makePdfUrl(`/api/pdf/proforma/${shipmentId}`)
 }
 
+/** Sözleşmeli depoculuk — aylık döküm ve stok fişi (Fransızca) */
+export function getWhStatementUrl(accountId: number, period: string) {
+  return makePdfUrl(`/api/pdf/wh-statement/${accountId}?period=${encodeURIComponent(period)}`)
+}
+export function getWhStockUrl(accountId: number, from: string, to: string) {
+  const qs = [from && `from=${from}`, to && `to=${to}`].filter(Boolean).join('&')
+  return makePdfUrl(`/api/pdf/wh-stock/${accountId}${qs ? `?${qs}` : ''}`)
+}
+
 export function getStorageReportUrl(shipmentId: number) {
   return makePdfUrl(`/api/pdf/storage-report/${shipmentId}`)
 }

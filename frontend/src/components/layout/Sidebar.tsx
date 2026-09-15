@@ -2,7 +2,7 @@ import { NavLink, useLocation } from 'react-router-dom'
 import {
   Truck, Ship, Plane, Warehouse, Package, Users, BarChart3,
   Settings, Building2, FileText, ArrowRightLeft, ChevronDown, Truck as TruckIcon,
-  History, Boxes, X, Archive, BookOpen,
+  History, Boxes, X, Archive, BookOpen, Container,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/stores/auth'
@@ -51,6 +51,7 @@ function buildNav(t: (k: string) => string): NavGroup[] {
         { label: t('nav.partners'), to: '/partners', icon: <Building2 className="w-4 h-4" /> },
         { label: t('nav.warehouses'), to: '/warehouses', icon: <Warehouse className="w-4 h-4" /> },
         { label: t('nav.storage_orders'), to: '/storage-orders', icon: <Boxes className="w-4 h-4" /> },
+        { label: t('nav.warehousing'), to: '/warehousing', icon: <Container className="w-4 h-4" /> },
         { label: t('nav.vehicles'), to: '/vehicles', icon: <TruckIcon className="w-4 h-4" /> },
         { label: t('nav.assignments'), to: '/assignments', icon: <ArrowRightLeft className="w-4 h-4" /> },
         { label: t('nav.documents'), to: '/documents', icon: <FileText className="w-4 h-4" /> },
@@ -114,6 +115,7 @@ export function Sidebar() {
     '/users': 'users.read',
     '/audit': 'audit.view',
     '/storage-orders': 'warehouses.read',
+    '/warehousing': 'warehousing.read',
     '/reports': 'reports.view',
     '/archive': 'archive.view',
   }

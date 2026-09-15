@@ -25,6 +25,7 @@ export const HANDLING_ITEMS: HandlingItem[] = [
   { key: 'ellecleme_filmleme', label: 'ui.hnd_filming' },
   { key: 'ellecleme_paletleme', label: 'ui.hnd_palletizing' },
   { key: 'ellecleme_etiketleme', label: 'ui.hnd_labeling' },
+  { key: 'order_prep', label: 'ui.hnd_order_prep' },
   { key: 'ellecleme_depo_giris', label: 'ui.hnd_wh_entry' },
   { key: 'ellecleme_depo_cikis', label: 'ui.hnd_wh_exit' },
   // Diğer: legacy compat

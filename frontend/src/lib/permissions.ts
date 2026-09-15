@@ -59,6 +59,12 @@ export const PERMISSION_LABELS: Record<string, string> = {
   'reports.view':           'ui.perm_reports_view',
   'statistics.view':        'ui.perm_statistics_view',
 
+  // Sözleşmeli depoculuk
+  'warehousing.read':       'ui.perm_warehousing_read',
+  'warehousing.operate':    'ui.perm_warehousing_operate',
+  'warehousing.manage':     'ui.perm_warehousing_manage',
+  'warehousing.delete':     'ui.perm_warehousing_delete',
+
   // Arşiv
   'archive.view':           'ui.perm_archive_view',
   'archive.restore':        'ui.perm_archive_restore',
@@ -79,6 +85,7 @@ export const PERMISSION_GROUPS: Array<{ title: string; prefix: string }> = [
   { title: 'nav.partners', prefix: 'partners.' },
   { title: 'nav.vehicles', prefix: 'vehicles.' },
   { title: 'nav.warehouses', prefix: 'warehouses.' },
+  { title: 'nav.warehousing', prefix: 'warehousing.' },
   { title: 'nav.assignments', prefix: 'assignments.' },
   { title: 'nav.documents', prefix: 'documents.' },
   { title: 'nav.users', prefix: 'users.' },
