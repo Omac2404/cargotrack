@@ -1315,7 +1315,9 @@
     "cb_currency": "Choisir une devise…",
     "cb_package": "Choisir un type d’emballage…",
     "veh_carrier_search": "Rechercher ou saisir un nouveau transporteur…",
-    "veh_carrier_hint": "{{count}} transporteur(s) enregistré(s). Pour un nouveau transporteur, saisissez son nom puis choisissez la ligne « Utiliser … »."
+    "veh_carrier_hint": "{{count}} transporteur(s) enregistré(s). Pour un nouveau transporteur, saisissez son nom puis choisissez la ligne « Utiliser … ».",
+    "veh_carrier_src_vehicle": "déjà utilisé",
+    "veh_carrier_hint2": "La liste contient les agents enregistrés (Partenaires › Agents) et les transporteurs déjà saisis sur des véhicules ({{count}}). Pour un nouveau nom, saisissez-le puis choisissez la ligne « Utiliser … »."
   },
   "invoice": {
     "invoice_no": "N° de facture",

@@ -8,6 +8,18 @@ import {
 } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
+/**
+ * Arama karsilastirmasi icin normalize: kucuk harf + aksan/nokta kaldirma.
+ * "İNCİ" ile "inci", "Faïence" ile "faience" eslesir.
+ */
+function norm(v: string): string {
+  return (v || '')
+    .toLocaleLowerCase('tr')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/ı/g, 'i')
+}
+
 export interface ComboboxOption {
   value: string
   label: string
@@ -48,10 +60,17 @@ export function Combobox({
   // kullanıcı yazıp Enter'a basınca ya da dışarı tıklayınca yazdığı kayboluyor,
   // "kaydettim ama listede yok" durumu oluşuyordu.
   const typed = search.trim()
-  const hasExact = options.some(
-    (o) => o.label.toLowerCase() === typed.toLowerCase() || o.value.toLowerCase() === typed.toLowerCase()
-  )
+  const hasExact = options.some((o) => norm(o.label) === norm(typed) || norm(o.value) === norm(typed))
   const showTyped = allowCustom && !!typed && !hasExact
+
+  // Filtrelemeyi kendimiz yapiyoruz: cmdk'nin bulanik eslestirmesi Turkce
+  // karakterlerde sasiyor ve alakasiz satirlari da listede tutuyordu.
+  const filtered = typed
+    ? options.filter((o) => {
+        const hay = norm(`${o.label} ${o.description ?? ''}`)
+        return norm(typed).split(/\s+/).every((tok) => hay.includes(tok))
+      })
+    : options
 
   const pick = (v: string) => {
     onChange(v)
@@ -101,22 +120,16 @@ export function Combobox({
         sideOffset={4}
         avoidCollisions={false}
       >
-        <Command shouldFilter={true}>
+        <Command shouldFilter={false}>
           <CommandInput
             placeholder={searchText}
             value={search}
             onValueChange={setSearch}
           />
           <CommandList>
-            <CommandEmpty>{emptyText}</CommandEmpty>
+            {filtered.length === 0 && !showTyped && <CommandEmpty>{emptyText}</CommandEmpty>}
             <CommandGroup>
-              {showTyped && (
-                <CommandItem value={typed} onSelect={() => pick(typed)} className="text-primary">
-                  <Plus className="mr-2 h-4 w-4" />
-                  <span className="truncate">{t('ui.use_typed_value', { value: typed })}</span>
-                </CommandItem>
-              )}
-              {options.map((opt) => (
+              {filtered.map((opt) => (
                 <CommandItem
                   key={opt.value}
                   value={`${opt.label} ${opt.description ?? ''}`}
@@ -131,6 +144,14 @@ export function Combobox({
                   </div>
                 </CommandItem>
               ))}
+              {/* Yazilan yeni deger en sonda: listede eslesme varsa Enter once
+                  onu secer, boylece "NEW" yazip NEWAGE yerine "NEW" kaydedilmez */}
+              {showTyped && (
+                <CommandItem value={`__typed__${typed}`} onSelect={() => pick(typed)} className="text-primary">
+                  <Plus className="mr-2 h-4 w-4" />
+                  <span className="truncate">{t('ui.use_typed_value', { value: typed })}</span>
+                </CommandItem>
+              )}
             </CommandGroup>
           </CommandList>
         </Command>

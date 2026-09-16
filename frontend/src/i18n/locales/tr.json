@@ -1315,7 +1315,9 @@
     "cb_currency": "Para birimi seçin...",
     "cb_package": "Ambalaj tipi seçin...",
     "veh_carrier_search": "Nakliyeci ara veya yeni ad yaz...",
-    "veh_carrier_hint": "Kayıtlı {{count}} nakliyeci listelenir. Yeni bir nakliyeci için adını yazıp çıkan \"… kullan\" satırını seçin."
+    "veh_carrier_hint": "Kayıtlı {{count}} nakliyeci listelenir. Yeni bir nakliyeci için adını yazıp çıkan \"… kullan\" satırını seçin.",
+    "veh_carrier_src_vehicle": "araçlardan",
+    "veh_carrier_hint2": "Listede Partenaires > Agents altındaki acenteler ve daha önce araçlara yazılmış nakliyeciler ({{count}}) görünür. Yeni bir ad için yazıp çıkan \"… kullan\" satırını seçin."
   },
   "invoice": {
     "invoice_no": "Fatura No",

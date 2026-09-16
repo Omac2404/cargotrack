@@ -1315,7 +1315,9 @@
     "cb_currency": "Select a currency…",
     "cb_package": "Select a packaging type…",
     "veh_carrier_search": "Search or type a new carrier…",
-    "veh_carrier_hint": "{{count}} saved carriers. For a new carrier, type the name and pick the \"Use …\" row."
+    "veh_carrier_hint": "{{count}} saved carriers. For a new carrier, type the name and pick the \"Use …\" row.",
+    "veh_carrier_src_vehicle": "already used",
+    "veh_carrier_hint2": "The list shows agents from Partners › Agents and carriers already used on vehicles ({{count}}). For a new name, type it and pick the \"Use …\" row."
   },
   "invoice": {
     "invoice_no": "Invoice No",

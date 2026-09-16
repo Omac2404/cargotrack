@@ -1315,7 +1315,9 @@
     "cb_currency": "Währung wählen…",
     "cb_package": "Verpackungsart wählen…",
     "veh_carrier_search": "Spediteur suchen oder neu eingeben…",
-    "veh_carrier_hint": "{{count}} gespeicherte Spediteure. Für einen neuen Spediteur den Namen eingeben und die Zeile „… verwenden“ wählen."
+    "veh_carrier_hint": "{{count}} gespeicherte Spediteure. Für einen neuen Spediteur den Namen eingeben und die Zeile „… verwenden“ wählen.",
+    "veh_carrier_src_vehicle": "bereits verwendet",
+    "veh_carrier_hint2": "Die Liste zeigt Agenten aus Partner › Agenten und bereits auf Fahrzeugen verwendete Spediteure ({{count}}). Für einen neuen Namen eingeben und die Zeile „… verwenden\" wählen."
   },
   "invoice": {
     "invoice_no": "Rechnungsnr.",

@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
 import { useVehicle, useVehicles, useSaveVehicle, EQUIPMENT_BY_MODE } from './hooks'
+import { usePartners } from '@/features/partners/hooks'
 import { Combobox } from '@/components/shared/Combobox'
 import { VehicleLoadPanel } from './VehicleLoadPanel'
 import type { VehicleTransport } from '@/types/api'
@@ -78,17 +79,35 @@ export function VehicleFormPage() {
   })
   const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = form
 
-  // Nakliyeci onerileri: tum kayitli araclardaki benzersiz nakliyeci adlari.
-  // Onceden duz metin alaniydi; ayni nakliyeci her aracta elle yeniden yaziliyordu.
+  // Nakliyeci onerileri iki kaynaktan gelir:
+  //   1) Partenaires > Agents altina kaydedilen acenteler (musteri tasiyicilari
+  //      oraya kaydediyor; onceden bu liste hic gorunmuyordu)
+  //   2) daha once araclara yazilmis nakliyeci adlari
+  // Ayni ad iki kaynakta varsa bir kez gosterilir (buyuk/kucuk harf duyarsiz).
   const { data: allVehicles = [] } = useVehicles()
+  const { data: allPartners = [] } = usePartners('')
   const carrierOptions = useMemo(() => {
-    const names = new Set<string>()
-    for (const v of allVehicles) {
-      const n = (v.carrier_name || '').trim()
-      if (n) names.add(n)
+    const byKey = new Map<string, { value: string; label: string; description: string }>()
+    const add = (name: string, description: string) => {
+      const n = (name || '').trim()
+      if (!n) return
+      const key = n.toLocaleLowerCase('tr')
+      const prev = byKey.get(key)
+      if (!prev) byKey.set(key, { value: n, label: n, description })
+      // Ayni ad birden fazla kayitta varsa ilk aciklama korunur (tekrar eklenmez)
+      else if (!prev.description && description) prev.description = description
     }
-    return Array.from(names).sort((a, b) => a.localeCompare(b, 'tr')).map((n) => ({ value: n, label: n }))
-  }, [allVehicles])
+    for (const pr of allPartners) {
+      const roles = Array.isArray(pr.extra_roles)
+        ? pr.extra_roles
+        : typeof pr.extra_roles === 'string' ? pr.extra_roles.split(',').map((r) => r.trim()) : []
+      if (pr.type === 'agent' || roles.includes('agent')) {
+        add(pr.company_name, [t('partner.types.agent'), pr.partner_code, pr.city].filter(Boolean).join(' · '))
+      }
+    }
+    for (const v of allVehicles) add(v.carrier_name || '', t('ui.veh_carrier_src_vehicle'))
+    return Array.from(byKey.values()).sort((x, y) => x.label.localeCompare(y.label, 'tr'))
+  }, [allVehicles, allPartners, t])
   const currentMode = watch('transport_type')
   const equipmentOptions = EQUIPMENT_BY_MODE[currentMode] || []
   const modeCfg = MODE_CONFIG[currentMode]
@@ -325,7 +344,7 @@ export function VehicleFormPage() {
                     allowCustom
                   />
                   <p className="text-[10px] text-muted-foreground">
-                    {t('ui.veh_carrier_hint', { count: carrierOptions.length })}
+                    {t('ui.veh_carrier_hint2', { count: carrierOptions.length })}
                   </p>
                 </div>
               </div>
