@@ -1307,7 +1307,15 @@
     "perm_warehousing_read": "Depo hesaplarını ve dökümleri görür",
     "perm_warehousing_operate": "Palet hareketi ve depo hizmeti girer",
     "perm_warehousing_manage": "Hesap/tarife düzenler, ay sonu kapatır",
-    "perm_warehousing_delete": "Depo hesabı siler"
+    "perm_warehousing_delete": "Depo hesabı siler",
+    "cb_select": "Seçim yapın...",
+    "cb_search": "Ara...",
+    "cb_empty": "Sonuç bulunamadı",
+    "cb_country": "Ülke seçin...",
+    "cb_currency": "Para birimi seçin...",
+    "cb_package": "Ambalaj tipi seçin...",
+    "veh_carrier_search": "Nakliyeci ara veya yeni ad yaz...",
+    "veh_carrier_hint": "Kayıtlı {{count}} nakliyeci listelenir. Yeni bir nakliyeci için adını yazıp çıkan \"… kullan\" satırını seçin."
   },
   "invoice": {
     "invoice_no": "Fatura No",

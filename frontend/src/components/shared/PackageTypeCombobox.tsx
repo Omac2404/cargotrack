@@ -25,7 +25,7 @@ interface Props {
  * Kategorize edilmiş, Türkçe + Fransızca açıklamalı.
  */
 export function PackageTypeCombobox({
-  value, onChange, placeholder = 'Ambalaj tipi seçin...',
+  value, onChange, placeholder,
   className, disabled = false, filterCategories, allowCustom = true,
 }: Props) {
   const { t, i18n } = useTranslation()
@@ -55,7 +55,7 @@ export function PackageTypeCombobox({
       value={value || ''}
       onChange={handleChange}
       options={options}
-      placeholder={placeholder}
+      placeholder={placeholder || t('ui.cb_package')}
       searchPlaceholder={t('ui.kod_veya_isim_ara_orn_4g_karton_varil_cuval')}
       emptyMessage={t('ui.ambalaj_tipi_bulunamadi')}
       className={className}

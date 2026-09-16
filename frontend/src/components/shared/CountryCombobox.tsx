@@ -19,7 +19,7 @@ interface Props {
 }
 
 export function CountryCombobox({
-  value, onChange, placeholder = 'Ülke seçin...',
+  value, onChange, placeholder,
   allowClear = true, className, disabled = false,
 }: Props) {
   const { t } = useTranslation()
@@ -44,7 +44,7 @@ export function CountryCombobox({
             className
           )}
         >
-          <span className="truncate text-left">{displayLabel || placeholder}</span>
+          <span className="truncate text-left">{displayLabel || placeholder || t('ui.cb_country')}</span>
           <div className="flex items-center gap-1">
             {allowClear && value && (
               <X

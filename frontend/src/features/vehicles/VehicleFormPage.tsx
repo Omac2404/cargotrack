@@ -321,8 +321,12 @@ export function VehicleFormPage() {
                     onChange={(v) => setValue('carrier_name', v, { shouldDirty: true })}
                     options={carrierOptions}
                     placeholder={t('vehicle.carrier_ph')}
+                    searchPlaceholder={t('ui.veh_carrier_search')}
                     allowCustom
                   />
+                  <p className="text-[10px] text-muted-foreground">
+                    {t('ui.veh_carrier_hint', { count: carrierOptions.length })}
+                  </p>
                 </div>
               </div>
             </Card>

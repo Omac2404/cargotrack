@@ -1307,7 +1307,15 @@
     "perm_warehousing_read": "Voir les comptes et relevés d’entreposage",
     "perm_warehousing_operate": "Saisir mouvements et prestations",
     "perm_warehousing_manage": "Gérer contrats, tarifs et clôtures",
-    "perm_warehousing_delete": "Supprimer un compte d’entreposage"
+    "perm_warehousing_delete": "Supprimer un compte d’entreposage",
+    "cb_select": "Sélectionner…",
+    "cb_search": "Rechercher…",
+    "cb_empty": "Aucun résultat",
+    "cb_country": "Choisir un pays…",
+    "cb_currency": "Choisir une devise…",
+    "cb_package": "Choisir un type d’emballage…",
+    "veh_carrier_search": "Rechercher ou saisir un nouveau transporteur…",
+    "veh_carrier_hint": "{{count}} transporteur(s) enregistré(s). Pour un nouveau transporteur, saisissez son nom puis choisissez la ligne « Utiliser … »."
   },
   "invoice": {
     "invoice_no": "N° de facture",

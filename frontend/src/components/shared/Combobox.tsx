@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Check, ChevronsUpDown, X } from 'lucide-react'
+import { Check, ChevronsUpDown, X, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
@@ -29,13 +29,35 @@ interface Props {
 }
 
 export function Combobox({
-  value, onChange, options, placeholder = 'Seçim yapın...',
-  emptyMessage = 'Sonuç bulunamadı', searchPlaceholder = 'Ara...',
+  value, onChange, options, placeholder,
+  emptyMessage, searchPlaceholder,
   allowClear = true, className, disabled = false, allowCustom = false,
 }: Props) {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
+
+  // Varsayılan metinler çeviriden gelir — sabit Türkçe metinler Fransızca
+  // arayüze sızıyordu (ör. araç formundaki arama kutusunda "Ara...")
+  const phText = placeholder ?? t('ui.cb_select')
+  const searchText = searchPlaceholder ?? t('ui.cb_search')
+  const emptyText = emptyMessage ?? t('ui.cb_empty')
+
+  // Yazılan yeni değer: listede satır olarak görünür; böylece Enter ile de
+  // seçilebilir. Önceden yalnızca hiçbir sonuç yokken bir buton çıkıyordu;
+  // kullanıcı yazıp Enter'a basınca ya da dışarı tıklayınca yazdığı kayboluyor,
+  // "kaydettim ama listede yok" durumu oluşuyordu.
+  const typed = search.trim()
+  const hasExact = options.some(
+    (o) => o.label.toLowerCase() === typed.toLowerCase() || o.value.toLowerCase() === typed.toLowerCase()
+  )
+  const showTyped = allowCustom && !!typed && !hasExact
+
+  const pick = (v: string) => {
+    onChange(v)
+    setOpen(false)
+    setSearch('')
+  }
 
   const selected = options.find((o) => o.value === value)
   // value var ama options'ta yoksa (örneğin eski text input value'su) onu göster
@@ -56,7 +78,7 @@ export function Combobox({
             className
           )}
         >
-          <span className="truncate text-left">{displayLabel || placeholder}</span>
+          <span className="truncate text-left">{displayLabel || phText}</span>
           <div className="flex items-center gap-1">
             {allowClear && value && (
               <X
@@ -81,37 +103,24 @@ export function Combobox({
       >
         <Command shouldFilter={true}>
           <CommandInput
-            placeholder={searchPlaceholder}
+            placeholder={searchText}
             value={search}
             onValueChange={setSearch}
           />
           <CommandList>
-            <CommandEmpty>
-              {allowCustom && search ? (
-                <button
-                  onClick={() => {
-                    onChange(search)
-                    setOpen(false)
-                    setSearch('')
-                  }}
-                  className="w-full text-left px-2 py-1.5 text-sm hover:bg-accent rounded"
-                >
-                  {t('ui.use_typed_value', { value: search })}
-                </button>
-              ) : (
-                emptyMessage
-              )}
-            </CommandEmpty>
+            <CommandEmpty>{emptyText}</CommandEmpty>
             <CommandGroup>
+              {showTyped && (
+                <CommandItem value={typed} onSelect={() => pick(typed)} className="text-primary">
+                  <Plus className="mr-2 h-4 w-4" />
+                  <span className="truncate">{t('ui.use_typed_value', { value: typed })}</span>
+                </CommandItem>
+              )}
               {options.map((opt) => (
                 <CommandItem
                   key={opt.value}
                   value={`${opt.label} ${opt.description ?? ''}`}
-                  onSelect={() => {
-                    onChange(opt.value)
-                    setOpen(false)
-                    setSearch('')
-                  }}
+                  onSelect={() => pick(opt.value)}
                 >
                   <Check className={cn('mr-2 h-4 w-4', value === opt.value ? 'opacity-100' : 'opacity-0')} />
                   <div className="flex-1 min-w-0">

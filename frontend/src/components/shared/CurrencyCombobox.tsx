@@ -19,7 +19,7 @@ interface Props {
 }
 
 export function CurrencyCombobox({
-  value, onChange, placeholder = 'Para birimi seçin...',
+  value, onChange, placeholder,
   allowClear = false, className, disabled = false,
 }: Props) {
   const { t } = useTranslation()
@@ -53,7 +53,7 @@ export function CurrencyCombobox({
             className
           )}
         >
-          <span className="truncate text-left">{displayLabel || placeholder}</span>
+          <span className="truncate text-left">{displayLabel || placeholder || t('ui.cb_currency')}</span>
           <div className="flex items-center gap-1">
             {allowClear && value && (
               <X

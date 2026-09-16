@@ -1307,7 +1307,15 @@
     "perm_warehousing_read": "View storage accounts and statements",
     "perm_warehousing_operate": "Enter movements and services",
     "perm_warehousing_manage": "Manage contracts, rates and closings",
-    "perm_warehousing_delete": "Delete storage accounts"
+    "perm_warehousing_delete": "Delete storage accounts",
+    "cb_select": "Select…",
+    "cb_search": "Search…",
+    "cb_empty": "No results",
+    "cb_country": "Select a country…",
+    "cb_currency": "Select a currency…",
+    "cb_package": "Select a packaging type…",
+    "veh_carrier_search": "Search or type a new carrier…",
+    "veh_carrier_hint": "{{count}} saved carriers. For a new carrier, type the name and pick the \"Use …\" row."
   },
   "invoice": {
     "invoice_no": "Invoice No",

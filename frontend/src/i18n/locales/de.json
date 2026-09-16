@@ -1307,7 +1307,15 @@
     "perm_warehousing_read": "Lagerkonten und Abrechnungen ansehen",
     "perm_warehousing_operate": "Bewegungen und Leistungen erfassen",
     "perm_warehousing_manage": "Verträge, Tarife und Abschlüsse verwalten",
-    "perm_warehousing_delete": "Lagerkonten löschen"
+    "perm_warehousing_delete": "Lagerkonten löschen",
+    "cb_select": "Auswählen…",
+    "cb_search": "Suchen…",
+    "cb_empty": "Keine Ergebnisse",
+    "cb_country": "Land wählen…",
+    "cb_currency": "Währung wählen…",
+    "cb_package": "Verpackungsart wählen…",
+    "veh_carrier_search": "Spediteur suchen oder neu eingeben…",
+    "veh_carrier_hint": "{{count}} gespeicherte Spediteure. Für einen neuen Spediteur den Namen eingeben und die Zeile „… verwenden“ wählen."
   },
   "invoice": {
     "invoice_no": "Rechnungsnr.",
