@@ -1,7 +1,15 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { Package, Loader2, AlertCircle, Inbox, ExternalLink, Calendar, Plus, FileText } from 'lucide-react'
+import { Package, Loader2, AlertCircle, Inbox, ExternalLink, Calendar, Plus, FileText, Pencil, Trash2 } from 'lucide-react'
+import { toast } from 'sonner'
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import { useDeleteAssignment } from '@/features/assignments/hooks'
+import { useCan } from '@/hooks/useCan'
+import type { Assignment } from '@/types/api'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -30,6 +38,13 @@ export function VehicleLoadPanel({ vehicleId }: Props) {
   const { t } = useTranslation()
   const { data, isLoading, error } = useVehicleLoad(vehicleId)
   const [addOpen, setAddOpen] = useState(false)
+  // Yük satırı düzenleme / kamyondan çıkarma — önceden yalnızca ayrı
+  // "Affectations" ekranından yapılabiliyordu, kullanıcı bulamıyordu
+  const [editTarget, setEditTarget] = useState<Assignment | null>(null)
+  const [removeTarget, setRemoveTarget] = useState<{ id: number; shipment_no: string | null } | null>(null)
+  const deleteMut = useDeleteAssignment()
+  const canEdit = useCan('assignments.update')
+  const canRemove = useCan('assignments.delete')
 
   if (isLoading) {
     return (
@@ -164,7 +179,7 @@ export function VehicleLoadPanel({ vehicleId }: Props) {
                 <TableHead className="text-right">{t('assignment.assigned_quantity')}</TableHead>
                 <TableHead className="text-right">{t('assignment.assigned_weight')}</TableHead>
                 <TableHead>{t('common.status')}</TableHead>
-                <TableHead className="w-[60px] text-right">{t('common.open')}</TableHead>
+                <TableHead className="w-[110px] text-right">{t('common.actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -200,13 +215,42 @@ export function VehicleLoadPanel({ vehicleId }: Props) {
                       {status && <Badge variant={status.variant}>{t(status.label)}</Badge>}
                     </TableCell>
                     <TableCell className="text-right">
-                      {editLink && (
-                        <Button asChild variant="ghost" size="icon" className="h-7 w-7">
-                          <Link to={editLink} title={t('ui.sevkiyati_ac')}>
-                            <ExternalLink className="w-3.5 h-3.5" />
-                          </Link>
-                        </Button>
-                      )}
+                      <div className="flex justify-end gap-1">
+                        {canEdit && (
+                          <Button
+                            type="button" variant="ghost" size="icon" className="h-7 w-7"
+                            title={t('ui.lp_edit_load')}
+                            onClick={() => setEditTarget({
+                              id: a.id,
+                              vehicle_id: vehicleId,
+                              shipment_id: a.shipment_id,
+                              assigned_quantity: a.assigned_quantity,
+                              assigned_weight: a.assigned_weight,
+                              loading_date: a.loading_date,
+                              notes: a.notes ?? '',
+                            } as unknown as Assignment)}
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </Button>
+                        )}
+                        {canRemove && (
+                          <Button
+                            type="button" variant="ghost" size="icon"
+                            className="h-7 w-7 text-destructive hover:bg-destructive/10"
+                            title={t('ui.lp_remove_load')}
+                            onClick={() => setRemoveTarget({ id: a.id, shipment_no: a.shipment_no })}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        )}
+                        {editLink && (
+                          <Button asChild variant="ghost" size="icon" className="h-7 w-7">
+                            <Link to={editLink} title={t('ui.sevkiyati_ac')}>
+                              <ExternalLink className="w-3.5 h-3.5" />
+                            </Link>
+                          </Button>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 )
@@ -222,6 +266,36 @@ export function VehicleLoadPanel({ vehicleId }: Props) {
         onOpenChange={setAddOpen}
         defaultVehicleId={vehicleId}
       />
+      <AssignmentFormDialog
+        open={!!editTarget}
+        onOpenChange={(o) => !o && setEditTarget(null)}
+        assignment={editTarget}
+      />
+      <AlertDialog open={!!removeTarget} onOpenChange={(o) => !o && setRemoveTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('ui.lp_remove_title')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('ui.lp_remove_body', { no: removeTarget?.shipment_no || '' })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (!removeTarget) return
+                deleteMut.mutate(removeTarget.id, {
+                  onSuccess: () => { toast.success(t('ui.lp_removed')); setRemoveTarget(null) },
+                  onError: (err: Error) => { toast.error(err.message); setRemoveTarget(null) },
+                })
+              }}
+            >
+              {t('ui.lp_remove_load')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

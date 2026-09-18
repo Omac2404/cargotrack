@@ -11,10 +11,23 @@ interface DeleteParams {
   expected_transport_type?: TransportType
 }
 
+export interface DirectAssignmentResult {
+  status: 'none' | 'ok' | 'skipped' | 'split' | 'error'
+  code?: string
+  plate?: string
+  quantity?: number
+  weight?: number
+  capacity?: number
+  used?: number
+  remaining?: number
+  count?: number
+}
+
 interface SaveResponse {
   id: number
   shipment_no?: string
   message: string
+  direct_assignment?: DirectAssignmentResult
 }
 
 /**
@@ -51,6 +64,10 @@ export function useSaveShipment() {
     onSuccess: (_, vars) => {
       qc.invalidateQueries({ queryKey: ['shipments'] })
       if (vars.id) qc.invalidateQueries({ queryKey: shipmentKey(vars.id as number | string) })
+      // Doğrudan yükleme aracı seçiliyse kayıt atamayı da değiştirmiş olabilir
+      qc.invalidateQueries({ queryKey: ['assignments'] })
+      qc.invalidateQueries({ queryKey: ['vehicle-load'] })
+      qc.invalidateQueries({ queryKey: ['load-pool'] })
     },
   })
 }

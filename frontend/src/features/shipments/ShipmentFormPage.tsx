@@ -29,6 +29,8 @@ import { useShipment, useSaveShipment } from './hooks'
 import { usePartners } from '@/features/partners/hooks'
 import { useWarehouses } from '@/features/warehouses/hooks'
 import { useAssignments } from '@/features/assignments/hooks'
+import { useVehicles } from '@/features/vehicles/hooks'
+import type { DirectAssignmentResult } from './hooks'
 import { getTransportMode } from '@/lib/constants/transportModes'
 import { getProformaUrl, getStorageReportUrl, getBarcodesUrl, getCmrUrl, getBillOfLadingUrl, getAirWaybillUrl, openPdf } from '@/features/pdf/hooks'
 import { FileBadge2, FileCheck2, Barcode, FileSpreadsheet } from 'lucide-react'
@@ -99,7 +101,7 @@ const STORAGE_PRICING = [
 const FIELD_TAB: Record<string, string> = {
   created_date: 'general', responsible_user: 'general', client_reference: 'general',
   status: 'general', currency_code: 'general', transport_type: 'general',
-  incoterm: 'general', incoterm_location: 'general', mode_data: 'general',
+  incoterm: 'general', incoterm_location: 'general', mode_data: 'general', direct_vehicle_id: 'general',
 
   client_billing: 'parties', sender: 'parties', receiver: 'parties', agent: 'parties',
   client_contact: 'parties', client_phone: 'parties', client_email: 'parties',
@@ -182,6 +184,40 @@ export function ShipmentFormPage() {
   const { data: warehouses = [] } = useWarehouses()
   // Sevk Planı tab'ında bu sevkiyatın atamalarını göstermek için
   const { data: assignments = [] } = useAssignments(isEdit ? { shipment_id: Number(id) } : undefined)
+
+  // Doğrudan yükleme: dosyanın moduna uygun aktif araçlar
+  // (ithalat/ihracat her moddaki araca gidebilir; depolama araç almaz)
+  const { data: allVehicles = [] } = useVehicles()
+  const directVehicleOptions = useMemo(() => {
+    const want = config.key === 'maritime' ? 'sea' : config.key
+    return allVehicles
+      .filter((v) => v.status === 'active')
+      .filter((v) => config.key === 'import' || config.key === 'export' || v.transport_type === want)
+      .map((v) => ({
+        value: String(v.id),
+        label: [v.plate, v.trailer_plate].filter(Boolean).join(' / '),
+        description: [v.carrier_name, v.capacity_kg ? `${Number(v.capacity_kg).toLocaleString('fr-FR')} kg` : '', v.vehicle_code].filter(Boolean).join(' · '),
+      }))
+  }, [allVehicles, config.key])
+
+  /** Kayıt sonrası doğrudan yükleme sonucunu kullanıcıya bildir */
+  const reportDirect = (r?: DirectAssignmentResult) => {
+    if (!r || r.status === 'none') return
+    if (r.status === 'ok') {
+      if (r.code === 'created') toast.success(t('ui.direct_load_created', { plate: r.plate, qty: r.quantity, kg: r.weight }))
+      else if (r.code === 'updated' || r.code === 'moved') toast.success(t('ui.direct_load_updated', { plate: r.plate, qty: r.quantity, kg: r.weight }))
+      return
+    }
+    if (r.status === 'split') { toast.info(t('ui.direct_load_split', { n: r.count })); return }
+    if (r.code === 'no_quantity') { toast.warning(t('ui.direct_load_no_qty', { plate: r.plate })); return }
+    if (r.code === 'capacity') {
+      toast.error(t('ui.direct_load_capacity', { plate: r.plate, capacity: r.capacity, used: r.used, remaining: r.remaining }))
+      return
+    }
+    if (r.code === 'mode') { toast.error(t('ui.direct_load_mode', { plate: r.plate })); return }
+    if (r.code === 'no_permission') return
+    toast.error(t('ui.direct_load_failed'))
+  }
 
   const partnerOptionsByRole = useMemo(() => {
     const make = (role: PartnerType) => partners
@@ -385,6 +421,7 @@ export function ShipmentFormPage() {
     if (payload.payment_type === '__none__') payload.payment_type = ''
     saveMut.mutate(payload, {
       onSuccess: (data) => {
+        reportDirect(data.direct_assignment)
         if (!isEdit && data.id) {
           // Yeni kayıttan sonra edit moduna geçir (belgeler/atamalar kullanılabilir olsun)
           toast.success(`${t('common.success')}: ${data.shipment_no || ''}`)
@@ -598,6 +635,24 @@ export function ShipmentFormPage() {
                   </Select>
                 </div>
                 <Field label={t('shipment.fields.incoterm_location')} name="incoterm_location" register={register} errors={errors} className="md:col-span-2" />
+                {config.key !== 'storage' && (
+                  <div className="space-y-1.5 md:col-span-3">
+                    <Label>{t('ui.direct_vehicle')}</Label>
+                    <Combobox
+                      value={watch('direct_vehicle_id') ? String(watch('direct_vehicle_id')) : ''}
+                      onChange={(v) => setValue('direct_vehicle_id', v ? Number(v) : null, { shouldDirty: true })}
+                      options={directVehicleOptions}
+                      placeholder={t('ui.direct_vehicle_ph')}
+                      searchPlaceholder={t('ui.direct_vehicle_search')}
+                      emptyMessage={t('ui.direct_vehicle_empty')}
+                    />
+                    <p className="text-[10px] text-muted-foreground">
+                      {assignments.length > 1
+                        ? t('ui.direct_load_split', { n: assignments.length })
+                        : t('ui.direct_vehicle_hint')}
+                    </p>
+                  </div>
+                )}
               </div>
             </Card>
 

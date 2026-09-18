@@ -11,6 +11,7 @@ const {
 } = require('../helpers/utils');
 
 const { finSummaryTotals } = require('../helpers/finTotals');
+const { syncDirectAssignment } = require('../helpers/directAssignment');
 
 const router = express.Router();
 
@@ -68,6 +69,8 @@ const COL_DEFS = {
   quantity: { type: 'int' },
   package_count: { type: 'int' },
   pallet_count: { type: 'int' },
+  // Dosyadan dogrudan yukleme: secilen arac (bos = dogrudan yukleme yok)
+  direct_vehicle_id: { type: 'nint' },
   pallets: { type: 'bool' },
   package_type: { type: 'text' },
   package_type_custom: { type: 'text' },
@@ -141,6 +144,7 @@ function processValue(def, raw) {
     case 'email': return sanitizeEmail(raw);
     case 'int': return toInt(raw, 0);
     case 'float': return toFloat(raw, 0);
+    case 'nint': { const n = toNullableInt(raw); return n && n > 0 ? n : null; }
     case 'nfloat': return toNullableFloat(raw);
     case 'bool': return toBool01(raw);
     case 'date': return toNullableDate(raw);
@@ -348,7 +352,9 @@ router.post('/', verifyToken, async (req, res) => {
       if (Object.keys(diff).length > 0) {
         await logAudit(req, 'update', 'shipments', shipmentId, record.shipment_no || oldRow.shipment_no || `#${shipmentId}`, diff);
       }
-      sendSuccess(res, { id: shipmentId, shipment_no: record.shipment_no || null, message: 'Kayıt güncellendi' });
+      // Dogrudan yukleme araci seciliyse atamayi dosyayla senkron tut
+      const direct = await syncDirectAssignment(shipmentId, req);
+      sendSuccess(res, { id: shipmentId, shipment_no: record.shipment_no || null, message: 'Kayıt güncellendi', direct_assignment: direct });
     } else {
       if (!can(req.user, 'shipments.create')) {
         await conn.rollback();
@@ -363,10 +369,12 @@ router.post('/', verifyToken, async (req, res) => {
 
       await conn.commit();
       await logAudit(req, 'create', 'shipments', result.insertId, record.shipment_no);
+      const direct = await syncDirectAssignment(result.insertId, req);
       sendSuccess(res, {
         id: result.insertId,
         shipment_no: record.shipment_no,
-        message: 'Kayıt başarılı'
+        message: 'Kayıt başarılı',
+        direct_assignment: direct,
       });
     }
   } catch (err) {

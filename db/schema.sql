@@ -135,6 +135,7 @@ CREATE TABLE IF NOT EXISTS `shipments` (
   `quantity` INT,
   `package_count` INT,
   `pallet_count` INT,
+  `direct_vehicle_id` INT,
   `pallets` TINYINT(1) DEFAULT 0,
   `package_type` VARCHAR(100),
   `package_type_custom` VARCHAR(100) DEFAULT '',

@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -121,7 +121,7 @@ export function AssignmentFormDialog({
     normalize(selectedVehicle.transport_type) !== shipmentMode
 
   // Bu sevkiyata yapılmış diğer atamaların toplamı (mevcut atama hariç)
-  const { data: shipmentAssignments = [] } = useAssignments(shipmentId ? { shipment_id: shipmentId } : undefined)
+  const { data: shipmentAssignments = [], isFetching: shipmentAsgFetching } = useAssignments(shipmentId ? { shipment_id: shipmentId } : undefined)
   const usage = useMemo(() => {
     if (!selectedShipment) return { qtyUsed: 0, wgtUsed: 0, qtyTotal: 0, wgtTotal: 0 }
     const others = shipmentAssignments.filter((a) => a.id !== assignment?.id)
@@ -144,7 +144,23 @@ export function AssignmentFormDialog({
     }
   }, [vehicleAssignments, selectedVehicle, assignment])
 
-  // Otomatik weight önerisi: sevkiyatın brüt ağırlığı yoksa 0
+  // Dosya seçilince koli ve kilo, dosyanın henüz yüklenmemiş kalanıyla dolar.
+  // Önceden araç sayfasından açılan diyalogda dosya seçilse de varsayılan
+  // 1 koli / 0 kg kalıyor, kaydedilince araç toplamı (Total de chargement) bozuluyordu.
+  const autoFilledFor = useRef<number | null>(null)
+  useEffect(() => {
+    if (!open) { autoFilledFor.current = null; return }
+    if (isEdit || !selectedShipment || shipmentAsgFetching) return
+    if (autoFilledFor.current === selectedShipment.id) return
+    autoFilledFor.current = selectedShipment.id
+    // Çağıran taraf bu dosya için değer verdiyse (yük havuzu) ona dokunma
+    if (defaultShipmentId === selectedShipment.id && defaultQuantity && defaultQuantity > 0) return
+    const remQty = Math.max(0, usage.qtyTotal - usage.qtyUsed)
+    const remWgt = Math.max(0, Math.round((usage.wgtTotal - usage.wgtUsed) * 100) / 100)
+    setValue('assigned_quantity', remQty > 0 ? remQty : 1, { shouldValidate: true })
+    setValue('assigned_weight', remWgt, { shouldValidate: true })
+  }, [open, isEdit, selectedShipment, shipmentAsgFetching, usage, defaultShipmentId, defaultQuantity, setValue])
+
   const currentQty = Number(watch('assigned_quantity') || 0)
   const currentWgt = Number(watch('assigned_weight') || 0)
 

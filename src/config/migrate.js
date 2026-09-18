@@ -118,6 +118,8 @@ async function migrate() {
   await ensureColumn('vehicles', 'total_packages', 'INT NULL');
   // Konteyner basina kap/kilo (JSON: [{no, packages, weight}])
   await ensureColumn('vehicles', 'containers_data', 'LONGTEXT NULL');
+  // Dosyadan dogrudan yukleme icin secilen arac
+  await ensureColumn('shipments', 'direct_vehicle_id', 'INT NULL');
 
   // Geri doldurma: finansal kalemleri girilmiş ama özet kolonu 0 kalmış kayıtlar.
   // İstatistik sayfası sale_price/purchase_price toplar; bu kolonlar boş olduğu
@@ -153,6 +155,35 @@ async function migrate() {
       await ensureColumn(tbl, 'deleted_at', 'TIMESTAMP NULL DEFAULT NULL');
       await ensureColumn(tbl, 'deleted_by', 'INT NULL DEFAULT NULL');
     }
+  }
+
+  // Veri duzeltmesi: arac sayfasindaki "Bu araca yuk ekle" diyalogu dosya
+  // secilince koli/kiloyu doldurmuyordu; varsayilan 1 koli / 0 kg ile kaydedilen
+  // yuklemeler arac toplamlarini (Total de chargement) bozuyordu. Yalnizca
+  // bu hatanin izini tasiyan kayitlar duzeltilir: 1 koli + 0 kg, dosyasi TEK
+  // araca yuklu ve dosyada gercek koli/kilo var. Idempotent — duzeltilen kayit
+  // bir daha eslesmez.
+  try {
+    const [cands] = await pool.query(
+      `SELECT a.id, s.quantity, s.gross_weight
+       FROM vehicle_assignments a
+       JOIN shipments s ON s.id = a.shipment_id AND s.deleted_at IS NULL
+       WHERE a.deleted_at IS NULL
+         AND a.assigned_quantity = 1
+         AND (a.assigned_weight IS NULL OR a.assigned_weight = 0)
+         AND s.quantity >= 1 AND s.gross_weight > 0
+         AND (SELECT COUNT(*) FROM vehicle_assignments a2
+              WHERE a2.shipment_id = a.shipment_id AND a2.deleted_at IS NULL) = 1`
+    );
+    for (const c of cands) {
+      await pool.query(
+        'UPDATE vehicle_assignments SET assigned_quantity = ?, assigned_weight = ? WHERE id = ?',
+        [parseInt(c.quantity, 10), parseFloat(c.gross_weight), c.id]
+      );
+    }
+    if (cands.length) console.log(`[migrate] ${cands.length} hatali arac yuklemesi dosya degerleriyle duzeltildi`);
+  } catch (err) {
+    console.error('[migrate] arac yuklemesi duzeltmesi atlandi:', err.message);
   }
 
   await ensureDefaultAdmin();

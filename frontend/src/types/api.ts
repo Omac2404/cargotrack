@@ -298,6 +298,8 @@ export interface GoodsItem {
 }
 
 export interface Shipment {
+  /** Dosyadan doğrudan yükleme için seçilen araç */
+  direct_vehicle_id?: number | null
   /** Liste endpoint'i doldurur: atanan araclarin plakalari (plaka aramasi icin) */
   assigned_plates?: string | null
   id: number
