@@ -779,7 +779,9 @@ export function ShipmentFormPage() {
                     />
                   </div>
 
-                  {/* Acente */}
+                  {/* Acente — karayolunda gizli: taşıyıcı kamyon kaydından bir kez girilir,
+                      CMR'deki Transporteur oradan gelir (müşteri isteği). Kayıtlı değer korunur. */}
+                  {!(config.key === 'road' || config.key === 'import' || config.key === 'export') && (
                   <div className="space-y-1.5">
                     <Label>{t('partner.types.agent')}</Label>
                     <div className="flex items-center gap-1">
@@ -800,6 +802,7 @@ export function ShipmentFormPage() {
                       onChange={(v) => setPartiesData('agent', v)}
                     />
                   </div>
+                  )}
 
                   <div className="grid grid-cols-2 gap-3 pt-3 border-t">
                     <div className="space-y-1.5">
