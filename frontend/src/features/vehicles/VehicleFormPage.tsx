@@ -1,13 +1,12 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { useForm, type UseFormRegister, type FieldErrors } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
 import {
-  ArrowLeft, Save, Loader2, Truck, Ship, Plane, AlertCircle, FileText, Package,
-} from 'lucide-react'
+  ArrowLeft, Save, Loader2, Truck, Ship, Plane, AlertCircle, FileText, Package, Lock, Copy, RotateCcw } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -17,10 +16,14 @@ import { Card } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select'
-import { cn } from '@/lib/utils'
-import { useVehicle, useVehicles, useSaveVehicle, EQUIPMENT_BY_MODE } from './hooks'
+import { cn, formatDate } from '@/lib/utils'
+import { useVehicle, useVehicles, useSaveVehicle, useCloseVehicle, useReopenVehicle, EQUIPMENT_BY_MODE } from './hooks'
 import { usePartners } from '@/features/partners/hooks'
 import { Combobox } from '@/components/shared/Combobox'
 import { VehicleLoadPanel } from './VehicleLoadPanel'
@@ -46,7 +49,7 @@ const buildSchema = (t: (k: string) => string) => z.object({
   registration_date: z.string().optional().or(z.literal('')),
   adr_certified: z.boolean(),
   notes: z.string().optional().or(z.literal('')),
-  status: z.enum(['active', 'inactive', 'maintenance']),
+  status: z.enum(['active', 'inactive', 'maintenance', 'closed']),
 })
 type FormValues = z.infer<ReturnType<typeof buildSchema>>
 
@@ -65,6 +68,14 @@ export function VehicleFormPage() {
   const schema = useMemo(() => buildSchema(t), [t])
 
   const { data: existing, isLoading: loadingExisting } = useVehicle(isEdit ? id : undefined)
+  // "Aynı plakayla yeni kayıt": kapatılan kayıttan bilgileri kopyalar
+  const [searchParams] = useSearchParams()
+  const copyFromId = searchParams.get('copy')
+  const { data: copySource } = useVehicle(!isEdit && copyFromId ? copyFromId : undefined)
+  const closeMut = useCloseVehicle()
+  const reopenMut = useReopenVehicle()
+  const [confirmClose, setConfirmClose] = useState(false)
+  const isClosed = existing?.status === 'closed'
   const saveMut = useSaveVehicle()
 
   const form = useForm<FormValues>({
@@ -111,6 +122,33 @@ export function VehicleFormPage() {
   const currentMode = watch('transport_type')
   const equipmentOptions = EQUIPMENT_BY_MODE[currentMode] || []
   const modeCfg = MODE_CONFIG[currentMode]
+
+  // Kaynak araçtan kopyala (aynı plaka, yeni sefer kaydı) — plaka dahil tüm
+  // sabit bilgiler gelir; durum 'active', yük havuzu boş başlar
+  useEffect(() => {
+    if (isEdit || !copySource) return
+    reset({
+      transport_type: copySource.transport_type,
+      plate: copySource.plate || '',
+      trailer_plate: copySource.trailer_plate || '',
+      equipment_type: copySource.equipment_type,
+      volume_m3: copySource.volume_m3 || '',
+      capacity_kg: copySource.capacity_kg || '',
+      brand_model: copySource.brand_model || '',
+      carrier_name: copySource.carrier_name || '',
+      container_numbers: '',
+      containers_data: '',
+      container_count: '',
+      bl_number: '',
+      total_packages: '',
+      driver_name: copySource.driver_name || '',
+      driver_phone: copySource.driver_phone || '',
+      registration_date: copySource.registration_date || '',
+      adr_certified: !!copySource.adr_certified,
+      notes: copySource.notes || '',
+      status: 'active',
+    })
+  }, [isEdit, copySource, reset])
 
   useEffect(() => {
     if (existing) {
@@ -208,6 +246,31 @@ export function VehicleFormPage() {
                   {t('shipment.errors_present')}
                 </span>
               )}
+              {isEdit && !isClosed && (
+                <Button type="button" variant="outline" size="sm" className="text-destructive"
+                        onClick={() => setConfirmClose(true)} disabled={closeMut.isPending}>
+                  <Lock className="w-4 h-4" />
+                  <span className="hidden md:inline">{t('ui.veh_close_btn')}</span>
+                </Button>
+              )}
+              {isEdit && isClosed && (
+                <>
+                  <Button asChild type="button" variant="outline" size="sm">
+                    <Link to={`/vehicles/new?copy=${id}`}>
+                      <Copy className="w-4 h-4" />
+                      <span className="hidden md:inline">{t('ui.veh_new_same_plate')}</span>
+                    </Link>
+                  </Button>
+                  <Button type="button" variant="outline" size="sm" disabled={reopenMut.isPending}
+                          onClick={() => reopenMut.mutate(Number(id), {
+                            onSuccess: () => toast.success(t('ui.veh_reopened')),
+                            onError: (err: Error) => toast.error(err.message),
+                          })}>
+                    <RotateCcw className="w-4 h-4" />
+                    <span className="hidden md:inline">{t('ui.veh_reopen_btn')}</span>
+                  </Button>
+                </>
+              )}
               <Button asChild type="button" variant="outline" size="sm">
                 <Link to="/vehicles">{t('common.cancel')}</Link>
               </Button>
@@ -232,7 +295,13 @@ export function VehicleFormPage() {
         {/* Tab içerikleri */}
         <div className="p-6 space-y-4" style={{ paddingTop: '7rem' }}>
           {/* === ARAÇ BİLGİLERİ === */}
-          <TabsContent value="info" className="mt-0">
+          {isClosed && (
+          <div className="mx-6 mt-2 flex flex-wrap items-center gap-2 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs">
+            <Lock className="w-4 h-4 text-destructive shrink-0" />
+            <span>{t('ui.veh_closed_banner', { date: existing?.closed_at ? formatDate(existing.closed_at) : '' })}</span>
+          </div>
+        )}
+        <TabsContent value="info" className="mt-0">
             <Card className="p-5 space-y-4">
               <SectionTitle>{t('ui.tip_ve_ekipman')}</SectionTitle>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -320,6 +389,7 @@ export function VehicleFormPage() {
                       <SelectItem value="active">{t('vehicle.status.active')}</SelectItem>
                       <SelectItem value="inactive">{t('vehicle.status.inactive')}</SelectItem>
                       <SelectItem value="maintenance">{t('vehicle.status.maintenance')}</SelectItem>
+                      <SelectItem value="closed">{t('vehicle.status.closed')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -385,7 +455,7 @@ export function VehicleFormPage() {
           {/* === YÜK HAVUZU === */}
           <TabsContent value="load" className="mt-0">
             {isEdit && id ? (
-              <VehicleLoadPanel vehicleId={Number(id)} />
+              <VehicleLoadPanel vehicleId={Number(id)} closed={isClosed} />
             ) : (
               <Card className="p-4 bg-warning/10 border-warning/30">
                 <div className="flex items-start gap-2 text-sm">
@@ -399,6 +469,26 @@ export function VehicleFormPage() {
           </TabsContent>
         </div>
       </Tabs>
+    <AlertDialog open={confirmClose} onOpenChange={setConfirmClose}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{t('ui.veh_close_title')}</AlertDialogTitle>
+          <AlertDialogDescription>{t('ui.veh_close_body', { plate: existing?.plate || '' })}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+          <AlertDialogAction
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            onClick={() => closeMut.mutate(Number(id), {
+              onSuccess: () => { toast.success(t('ui.veh_closed_toast')); setConfirmClose(false) },
+              onError: (err: Error) => { toast.error(err.message); setConfirmClose(false) },
+            })}
+          >
+            {t('ui.veh_close_btn')}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
     </form>
   )
 }

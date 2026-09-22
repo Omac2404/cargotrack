@@ -32,9 +32,11 @@ const STATUS_LABELS: Record<string, { label: string; variant: 'default' | 'secon
 
 interface Props {
   vehicleId: number
+  /** Kayıt kapatıldıysa yeni yük eklenemez; mevcut yükler arşiv olarak görünür */
+  closed?: boolean
 }
 
-export function VehicleLoadPanel({ vehicleId }: Props) {
+export function VehicleLoadPanel({ vehicleId, closed = false }: Props) {
   const { t } = useTranslation()
   const { data, isLoading, error } = useVehicleLoad(vehicleId)
   const [addOpen, setAddOpen] = useState(false)
@@ -72,6 +74,11 @@ export function VehicleLoadPanel({ vehicleId }: Props) {
 
   return (
     <div className="space-y-4">
+      {closed && (
+        <div className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs">
+          {t('ui.veh_closed_no_load')}
+        </div>
+      )}
       {/* Özet kart — kapasite kullanımı */}
       <Card className="p-4">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3">
@@ -136,15 +143,17 @@ export function VehicleLoadPanel({ vehicleId }: Props) {
                 {t('ui.vehicle_manifest')}
               </Button>
             )}
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-7"
-              onClick={() => setAddOpen(true)}
-            >
-              <Plus className="w-3.5 h-3.5" />
-              {t('ui.bu_araca_yuk_ekle')}
-            </Button>
+            {!closed && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7"
+                onClick={() => setAddOpen(true)}
+              >
+                <Plus className="w-3.5 h-3.5" />
+                {t('ui.bu_araca_yuk_ekle')}
+              </Button>
+            )}
           </div>
         </div>
 
@@ -156,10 +165,12 @@ export function VehicleLoadPanel({ vehicleId }: Props) {
               {t('ui.ayni_araca_birden_fazla_sevkiyat_yukleyebili')}
             </div>
             <div className="flex items-center justify-center gap-2 mt-3">
-              <Button size="sm" onClick={() => setAddOpen(true)}>
-                <Plus className="w-3.5 h-3.5" />
-                {t('ui.bu_araca_yuk_ekle')}
-              </Button>
+              {!closed && (
+                <Button size="sm" onClick={() => setAddOpen(true)}>
+                  <Plus className="w-3.5 h-3.5" />
+                  {t('ui.bu_araca_yuk_ekle')}
+                </Button>
+              )}
               <Button asChild variant="outline" size="sm">
                 <Link to="/assignments">
                   <ExternalLink className="w-3.5 h-3.5" />

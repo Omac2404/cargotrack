@@ -257,7 +257,8 @@
     "status": {
       "active": "Active",
       "inactive": "Inactive",
-      "maintenance": "Maintenance"
+      "maintenance": "Maintenance",
+      "closed": "Closed"
     },
     "plate": "Plate",
     "trailer_plate": "Trailer Plate",
@@ -1334,7 +1335,18 @@
     "direct_load_no_qty": "To load on {{plate}}, first enter the number of parcels (Goods tab).",
     "direct_load_capacity": "Insufficient capacity on {{plate}}: {{capacity}} kg, used {{used}} kg, remaining {{remaining}} kg. File saved but not loaded.",
     "direct_load_mode": "Vehicle {{plate}} does not match the file transport mode.",
-    "direct_load_failed": "Direct loading failed."
+    "direct_load_failed": "Direct loading failed.",
+    "veh_close_btn": "Close vehicle record",
+    "veh_close_title": "Close this vehicle record?",
+    "veh_close_body": "Vehicle {{plate}} will be closed. It will no longer appear in loading and assignment lists; its loads and assignments stay archived and the loading sheet (PDF) remains printable. When the same plate returns you can create a new record.",
+    "veh_closed_toast": "Vehicle record closed",
+    "veh_closed_banner": "This vehicle record is closed ({{date}}). No new loads can be added; if the same plate returns, use \"New record (same plate)\".",
+    "veh_new_same_plate": "New record (same plate)",
+    "veh_reopen_btn": "Reopen",
+    "veh_reopened": "Vehicle record reopened",
+    "veh_filter_open": "Open records",
+    "veh_filter_closed": "Closed",
+    "veh_closed_no_load": "This record is closed — no new loads. Existing loads remain visible (archive)."
   },
   "invoice": {
     "invoice_no": "Invoice No",

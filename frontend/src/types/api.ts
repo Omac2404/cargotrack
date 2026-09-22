@@ -84,9 +84,12 @@ export interface Warehouse {
 
 // === Vehicle ===
 export type VehicleTransport = 'road' | 'sea' | 'air'
-export type VehicleStatus = 'active' | 'inactive' | 'maintenance'
+export type VehicleStatus = 'active' | 'inactive' | 'maintenance' | 'closed'
 
 export interface Vehicle {
+  /** Kaydı kapatılan araç: yükleme/atama listelerinde çıkmaz, geçmişi arşivde kalır */
+  closed_at?: string | null
+  closed_by?: number | null
   /** Deniz modu: konteyner/B-L bilgileri */
   container_numbers?: string | null
   containers_data?: string | Array<{ no: string; packages?: number | string | null; weight?: number | string | null }> | null

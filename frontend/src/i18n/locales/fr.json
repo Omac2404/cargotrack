@@ -257,7 +257,8 @@
     "status": {
       "active": "Actif",
       "inactive": "Inactif",
-      "maintenance": "Maintenance"
+      "maintenance": "Maintenance",
+      "closed": "Clôturé"
     },
     "plate": "Plaque",
     "trailer_plate": "Plaque remorque",
@@ -1334,7 +1335,18 @@
     "direct_load_no_qty": "Pour charger sur {{plate}}, renseignez d’abord le nombre de colis (onglet Marchandise).",
     "direct_load_capacity": "Capacité insuffisante sur {{plate}} : {{capacity}} kg, déjà {{used}} kg, reste {{remaining}} kg. Dossier enregistré mais non chargé.",
     "direct_load_mode": "Le véhicule {{plate}} ne correspond pas au mode de transport du dossier.",
-    "direct_load_failed": "Chargement direct impossible."
+    "direct_load_failed": "Chargement direct impossible.",
+    "veh_close_btn": "Clôturer le véhicule",
+    "veh_close_title": "Clôturer ce véhicule ?",
+    "veh_close_body": "Le véhicule {{plate}} sera clôturé. Il n’apparaîtra plus dans les listes de chargement et d’affectation ; ses chargements et affectations restent archivés et la feuille de chargement (PDF) reste imprimable. Lorsque la même plaque revient, vous pourrez créer un nouveau dossier.",
+    "veh_closed_toast": "Véhicule clôturé",
+    "veh_closed_banner": "Ce véhicule est clôturé ({{date}}). Aucun nouveau chargement n’est possible ; si la même plaque revient, créez un nouveau dossier avec « Nouveau dossier (même plaque) ».",
+    "veh_new_same_plate": "Nouveau dossier (même plaque)",
+    "veh_reopen_btn": "Réouvrir",
+    "veh_reopened": "Véhicule réouvert",
+    "veh_filter_open": "Dossiers actifs",
+    "veh_filter_closed": "Clôturés",
+    "veh_closed_no_load": "Ce dossier est clôturé — aucun nouveau chargement. Les chargements existants restent visibles (archive)."
   },
   "invoice": {
     "invoice_no": "N° de facture",

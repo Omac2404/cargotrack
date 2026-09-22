@@ -10,7 +10,24 @@ const {
 const router = express.Router();
 
 const VALID_TRANSPORT = ['road', 'sea', 'air'];
-const VALID_STATUS = ['active', 'inactive', 'maintenance'];
+const VALID_STATUS = ['active', 'inactive', 'maintenance', 'closed'];
+// 'closed' = is bitti, kayit arsivde; yukleme/atama listelerinde cikmaz
+const OPEN_STATUSES = ['active', 'inactive', 'maintenance'];
+
+/**
+ * Ayni plakada KAPATILMAMIS baska kayit var mi?
+ * Kapatilmis kayitlarla cakisma serbesttir — ayni plakali kamyon tekrar
+ * geldiginde yeni kayit acilabilmesi bunun icin.
+ */
+async function findOpenDuplicate(conn, plate, excludeId) {
+  const [rows] = await (conn || pool).execute(
+    `SELECT id, vehicle_code, plate, status FROM vehicles
+     WHERE plate = ? AND deleted_at IS NULL AND status != 'closed'
+     ${excludeId ? 'AND id != ?' : ''} LIMIT 1`,
+    excludeId ? [plate, excludeId] : [plate]
+  );
+  return rows[0] || null;
+}
 
 const EQUIPMENT_BY_MODE = {
   road: ['tilt', 'frigorifik', 'open', 'container', 'tanker', 'other'],
@@ -24,15 +41,20 @@ const PREFIX_MAP = { road: 'V', sea: 'VS', air: 'VA' };
 router.get('/', verifyToken, requirePermission('vehicles.read'), async (req, res) => {
   try {
     const transportType = sanitizeText(req.query.transport_type || '');
-    let rows;
+    // Kapatilan kayitlar varsayilan olarak gelmez; arac listesi ekrani
+    // include_closed=1 ile hepsini ister.
+    const includeClosed = ['1', 'true', 'yes'].includes(String(req.query.include_closed || '').toLowerCase());
+    const where = ['deleted_at IS NULL'];
+    const params = [];
     if (transportType && VALID_TRANSPORT.includes(transportType)) {
-      [rows] = await pool.execute(
-        'SELECT * FROM vehicles WHERE transport_type = ? AND deleted_at IS NULL ORDER BY vehicle_code ASC',
-        [transportType]
-      );
-    } else {
-      [rows] = await pool.execute('SELECT * FROM vehicles WHERE deleted_at IS NULL ORDER BY vehicle_code ASC');
+      where.push('transport_type = ?');
+      params.push(transportType);
     }
+    if (!includeClosed) where.push("status != 'closed'");
+    const [rows] = await pool.execute(
+      `SELECT * FROM vehicles WHERE ${where.join(' AND ')} ORDER BY vehicle_code ASC`,
+      params
+    );
     sendSuccess(res, rows);
   } catch (err) {
     console.error('[vehicles/list]', err);
@@ -76,6 +98,17 @@ router.post('/', verifyToken, async (req, res) => {
           }))
       : [];
 
+    // Ayni plakada acik kayit varsa engelle — iki ayni kayit karisikliga yol aciyordu.
+    // Once eski kaydin kapatilmasi gerekir (Clôturer le véhicule).
+    const dup = await findOpenDuplicate(conn, plate.toUpperCase(), id || null);
+    if (dup) {
+      await conn.rollback();
+      return sendError(res, `Bu plakada açık bir araç kaydı var: ${dup.vehicle_code}. Yeni kayıt açmak için önce onu kapatın.`, 409, {
+        code: 'duplicate_plate',
+        vehicle: { id: dup.id, vehicle_code: dup.vehicle_code, plate: dup.plate },
+      });
+    }
+
     const transportType = whitelist(sanitizeText(body.transport_type), VALID_TRANSPORT, 'road');
     const allowedEquipment = EQUIPMENT_BY_MODE[transportType];
     const equipmentType = whitelist(sanitizeText(body.equipment_type), allowedEquipment, allowedEquipment[0]);
@@ -105,6 +138,15 @@ router.post('/', verifyToken, async (req, res) => {
       status: whitelist(sanitizeText(body.status), VALID_STATUS, 'active'),
       mode_data: jsonStringifyOrNull(body.mode_data)
     };
+
+    // Durum formdan 'closed' yapildiysa kapanis bilgisi de yazilir
+    if (data.status === 'closed') {
+      data.closed_at = new Date();
+      data.closed_by = req.user.id;
+    } else {
+      data.closed_at = null;
+      data.closed_by = null;
+    }
 
     if (id) {
       const cols = Object.keys(data);
@@ -219,6 +261,61 @@ router.get('/:id/load', verifyToken, requirePermission('vehicles.read'), async (
   } catch (err) {
     console.error('[vehicles/load]', err);
     sendError(res, 'Yük havuzu alınamadı', 500);
+  }
+});
+
+// ============ POST /api/vehicles/:id/close ============
+// İş biten kamyonun kaydını kapatır: yükleme/atama listelerinden çıkar, yükleri
+// ve dosya atamaları arşiv olarak aynen kalır (yükleme listesi PDF'i basılabilir).
+router.post('/:id/close', verifyToken, requirePermission('vehicles.update'), async (req, res) => {
+  try {
+    const id = toInt(req.params.id);
+    const [rows] = await pool.execute(
+      'SELECT id, vehicle_code, plate, status FROM vehicles WHERE id = ? AND deleted_at IS NULL LIMIT 1', [id]
+    );
+    const v = rows[0];
+    if (!v) return sendError(res, 'Kayıt bulunamadı', 404);
+    if (v.status === 'closed') return sendSuccess(res, { id, message: 'Kayıt zaten kapalı' });
+
+    await pool.execute(
+      "UPDATE vehicles SET status = 'closed', closed_at = NOW(), closed_by = ? WHERE id = ?",
+      [req.user.id, id]
+    );
+    await logAudit(req, 'update', 'vehicles', id, `${v.vehicle_code} ${v.plate} kapatıldı`);
+    sendSuccess(res, { id, message: 'Araç kaydı kapatıldı' });
+  } catch (err) {
+    console.error('[vehicles/close]', err);
+    sendError(res, 'Kapatma sırasında hata', 500);
+  }
+});
+
+// ============ POST /api/vehicles/:id/reopen ============
+// Yanlışlıkla kapatılan kaydı geri açar — aynı plakada başka açık kayıt varsa engellenir.
+router.post('/:id/reopen', verifyToken, requirePermission('vehicles.update'), async (req, res) => {
+  try {
+    const id = toInt(req.params.id);
+    const [rows] = await pool.execute(
+      'SELECT id, vehicle_code, plate, status FROM vehicles WHERE id = ? AND deleted_at IS NULL LIMIT 1', [id]
+    );
+    const v = rows[0];
+    if (!v) return sendError(res, 'Kayıt bulunamadı', 404);
+    if (v.status !== 'closed') return sendSuccess(res, { id, message: 'Kayıt zaten açık' });
+
+    const dup = await findOpenDuplicate(null, v.plate, id);
+    if (dup) {
+      return sendError(res, `Bu plakada açık bir kayıt var: ${dup.vehicle_code}. Geri açmak için önce onu kapatın.`, 409, {
+        code: 'duplicate_plate',
+        vehicle: { id: dup.id, vehicle_code: dup.vehicle_code, plate: dup.plate },
+      });
+    }
+    await pool.execute(
+      "UPDATE vehicles SET status = 'active', closed_at = NULL, closed_by = NULL WHERE id = ?", [id]
+    );
+    await logAudit(req, 'update', 'vehicles', id, `${v.vehicle_code} ${v.plate} yeniden açıldı`);
+    sendSuccess(res, { id, message: 'Araç kaydı yeniden açıldı' });
+  } catch (err) {
+    console.error('[vehicles/reopen]', err);
+    sendError(res, 'Geri açma sırasında hata', 500);
   }
 });
 

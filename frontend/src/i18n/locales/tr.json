@@ -257,7 +257,8 @@
     "status": {
       "active": "Aktif",
       "inactive": "Pasif",
-      "maintenance": "Bakımda"
+      "maintenance": "Bakımda",
+      "closed": "Kapatıldı"
     },
     "plate": "Plaka",
     "trailer_plate": "Dorse Plakası",
@@ -1334,7 +1335,18 @@
     "direct_load_no_qty": "{{plate}} aracına yüklemek için önce Marchandise sekmesinde koli sayısını girin.",
     "direct_load_capacity": "{{plate}} kapasitesi yetersiz: {{capacity}} kg, dolu {{used}} kg, kalan {{remaining}} kg. Dosya kaydedildi ama yüklenmedi.",
     "direct_load_mode": "{{plate}} bu dosyanın taşıma moduna uygun değil.",
-    "direct_load_failed": "Doğrudan yükleme yapılamadı."
+    "direct_load_failed": "Doğrudan yükleme yapılamadı.",
+    "veh_close_btn": "Kaydı kapat",
+    "veh_close_title": "Araç kaydı kapatılsın mı?",
+    "veh_close_body": "{{plate}} kaydı kapatılacak. Yükleme ve atama listelerinde artık görünmez; mevcut yükleri ve dosya atamaları arşiv olarak aynen kalır, yükleme listesi (PDF) yazdırılabilir. Aynı plakalı kamyon tekrar geldiğinde yeni kayıt açabilirsiniz.",
+    "veh_closed_toast": "Araç kaydı kapatıldı",
+    "veh_closed_banner": "Bu araç kaydı kapatıldı ({{date}}). Yeni yük eklenemez; aynı plakalı kamyon tekrar geldiyse \"Aynı plakayla yeni kayıt\" ile yeni bir kayıt açın.",
+    "veh_new_same_plate": "Aynı plakayla yeni kayıt",
+    "veh_reopen_btn": "Kaydı geri aç",
+    "veh_reopened": "Araç kaydı yeniden açıldı",
+    "veh_filter_open": "Açık kayıtlar",
+    "veh_filter_closed": "Kapatılanlar",
+    "veh_closed_no_load": "Bu kayıt kapatıldı — yeni yük eklenemez. Mevcut yükler arşiv olarak görünür."
   },
   "invoice": {
     "invoice_no": "Fatura No",

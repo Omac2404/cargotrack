@@ -257,7 +257,8 @@
     "status": {
       "active": "Aktiv",
       "inactive": "Inaktiv",
-      "maintenance": "Wartung"
+      "maintenance": "Wartung",
+      "closed": "Geschlossen"
     },
     "plate": "Kennzeichen",
     "trailer_plate": "Anhänger-Kennzeichen",
@@ -1334,7 +1335,18 @@
     "direct_load_no_qty": "Für die Verladung auf {{plate}} zuerst die Kolli-Anzahl erfassen.",
     "direct_load_capacity": "Kapazität auf {{plate}} unzureichend: {{capacity}} kg, belegt {{used}} kg, frei {{remaining}} kg. Akte gespeichert, nicht verladen.",
     "direct_load_mode": "Fahrzeug {{plate}} passt nicht zum Transportmodus.",
-    "direct_load_failed": "Direktverladung fehlgeschlagen."
+    "direct_load_failed": "Direktverladung fehlgeschlagen.",
+    "veh_close_btn": "Fahrzeugakte schließen",
+    "veh_close_title": "Fahrzeugakte schließen?",
+    "veh_close_body": "Fahrzeug {{plate}} wird geschlossen. Es erscheint nicht mehr in Verlade- und Zuweisungslisten; Ladungen und Zuweisungen bleiben archiviert.",
+    "veh_closed_toast": "Fahrzeugakte geschlossen",
+    "veh_closed_banner": "Diese Fahrzeugakte ist geschlossen ({{date}}). Keine neuen Ladungen möglich.",
+    "veh_new_same_plate": "Neue Akte (gleiches Kennzeichen)",
+    "veh_reopen_btn": "Wieder öffnen",
+    "veh_reopened": "Fahrzeugakte wieder geöffnet",
+    "veh_filter_open": "Offene Akten",
+    "veh_filter_closed": "Geschlossen",
+    "veh_closed_no_load": "Diese Akte ist geschlossen — keine neuen Ladungen."
   },
   "invoice": {
     "invoice_no": "Rechnungsnr.",

@@ -8,11 +8,43 @@ interface SaveResp {
   message: string
 }
 
-export function useVehicles(transportType?: VehicleTransport) {
+/**
+ * Araç listesi. Kapatılan kayıtlar backend'de varsayılan olarak filtrelenir
+ * (yükleme/atama listelerinde çıkmasınlar); araç listesi ekranı
+ * includeClosed ile hepsini ister.
+ */
+export function useVehicles(transportType?: VehicleTransport, includeClosed = false) {
   return useQuery({
-    queryKey: ['vehicles', transportType || 'all'],
+    queryKey: ['vehicles', transportType || 'all', includeClosed ? 'with-closed' : 'open'],
     queryFn: () =>
-      api.get<Vehicle[]>('/api/vehicles', transportType ? { transport_type: transportType } : undefined),
+      api.get<Vehicle[]>('/api/vehicles', {
+        ...(transportType ? { transport_type: transportType } : {}),
+        ...(includeClosed ? { include_closed: 1 } : {}),
+      }),
+  })
+}
+
+/** İşi biten kamyonun kaydını kapat (geçmiş arşivde kalır) */
+export function useCloseVehicle() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => api.post<{ id: number; message: string }>(`/api/vehicles/${id}/close`),
+    onSuccess: (_, id) => {
+      qc.invalidateQueries({ queryKey: ['vehicles'] })
+      qc.invalidateQueries({ queryKey: ['vehicle', String(id)] })
+    },
+  })
+}
+
+/** Yanlışlıkla kapatılan kaydı geri aç */
+export function useReopenVehicle() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => api.post<{ id: number; message: string }>(`/api/vehicles/${id}/reopen`),
+    onSuccess: (_, id) => {
+      qc.invalidateQueries({ queryKey: ['vehicles'] })
+      qc.invalidateQueries({ queryKey: ['vehicle', String(id)] })
+    },
   })
 }
 
@@ -117,8 +149,9 @@ export const EQUIPMENT_BY_MODE: Record<VehicleTransport, Array<{ value: string; 
 }
 
 // label i18n key — UI'de t(VEHICLE_STATUS_LABELS[s].label) ile çevrilir
-export const VEHICLE_STATUS_LABELS: Record<string, { label: string; variant: 'success' | 'secondary' | 'warning' }> = {
+export const VEHICLE_STATUS_LABELS: Record<string, { label: string; variant: 'success' | 'secondary' | 'warning' | 'destructive' }> = {
   active:      { label: 'vehicle.status.active',      variant: 'success' },
   inactive:    { label: 'vehicle.status.inactive',    variant: 'secondary' },
   maintenance: { label: 'vehicle.status.maintenance', variant: 'warning' },
+  closed:      { label: 'vehicle.status.closed',      variant: 'destructive' },
 }

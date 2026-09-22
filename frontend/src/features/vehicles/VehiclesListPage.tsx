@@ -44,9 +44,11 @@ export function VehiclesListPage() {
   const MODE_TABS = MODE_TAB_DEFS.map((m) => ({ ...m, label: t(m.key) }))
   const [search, setSearch] = useState('')
   const [carrier, setCarrier] = useState<string>('__all__')
+  // Kapatılan kayıtlar varsayılan olarak gizli; buradan görülebilir
+  const [statusFilter, setStatusFilter] = useState<'open' | 'closed' | 'all'>('open')
   const [deleteTarget, setDeleteTarget] = useState<Vehicle | null>(null)
 
-  const { data: vehicles = [], isLoading, error } = useVehicles(mode === 'all' ? undefined : mode)
+  const { data: vehicles = [], isLoading, error } = useVehicles(mode === 'all' ? undefined : mode, true)
   const { data: summaries = [] } = useVehicleSummary()
   const summaryMap = useMemo(() => Object.fromEntries(summaries.map((s) => [s.id, s])), [summaries])
   const deleteMut = useDeleteVehicle()
@@ -64,6 +66,8 @@ export function VehiclesListPage() {
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
     let list = vehicles
+    if (statusFilter === 'open') list = list.filter((v) => v.status !== 'closed')
+    else if (statusFilter === 'closed') list = list.filter((v) => v.status === 'closed')
     if (carrier !== '__all__') {
       list = list.filter((v) =>
         carrier === '__none__'
@@ -88,7 +92,7 @@ export function VehiclesListPage() {
       }
       return (a.plate || '').localeCompare(b.plate || '', 'tr')
     })
-  }, [vehicles, search, carrier])
+  }, [vehicles, search, carrier, statusFilter])
 
   const handleDelete = () => {
     if (!deleteTarget) return
@@ -160,6 +164,14 @@ export function VehiclesListPage() {
           />
         </div>
         <div className="text-xs text-muted-foreground px-2">{filtered.length} {t('common.records')}</div>
+        <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as 'open' | 'closed' | 'all')}>
+          <SelectTrigger className="h-8 w-[170px]"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="open">{t('ui.veh_filter_open')}</SelectItem>
+            <SelectItem value="closed">{t('ui.veh_filter_closed')}</SelectItem>
+            <SelectItem value="all">{t('common.all')}</SelectItem>
+          </SelectContent>
+        </Select>
         <ExportButton
           data={filtered}
           filename="araclar"

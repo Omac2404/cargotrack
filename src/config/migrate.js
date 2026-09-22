@@ -23,6 +23,19 @@ async function columnExists(table, column) {
   return rows[0].c > 0;
 }
 
+/** ENUM kolonuna eksik değeri ekle (varsa atla). */
+async function ensureEnumValue(table, column, value, definition) {
+  const [rows] = await pool.execute(
+    `SELECT COLUMN_TYPE AS t FROM information_schema.columns
+     WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ?`,
+    [table, column]
+  );
+  if (!rows.length) return;
+  if (String(rows[0].t).includes(`'${value}'`)) return;
+  console.log(`[migrate] ${table}.${column} ENUM'a '${value}' ekleniyor...`);
+  await pool.query(`ALTER TABLE \`${table}\` MODIFY COLUMN \`${column}\` ${definition}`);
+}
+
 /** Eksik kolonu ekle (varsa atla). MySQL 5.7+ uyumlu. */
 async function ensureColumn(table, column, definition) {
   if (await columnExists(table, column)) return;
@@ -120,6 +133,11 @@ async function migrate() {
   await ensureColumn('vehicles', 'containers_data', 'LONGTEXT NULL');
   // Dosyadan dogrudan yukleme icin secilen arac
   await ensureColumn('shipments', 'direct_vehicle_id', 'INT NULL');
+  // Arac kaydi kapatma: ayni plakali kamyon tekrar geldiginde yeni kayit acilabilsin
+  await ensureEnumValue('vehicles', 'status', 'closed',
+    "ENUM('active','inactive','maintenance','closed') NOT NULL DEFAULT 'active'");
+  await ensureColumn('vehicles', 'closed_at', 'DATETIME NULL DEFAULT NULL');
+  await ensureColumn('vehicles', 'closed_by', 'INT NULL DEFAULT NULL');
 
   // Geri doldurma: finansal kalemleri girilmiş ama özet kolonu 0 kalmış kayıtlar.
   // İstatistik sayfası sale_price/purchase_price toplar; bu kolonlar boş olduğu
