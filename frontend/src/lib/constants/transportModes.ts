@@ -134,6 +134,7 @@ export const TRANSPORT_MODES: Record<string, TransportModeConfig> = {
       { key: 'insurance', label: 'transport.documents.insurance' },
       { key: 'cert_origin', label: 'transport.documents.cert_origin' },
       { key: 'container_list', label: 'transport.documents.container_list' },
+      { key: 'transit', label: 'transport.documents.transit' },
       { key: 'other_docs', label: 'transport.documents.other_docs' },
     ],
     equipmentTypes: {
@@ -189,6 +190,7 @@ export const TRANSPORT_MODES: Record<string, TransportModeConfig> = {
       { key: 'insurance', label: 'transport.documents.insurance' },
       { key: 'cert_origin', label: 'transport.documents.cert_origin' },
       { key: 'security', label: 'transport.documents.security' },
+      { key: 'transit', label: 'transport.documents.transit' },
       { key: 'other_docs', label: 'transport.documents.other_docs' },
     ],
     equipmentTypes: {

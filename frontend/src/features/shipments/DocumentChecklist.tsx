@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import {
-  FileText, Upload, Trash2, Download, Loader2, CheckCircle2, Circle, AlertCircle, Eye,
+  FileText, Upload, Trash2, Download, Loader2, CheckCircle2, Circle, AlertCircle, Eye, Plus,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -97,18 +97,44 @@ export function DocumentChecklist({ shipmentId, docList, documentsData, onStageC
     }
   }
 
+  // "Autres documents" birden fazla olabilir: other_docs_2, other_docs_3 …
+  // Kullanıcı + ile yeni satır açar, her satır kendi dosyasını tutar.
+  const [newOtherSlots, setNewOtherSlots] = useState<string[]>([])
+
+  const otherLabel = (key: string) => {
+    const m = /^other_docs_(\d+)$/.exec(key)
+    return m ? `${t('transport.documents.other_docs')} ${m[1]}` : t(`transport.documents.${key}`, { defaultValue: key })
+  }
+
   // Belge listesi değiştiğinde (ör. gümrük beyannamesi ihracat/ithalat olarak
   // ayrıldı) eski anahtarla yüklenmiş dosyalar kaybolmasın: listeye eklenirler.
   const extraDocs = useMemo(() => {
     const known = new Set(docList.map((d) => d.key))
-    return Object.entries(documentsData || {})
+    const withFile = Object.entries(documentsData || {})
       .filter(([k, v]) => !known.has(k) && !!(v as DocumentSlotEntry)?.stored_name)
-      .map(([k]) => ({ key: k, label: `transport.documents.${k}` }))
-  }, [docList, documentsData])
+      .map(([k]) => k)
+    const pending = newOtherSlots.filter((k) => !known.has(k) && !withFile.includes(k))
+    return [...withFile, ...pending].map((k) => ({ key: k, label: otherLabel(k) }))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [docList, documentsData, newOtherSlots, t])
+
+  /** Sıradaki boş "Autres documents" satırını aç */
+  const addOtherSlot = () => {
+    const used = new Set([
+      ...Object.keys(documentsData || {}),
+      ...newOtherSlots,
+    ])
+    let n = 2
+    while (used.has(`other_docs_${n}`)) n += 1
+    setNewOtherSlots((prev) => [...prev, `other_docs_${n}`])
+  }
+
+  // Tek liste: docList etiketleri i18n anahtari, ek satirlarinki hazir metin
+  const rows = [...docList.map((d) => ({ key: d.key, label: t(d.label) })), ...extraDocs]
 
   return (
     <div className="space-y-2">
-      {[...docList, ...extraDocs].map((item) => {
+      {rows.map((item) => {
         const doc = documentsData[item.key] as DocumentSlotEntry | undefined
         const stage: DocStage = doc?.status as DocStage || (doc?.stored_name ? 'uploaded' : 'missing')
         const hasFile = !!doc?.stored_name
@@ -129,7 +155,7 @@ export function DocumentChecklist({ shipmentId, docList, documentsData, onStageC
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium truncate">{t(item.label, { defaultValue: item.key })}</span>
+                  <span className="text-sm font-medium truncate">{item.label}</span>
                   <Badge className={cn('text-[10px]', STAGE_COLORS[stage])}>
                     {t(STAGE_LABELS[stage])}
                   </Badge>
@@ -171,7 +197,7 @@ export function DocumentChecklist({ shipmentId, docList, documentsData, onStageC
                 {hasFile && (
                   <>
                     <Button type="button" variant="ghost" size="icon" className="h-7 w-7"
-                            onClick={() => setPreviewKey({ key: item.key, label: t(item.label) })}
+                            onClick={() => setPreviewKey({ key: item.key, label: item.label })}
                             title={t('ui.onizle_versiyonlar')}>
                       <Eye className="w-3.5 h-3.5" />
                     </Button>
@@ -209,6 +235,12 @@ export function DocumentChecklist({ shipmentId, docList, documentsData, onStageC
           </Card>
         )
       })}
+
+      {/* Kullanici istegi: "Autres documents" altina istedigi kadar dosya ekleyebilsin */}
+      <Button type="button" variant="outline" size="sm" className="w-full border-dashed" onClick={addOtherSlot}>
+        <Plus className="w-3.5 h-3.5" />
+        {t('ui.dcl_add_other')}
+      </Button>
 
       {previewKey && (
         <DocumentPreviewDialog

@@ -1352,7 +1352,8 @@
     "veh_flight_no": "N° de vol",
     "veh_voyage_hint": "Un même navire peut avoir plusieurs voyages ouverts en même temps. Un nouveau dossier n’est bloqué que si le navire et le n° de voyage sont identiques.",
     "sea_vessel_containers": "Conteneurs du navire sélectionné : {{list}}",
-    "sea_use_containers": "reprendre dans le dossier"
+    "sea_use_containers": "reprendre dans le dossier",
+    "dcl_add_other": "Ajouter un autre document"
   },
   "invoice": {
     "invoice_no": "N° de facture",

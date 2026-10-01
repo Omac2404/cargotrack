@@ -1352,7 +1352,8 @@
     "veh_flight_no": "Flight No",
     "veh_voyage_hint": "The same vessel or aircraft can have several open records with different voyages. A new record is blocked only when both the name and the voyage number match.",
     "sea_vessel_containers": "Containers of the selected vessel: {{list}}",
-    "sea_use_containers": "copy to file"
+    "sea_use_containers": "copy to file",
+    "dcl_add_other": "Add another document"
   },
   "invoice": {
     "invoice_no": "Invoice No",

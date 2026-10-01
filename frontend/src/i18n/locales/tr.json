@@ -1352,7 +1352,8 @@
     "veh_flight_no": "Uçuş No",
     "veh_voyage_hint": "Aynı gemi/uçak farklı seferlerle aynı anda kayıtlı olabilir. Sadece gemi adı ve sefer no birlikte aynıysa yeni kayıt engellenir.",
     "sea_vessel_containers": "Seçili geminin konteynerleri: {{list}}",
-    "sea_use_containers": "dosyaya aktar"
+    "sea_use_containers": "dosyaya aktar",
+    "dcl_add_other": "Başka belge ekle"
   },
   "invoice": {
     "invoice_no": "Fatura No",

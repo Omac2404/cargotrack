@@ -1352,7 +1352,8 @@
     "veh_flight_no": "Flug-Nr.",
     "veh_voyage_hint": "Dasselbe Schiff kann mehrere offene Datensätze mit unterschiedlichen Reisen haben. Ein neuer Datensatz wird nur blockiert, wenn Name und Reise-Nr. übereinstimmen.",
     "sea_vessel_containers": "Container des gewählten Schiffs: {{list}}",
-    "sea_use_containers": "in die Akte übernehmen"
+    "sea_use_containers": "in die Akte übernehmen",
+    "dcl_add_other": "Weiteres Dokument hinzufügen"
   },
   "invoice": {
     "invoice_no": "Rechnungsnr.",
