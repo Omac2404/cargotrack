@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
@@ -97,9 +97,18 @@ export function DocumentChecklist({ shipmentId, docList, documentsData, onStageC
     }
   }
 
+  // Belge listesi değiştiğinde (ör. gümrük beyannamesi ihracat/ithalat olarak
+  // ayrıldı) eski anahtarla yüklenmiş dosyalar kaybolmasın: listeye eklenirler.
+  const extraDocs = useMemo(() => {
+    const known = new Set(docList.map((d) => d.key))
+    return Object.entries(documentsData || {})
+      .filter(([k, v]) => !known.has(k) && !!(v as DocumentSlotEntry)?.stored_name)
+      .map(([k]) => ({ key: k, label: `transport.documents.${k}` }))
+  }, [docList, documentsData])
+
   return (
     <div className="space-y-2">
-      {docList.map((item) => {
+      {[...docList, ...extraDocs].map((item) => {
         const doc = documentsData[item.key] as DocumentSlotEntry | undefined
         const stage: DocStage = doc?.status as DocStage || (doc?.stored_name ? 'uploaded' : 'missing')
         const hasFile = !!doc?.stored_name
@@ -120,7 +129,7 @@ export function DocumentChecklist({ shipmentId, docList, documentsData, onStageC
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium truncate">{t(item.label)}</span>
+                  <span className="text-sm font-medium truncate">{t(item.label, { defaultValue: item.key })}</span>
                   <Badge className={cn('text-[10px]', STAGE_COLORS[stage])}>
                     {t(STAGE_LABELS[stage])}
                   </Badge>

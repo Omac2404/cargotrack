@@ -242,7 +242,7 @@ export function AssignmentFormDialog({
               disabled={isEdit}
               options={allVehicles.map((v) => ({
                 value: String(v.id),
-                label: `${v.plate} [${modeLabel(v.transport_type)}]`,
+                label: `${v.plate}${v.voyage_no ? ' · ' + v.voyage_no : ''} [${modeLabel(v.transport_type)}]`,
                 description: `${v.vehicle_code} · ${formatNumber(v.capacity_kg, 0)} kg${v.driver_name ? ' · ' + v.driver_name : ''}`,
               }))}
               placeholder={t('ui.arac_secin')}

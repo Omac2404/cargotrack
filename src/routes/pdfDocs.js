@@ -484,6 +484,12 @@ router.get('/bill-of-lading/:shipmentId', verifyTokenFlexible, async (req, res) 
         ctrRows.push({ no: `${c.plate}${c.trailer_plate ? ' / ' + c.trailer_plate : ''}`, pk: 0, kg: 0 });
       }
     }
+    // Gemi kaydi yoksa dosyanin kendi konteyner numaralari (Détails Maritime)
+    if (ctrRows.length === 0 && md.container_no) {
+      for (const n of String(md.container_no).split(/[,;\n]+/).map((x) => x.trim()).filter(Boolean)) {
+        ctrRows.push({ no: n, pk: 0, kg: 0 });
+      }
+    }
     const hasPerContainer = ctrRows.some((r) => r.pk > 0 || r.kg > 0);
     for (const r of ctrRows.slice(0, 14)) {
       doc.text(clip(r.no, 26), cols[0].x + 3, ry, { lineBreak: false });

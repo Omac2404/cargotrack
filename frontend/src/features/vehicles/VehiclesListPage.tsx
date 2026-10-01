@@ -77,7 +77,7 @@ export function VehiclesListPage() {
     }
     if (q) {
       list = list.filter((v) =>
-        [v.plate, v.vehicle_code, v.trailer_plate, v.driver_name, v.brand_model, v.carrier_name]
+        [v.plate, v.vehicle_code, v.trailer_plate, v.driver_name, v.brand_model, v.carrier_name, v.voyage_no]
           .filter(Boolean).join(' ').toLowerCase().includes(q)
       )
     }
@@ -263,6 +263,7 @@ export function VehiclesListPage() {
                     <TableCell className="font-medium font-mono">
                       {v.plate}
                       {v.trailer_plate && <div className="text-[10px] text-muted-foreground">+ {v.trailer_plate}</div>}
+                      {v.voyage_no && <div className="text-[10px] text-muted-foreground">{v.voyage_no}</div>}
                     </TableCell>
                     <TableCell className="text-xs">
                       {thisCarrier || <span className="text-muted-foreground">—</span>}

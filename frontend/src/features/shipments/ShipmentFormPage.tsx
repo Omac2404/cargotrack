@@ -195,10 +195,17 @@ export function ShipmentFormPage() {
       .filter((v) => config.key === 'import' || config.key === 'export' || v.transport_type === want)
       .map((v) => ({
         value: String(v.id),
-        label: [v.plate, v.trailer_plate].filter(Boolean).join(' / '),
+        label: [[v.plate, v.trailer_plate].filter(Boolean).join(' / '), v.voyage_no].filter(Boolean).join(' · '),
         description: [v.carrier_name, v.capacity_kg ? `${Number(v.capacity_kg).toLocaleString('fr-FR')} kg` : '', v.vehicle_code].filter(Boolean).join(' · '),
       }))
   }, [allVehicles, config.key])
+
+  // Seçili geminin konteyner numaraları (Détails Maritime'daki alana aktarılır)
+  const directVehicleId = watch('direct_vehicle_id')
+  const vesselContainers = useMemo(() => {
+    const v = allVehicles.find((x) => x.id === directVehicleId)
+    return (v?.container_numbers || '').trim()
+  }, [allVehicles, directVehicleId])
 
   /** Kayıt sonrası doğrudan yükleme sonucunu kullanıcıya bildir */
   const reportDirect = (r?: DirectAssignmentResult) => {
@@ -689,6 +696,17 @@ export function ShipmentFormPage() {
                     </div>
                   ))}
                 </div>
+                {/* Konteyner numaraları gemi kaydında da tutulur; seçilen geminin
+                    numaraları tek tıkla dosyaya yazılabilsin */}
+                {config.key === 'maritime' && vesselContainers && (
+                  <p className="text-[11px] text-muted-foreground">
+                    {t('ui.sea_vessel_containers', { list: vesselContainers })}
+                    <button type="button" className="ml-2 underline text-primary"
+                      onClick={() => setModeField('container_no', vesselContainers)}>
+                      {t('ui.sea_use_containers')}
+                    </button>
+                  </p>
+                )}
               </Card>
             )}
             <TabSaveBar isEdit={isEdit} isPending={saveMut.isPending} errorLabels={errorFieldLabels} onErrorClick={goToFirstError} />

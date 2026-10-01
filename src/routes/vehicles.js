@@ -15,18 +15,38 @@ const VALID_STATUS = ['active', 'inactive', 'maintenance', 'closed'];
 const OPEN_STATUSES = ['active', 'inactive', 'maintenance'];
 
 /**
- * Ayni plakada KAPATILMAMIS baska kayit var mi?
- * Kapatilmis kayitlarla cakisma serbesttir — ayni plakali kamyon tekrar
- * geldiginde yeni kayit acilabilmesi bunun icin.
+ * Ayni tanitici ile KAPATILMAMIS baska kayit var mi?
+ *
+ * Karayolu: bir kamyon ayni anda tek sefer yapar — plaka yeter.
+ * Deniz/hava: ayni gemi (ya da ucak) farkli seferlerle ayni anda yolda
+ *   olabilir; cakisma ancak SEFER NO da ayniysa vardir. Sefer no bos
+ *   birakilmissa hic engellenmez.
+ * Kapatilmis kayitlarla cakisma her zaman serbesttir.
  */
-async function findOpenDuplicate(conn, plate, excludeId) {
+async function findOpenDuplicate(conn, { plate, transportType, voyageNo, excludeId }) {
+  const byVoyage = transportType === 'sea' || transportType === 'air';
+  if (byVoyage && !voyageNo) return null;
+
+  const where = ["plate = ?", 'deleted_at IS NULL', "status != 'closed'"];
+  const params = [plate];
+  if (byVoyage) {
+    where.push('transport_type = ?', "UPPER(COALESCE(voyage_no, '')) = ?");
+    params.push(transportType, voyageNo.toUpperCase());
+  }
+  if (excludeId) { where.push('id != ?'); params.push(excludeId); }
+
   const [rows] = await (conn || pool).execute(
-    `SELECT id, vehicle_code, plate, status FROM vehicles
-     WHERE plate = ? AND deleted_at IS NULL AND status != 'closed'
-     ${excludeId ? 'AND id != ?' : ''} LIMIT 1`,
-    excludeId ? [plate, excludeId] : [plate]
+    `SELECT id, vehicle_code, plate, voyage_no, transport_type, status FROM vehicles
+     WHERE ${where.join(' AND ')} LIMIT 1`,
+    params
   );
   return rows[0] || null;
+}
+
+/** Cakisma mesaji — deniz/havada sefer numarasi da yazilir */
+function duplicateMessage(dup, action) {
+  const who = dup.voyage_no ? `${dup.plate} · ${dup.voyage_no}` : dup.plate;
+  return `Bu bilgilerle açık bir kayıt var: ${dup.vehicle_code} (${who}). ${action} için önce onu kapatın.`;
 }
 
 const EQUIPMENT_BY_MODE = {
@@ -98,18 +118,23 @@ router.post('/', verifyToken, async (req, res) => {
           }))
       : [];
 
-    // Ayni plakada acik kayit varsa engelle — iki ayni kayit karisikliga yol aciyordu.
+    const transportType = whitelist(sanitizeText(body.transport_type), VALID_TRANSPORT, 'road');
+    const voyageNo = sanitizeText(body.voyage_no);
+
+    // Ayni tanitici ile acik kayit varsa engelle — iki ayni kayit karisikliga yol aciyordu.
     // Once eski kaydin kapatilmasi gerekir (Clôturer le véhicule).
-    const dup = await findOpenDuplicate(conn, plate.toUpperCase(), id || null);
+    // Deniz/havada ayni gemi farkli sefer numarasiyla serbestce acilabilir.
+    const dup = await findOpenDuplicate(conn, {
+      plate: plate.toUpperCase(), transportType, voyageNo, excludeId: id || null,
+    });
     if (dup) {
       await conn.rollback();
-      return sendError(res, `Bu plakada açık bir araç kaydı var: ${dup.vehicle_code}. Yeni kayıt açmak için önce onu kapatın.`, 409, {
+      return sendError(res, duplicateMessage(dup, 'Yeni kayıt açmak'), 409, {
         code: 'duplicate_plate',
-        vehicle: { id: dup.id, vehicle_code: dup.vehicle_code, plate: dup.plate },
+        vehicle: { id: dup.id, vehicle_code: dup.vehicle_code, plate: dup.plate, voyage_no: dup.voyage_no },
       });
     }
 
-    const transportType = whitelist(sanitizeText(body.transport_type), VALID_TRANSPORT, 'road');
     const allowedEquipment = EQUIPMENT_BY_MODE[transportType];
     const equipmentType = whitelist(sanitizeText(body.equipment_type), allowedEquipment, allowedEquipment[0]);
 
@@ -130,6 +155,8 @@ router.post('/', verifyToken, async (req, res) => {
       container_count: containerRows.length ? containerRows.length : toNullableInt(body.container_count),
       containers_data: containerRows.length ? JSON.stringify(containerRows) : null,
       bl_number: sanitizeText(body.bl_number),
+      // Deniz/hava: sefer / ucus numarasi — ayni gemi birden fazla seferde acik olabilir
+      voyage_no: voyageNo,
       total_packages: toNullableInt(body.total_packages),
       driver_name: sanitizeText(body.driver_name),
       driver_phone: sanitizeText(body.driver_phone),
@@ -295,17 +322,19 @@ router.post('/:id/reopen', verifyToken, requirePermission('vehicles.update'), as
   try {
     const id = toInt(req.params.id);
     const [rows] = await pool.execute(
-      'SELECT id, vehicle_code, plate, status FROM vehicles WHERE id = ? AND deleted_at IS NULL LIMIT 1', [id]
+      'SELECT id, vehicle_code, plate, voyage_no, transport_type, status FROM vehicles WHERE id = ? AND deleted_at IS NULL LIMIT 1', [id]
     );
     const v = rows[0];
     if (!v) return sendError(res, 'Kayıt bulunamadı', 404);
     if (v.status !== 'closed') return sendSuccess(res, { id, message: 'Kayıt zaten açık' });
 
-    const dup = await findOpenDuplicate(null, v.plate, id);
+    const dup = await findOpenDuplicate(null, {
+      plate: v.plate, transportType: v.transport_type, voyageNo: v.voyage_no || '', excludeId: id,
+    });
     if (dup) {
-      return sendError(res, `Bu plakada açık bir kayıt var: ${dup.vehicle_code}. Geri açmak için önce onu kapatın.`, 409, {
+      return sendError(res, duplicateMessage(dup, 'Geri açmak'), 409, {
         code: 'duplicate_plate',
-        vehicle: { id: dup.id, vehicle_code: dup.vehicle_code, plate: dup.plate },
+        vehicle: { id: dup.id, vehicle_code: dup.vehicle_code, plate: dup.plate, voyage_no: dup.voyage_no },
       });
     }
     await pool.execute(

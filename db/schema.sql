@@ -85,6 +85,7 @@ CREATE TABLE IF NOT EXISTS `vehicles` (
   `container_numbers` TEXT,
   `container_count` INT,
   `bl_number` VARCHAR(100),
+  `voyage_no` VARCHAR(50),
   `total_packages` INT,
   `containers_data` LONGTEXT,
   `driver_name` VARCHAR(150) DEFAULT '',

@@ -512,7 +512,8 @@
       "mawb_no": "N° MAWB (Master AWB)",
       "hawb_no": "N° HAWB (House AWB)",
       "volumetric_weight": "Poids Volumétrique (kg)",
-      "chargeable_weight": "Poids Taxable (kg)"
+      "chargeable_weight": "Poids Taxable (kg)",
+      "container_no": "N° de conteneur(s)"
     },
     "vehicle_labels": {
       "plate": "Plaque",
@@ -1346,7 +1347,12 @@
     "veh_reopened": "Véhicule réouvert",
     "veh_filter_open": "Dossiers actifs",
     "veh_filter_closed": "Clôturés",
-    "veh_closed_no_load": "Ce dossier est clôturé — aucun nouveau chargement. Les chargements existants restent visibles (archive)."
+    "veh_closed_no_load": "Ce dossier est clôturé — aucun nouveau chargement. Les chargements existants restent visibles (archive).",
+    "veh_voyage_no": "N° de voyage",
+    "veh_flight_no": "N° de vol",
+    "veh_voyage_hint": "Un même navire peut avoir plusieurs voyages ouverts en même temps. Un nouveau dossier n’est bloqué que si le navire et le n° de voyage sont identiques.",
+    "sea_vessel_containers": "Conteneurs du navire sélectionné : {{list}}",
+    "sea_use_containers": "reprendre dans le dossier"
   },
   "invoice": {
     "invoice_no": "N° de facture",

@@ -95,6 +95,8 @@ export interface Vehicle {
   containers_data?: string | Array<{ no: string; packages?: number | string | null; weight?: number | string | null }> | null
   container_count?: number | string | null
   bl_number?: string | null
+  /** Deniz/hava: sefer — aynı gemi farklı seferlerle aynı anda açık olabilir */
+  voyage_no?: string | null
   total_packages?: number | string | null
   id: number
   vehicle_code: string

@@ -512,7 +512,8 @@
       "mawb_no": "MAWB-Nr. (Master AWB)",
       "hawb_no": "HAWB-Nr. (House AWB)",
       "volumetric_weight": "Volumengewicht (kg)",
-      "chargeable_weight": "Frachtpflichtiges Gewicht (kg)"
+      "chargeable_weight": "Frachtpflichtiges Gewicht (kg)",
+      "container_no": "Container-Nr."
     },
     "vehicle_labels": {
       "plate": "Kennzeichen",
@@ -1346,7 +1347,12 @@
     "veh_reopened": "Fahrzeugakte wieder geöffnet",
     "veh_filter_open": "Offene Akten",
     "veh_filter_closed": "Geschlossen",
-    "veh_closed_no_load": "Diese Akte ist geschlossen — keine neuen Ladungen."
+    "veh_closed_no_load": "Diese Akte ist geschlossen — keine neuen Ladungen.",
+    "veh_voyage_no": "Reise-Nr.",
+    "veh_flight_no": "Flug-Nr.",
+    "veh_voyage_hint": "Dasselbe Schiff kann mehrere offene Datensätze mit unterschiedlichen Reisen haben. Ein neuer Datensatz wird nur blockiert, wenn Name und Reise-Nr. übereinstimmen.",
+    "sea_vessel_containers": "Container des gewählten Schiffs: {{list}}",
+    "sea_use_containers": "in die Akte übernehmen"
   },
   "invoice": {
     "invoice_no": "Rechnungsnr.",

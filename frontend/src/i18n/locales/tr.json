@@ -512,7 +512,8 @@
       "mawb_no": "MAWB No (Master AWB)",
       "hawb_no": "HAWB No (House AWB)",
       "volumetric_weight": "Hacimsel Ağırlık (kg)",
-      "chargeable_weight": "Ücrete Esas Ağırlık (kg)"
+      "chargeable_weight": "Ücrete Esas Ağırlık (kg)",
+      "container_no": "Konteyner No"
     },
     "vehicle_labels": {
       "plate": "Plaka",
@@ -1346,7 +1347,12 @@
     "veh_reopened": "Araç kaydı yeniden açıldı",
     "veh_filter_open": "Açık kayıtlar",
     "veh_filter_closed": "Kapatılanlar",
-    "veh_closed_no_load": "Bu kayıt kapatıldı — yeni yük eklenemez. Mevcut yükler arşiv olarak görünür."
+    "veh_closed_no_load": "Bu kayıt kapatıldı — yeni yük eklenemez. Mevcut yükler arşiv olarak görünür.",
+    "veh_voyage_no": "Sefer No",
+    "veh_flight_no": "Uçuş No",
+    "veh_voyage_hint": "Aynı gemi/uçak farklı seferlerle aynı anda kayıtlı olabilir. Sadece gemi adı ve sefer no birlikte aynıysa yeni kayıt engellenir.",
+    "sea_vessel_containers": "Seçili geminin konteynerleri: {{list}}",
+    "sea_use_containers": "dosyaya aktar"
   },
   "invoice": {
     "invoice_no": "Fatura No",

@@ -43,6 +43,7 @@ const buildSchema = (t: (k: string) => string) => z.object({
   containers_data: z.string().optional().or(z.literal('')),
   container_count: z.union([z.string(), z.number()]).optional(),
   bl_number: z.string().optional().or(z.literal('')),
+  voyage_no: z.string().optional().or(z.literal('')),
   total_packages: z.union([z.string(), z.number()]).optional(),
   driver_name: z.string().optional().or(z.literal('')),
   driver_phone: z.string().optional().or(z.literal('')),
@@ -140,6 +141,7 @@ export function VehicleFormPage() {
       containers_data: '',
       container_count: '',
       bl_number: '',
+      voyage_no: '',
       total_packages: '',
       driver_name: copySource.driver_name || '',
       driver_phone: copySource.driver_phone || '',
@@ -167,6 +169,7 @@ export function VehicleFormPage() {
           : (existing.containers_data ? JSON.stringify(existing.containers_data) : ''),
         container_count: existing.container_count || '',
         bl_number: existing.bl_number || '',
+        voyage_no: existing.voyage_no || '',
         total_packages: existing.total_packages || '',
         driver_name: existing.driver_name || '',
         driver_phone: existing.driver_phone || '',
@@ -365,6 +368,20 @@ export function VehicleFormPage() {
                   </div>
                 )}
               </div>
+
+              {/* Sefer no: aynı gemi/uçak farklı seferlerle aynı anda açık olabilir.
+                  Çakışma kontrolü deniz/havada gemi adı + sefer no ikilisine bakar. */}
+              {currentMode !== 'road' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="voyage_no">
+                      {currentMode === 'sea' ? t('ui.veh_voyage_no') : t('ui.veh_flight_no')}
+                    </Label>
+                    <Input id="voyage_no" {...register('voyage_no')} placeholder={currentMode === 'sea' ? '631N' : 'TK1823'} />
+                    <p className="text-[10px] text-muted-foreground">{t('ui.veh_voyage_hint')}</p>
+                  </div>
+                </div>
+              )}
 
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {currentMode === 'sea' && (

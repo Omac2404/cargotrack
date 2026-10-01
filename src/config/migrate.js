@@ -128,6 +128,8 @@ async function migrate() {
   await ensureColumn('vehicles', 'container_numbers', 'TEXT NULL');
   await ensureColumn('vehicles', 'container_count', 'INT NULL');
   await ensureColumn('vehicles', 'bl_number', 'VARCHAR(100) NULL');
+  // Deniz/hava: ayni gemi farkli seferlerle ayni anda yolda olabilir
+  await ensureColumn('vehicles', 'voyage_no', 'VARCHAR(50) NULL');
   await ensureColumn('vehicles', 'total_packages', 'INT NULL');
   // Konteyner basina kap/kilo (JSON: [{no, packages, weight}])
   await ensureColumn('vehicles', 'containers_data', 'LONGTEXT NULL');
