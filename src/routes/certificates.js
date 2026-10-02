@@ -26,7 +26,7 @@ const VALID_TYPE = ['atr', 'eur1'];
 // Form alanları — hepsi serbest metin; matbu formdaki kutu sırasına göre
 const TEXT_FIELDS = [
   'cert_no', 'exporter', 'consignee', 'transport_doc_no', 'export_country',
-  'destination_country', 'origin_country', 'transport_info', 'observations',
+  'destination_country', 'origin_country', 'pref_from', 'pref_to', 'transport_info', 'observations',
   'order_no', 'goods_description', 'gross_weight', 'invoice_ref',
   'customs_doc_model', 'customs_doc_no', 'customs_office', 'issue_country',
   'issue_place', 'declaration_place', 'notes',

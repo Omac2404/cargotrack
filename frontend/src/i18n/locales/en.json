@@ -1595,8 +1595,11 @@
       "issue_date": "Date of issue",
       "declaration_place": "Place of declaration",
       "declaration_date": "Date of declaration",
-      "notes": "Internal notes (not printed)"
+      "notes": "Internal notes (not printed)",
+      "pref_from": "Preferential trade between (box 2)",
+      "pref_to": "and"
     },
-    "print_scale": "In the print dialog set the scale to 100% (actual size) — not \"fit to page\"."
+    "print_scale": "In the print dialog set the scale to 100% (actual size) — not \"fit to page\".",
+    "cert_no_hint": "The number is pre-printed on the form; it is kept here for the record and search only, not printed."
   }
 }

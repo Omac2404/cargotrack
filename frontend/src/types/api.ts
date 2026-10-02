@@ -369,6 +369,9 @@ export interface Certificate {
   export_country?: string | null
   destination_country?: string | null
   origin_country?: string | null
+  /** EUR.1 kutu 2: tercihli ticaretin taraflari */
+  pref_from?: string | null
+  pref_to?: string | null
   transport_info?: string | null
   observations?: string | null
   order_no?: string | null

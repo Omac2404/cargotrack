@@ -1595,8 +1595,11 @@
       "issue_date": "Date de délivrance",
       "declaration_place": "Lieu de la déclaration",
       "declaration_date": "Date de la déclaration",
-      "notes": "Notes internes (non imprimées)"
+      "notes": "Notes internes (non imprimées)",
+      "pref_from": "Échanges préférentiels entre (case 2)",
+      "pref_to": "et"
     },
-    "print_scale": "Dans la boîte d'impression, mettez l'échelle sur 100 % (taille réelle) — pas « ajuster à la page »."
+    "print_scale": "Dans la boîte d'impression, mettez l'échelle sur 100 % (taille réelle) — pas « ajuster à la page ».",
+    "cert_no_hint": "Le numéro est déjà imprimé sur le formulaire ; il est saisi ici pour l'enregistrement et la recherche, il n'est pas imprimé."
   }
 }

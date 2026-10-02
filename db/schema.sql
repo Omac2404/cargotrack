@@ -421,6 +421,8 @@ CREATE TABLE IF NOT EXISTS `certificates` (
   `export_country` VARCHAR(100) DEFAULT '',
   `destination_country` VARCHAR(100) DEFAULT '',
   `origin_country` VARCHAR(100) DEFAULT '',
+  `pref_from` VARCHAR(150) DEFAULT '',
+  `pref_to` VARCHAR(150) DEFAULT '',
   `transport_info` TEXT,
   `observations` TEXT,
   `order_no` VARCHAR(50) DEFAULT '',

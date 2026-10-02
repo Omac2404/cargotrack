@@ -1595,8 +1595,11 @@
       "issue_date": "Düzenleme tarihi",
       "declaration_place": "Beyan yeri",
       "declaration_date": "Beyan tarihi",
-      "notes": "İç notlar (forma basılmaz)"
+      "notes": "İç notlar (forma basılmaz)",
+      "pref_from": "Tercihli ticaret — taraf 1 (EUR.1 kutu 2)",
+      "pref_to": "Tercihli ticaret — taraf 2"
     },
-    "print_scale": "Yazıcı ayarında ölçek %100 (gerçek boyut) olmalı, \"sayfaya sığdır\" kapalı."
+    "print_scale": "Yazıcı ayarında ölçek %100 (gerçek boyut) olmalı, \"sayfaya sığdır\" kapalı.",
+    "cert_no_hint": "Numara matbu formda zaten basılı; buraya kayıt ve arama için yazılır, forma basılmaz."
   }
 }

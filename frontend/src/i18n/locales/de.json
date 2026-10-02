@@ -1595,8 +1595,11 @@
       "issue_date": "Ausstellungsdatum",
       "declaration_place": "Ort der Erklärung",
       "declaration_date": "Datum der Erklärung",
-      "notes": "Interne Notizen (nicht gedruckt)"
+      "notes": "Interne Notizen (nicht gedruckt)",
+      "pref_from": "Präferenzhandel zwischen (Feld 2)",
+      "pref_to": "und"
     },
-    "print_scale": "Im Druckdialog die Skalierung auf 100 % (Originalgröße) stellen — nicht „an Seite anpassen“."
+    "print_scale": "Im Druckdialog die Skalierung auf 100 % (Originalgröße) stellen — nicht „an Seite anpassen“.",
+    "cert_no_hint": "Die Nummer ist bereits auf dem Vordruck gedruckt; sie wird hier nur erfasst und nicht gedruckt."
   }
 }

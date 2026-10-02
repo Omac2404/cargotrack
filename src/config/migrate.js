@@ -130,6 +130,9 @@ async function migrate() {
   await ensureColumn('vehicles', 'bl_number', 'VARCHAR(100) NULL');
   // Deniz/hava: ayni gemi farkli seferlerle ayni anda yolda olabilir
   await ensureColumn('vehicles', 'voyage_no', 'VARCHAR(50) NULL');
+  // ATR / EUR.1: EUR.1 formunun 2. kutusu (tercihli ticaret taraflari)
+  await ensureColumn('certificates', 'pref_from', "VARCHAR(150) NULL DEFAULT ''");
+  await ensureColumn('certificates', 'pref_to', "VARCHAR(150) NULL DEFAULT ''");
   await ensureColumn('vehicles', 'total_packages', 'INT NULL');
   // Konteyner basina kap/kilo (JSON: [{no, packages, weight}])
   await ensureColumn('vehicles', 'containers_data', 'LONGTEXT NULL');

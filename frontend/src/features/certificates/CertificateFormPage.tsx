@@ -187,7 +187,10 @@ function CertificateEditor({ initial, isEdit, id }: { initial?: Certificate; isE
             />
             <p className="text-[10px] text-muted-foreground">{t('cert.from_file_hint')}</p>
           </div>
-          {field('cert_no', t('cert.fields.cert_no'), { placeholder: 'A 575914' })}
+          <div className="space-y-1.5">
+            {field('cert_no', t('cert.fields.cert_no'), { placeholder: 'A 575914' })}
+            <p className="text-[10px] text-muted-foreground">{t('cert.cert_no_hint')}</p>
+          </div>
         </div>
       </Card>
 
@@ -199,10 +202,17 @@ function CertificateEditor({ initial, isEdit, id }: { initial?: Certificate; isE
           {area('consignee', t('cert.fields.consignee'), 4, t('cert.multiline_hint'))}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {field('export_country', t('cert.fields.export_country'))}
-          {field('destination_country', t('cert.fields.destination_country'))}
+          {!isEur1 && field('export_country', t('cert.fields.export_country'))}
           {isEur1 && field('origin_country', t('cert.fields.origin_country'))}
+          {field('destination_country', t('cert.fields.destination_country'))}
         </div>
+        {/* EUR.1 formunun 2. kutusu: tercihli ticaret tarafları (ATR'de matbu) */}
+        {isEur1 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {field('pref_from', t('cert.fields.pref_from'), { placeholder: 'COMMUNAUTÉ EUROPÉENNE' })}
+            {field('pref_to', t('cert.fields.pref_to'), { placeholder: 'TURQUIE' })}
+          </div>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {field('transport_doc_no', t('cert.fields.transport_doc_no'))}
           {field('transport_doc_date', t('cert.fields.transport_doc_date'), { type: 'date' })}
