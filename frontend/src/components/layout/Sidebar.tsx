@@ -2,7 +2,7 @@ import { NavLink, useLocation } from 'react-router-dom'
 import {
   Truck, Ship, Plane, Warehouse, Package, Users, BarChart3,
   Settings, Building2, FileText, ArrowRightLeft, ChevronDown, Truck as TruckIcon,
-  History, Boxes, X, Archive, BookOpen, Container,
+  History, Boxes, X, Archive, BookOpen, Container, Stamp,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/stores/auth'
@@ -55,6 +55,7 @@ function buildNav(t: (k: string) => string): NavGroup[] {
         { label: t('nav.vehicles'), to: '/vehicles', icon: <TruckIcon className="w-4 h-4" /> },
         { label: t('nav.assignments'), to: '/assignments', icon: <ArrowRightLeft className="w-4 h-4" /> },
         { label: t('nav.documents'), to: '/documents', icon: <FileText className="w-4 h-4" /> },
+        { label: t('nav.certificates'), to: '/certificates', icon: <Stamp className="w-4 h-4" /> },
       ],
     },
     {
@@ -116,6 +117,7 @@ export function Sidebar() {
     '/audit': 'audit.view',
     '/storage-orders': 'warehouses.read',
     '/warehousing': 'warehousing.read',
+    '/certificates': 'certificates.read',
     '/reports': 'reports.view',
     '/archive': 'archive.view',
   }

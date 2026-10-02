@@ -350,3 +350,41 @@ export interface Shipment {
   created_by?: number
   [key: string]: unknown
 }
+
+// ============================================================
+// ATR / EUR.1 dolaşım belgeleri (matbu forma üstten baskı)
+// ============================================================
+export type CertificateType = 'atr' | 'eur1'
+
+export interface Certificate {
+  id: number
+  cert_type: CertificateType
+  cert_no?: string | null
+  shipment_id?: number | null
+  shipment_no?: string | null
+  exporter?: string | null
+  consignee?: string | null
+  transport_doc_no?: string | null
+  transport_doc_date?: string | null
+  export_country?: string | null
+  destination_country?: string | null
+  origin_country?: string | null
+  transport_info?: string | null
+  observations?: string | null
+  order_no?: string | null
+  goods_description?: string | null
+  gross_weight?: string | null
+  invoice_ref?: string | null
+  customs_doc_model?: string | null
+  customs_doc_no?: string | null
+  customs_doc_date?: string | null
+  customs_office?: string | null
+  issue_country?: string | null
+  issue_place?: string | null
+  issue_date?: string | null
+  declaration_place?: string | null
+  declaration_date?: string | null
+  notes?: string | null
+  created_at?: string
+  updated_at?: string
+}

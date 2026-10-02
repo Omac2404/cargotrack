@@ -69,6 +69,12 @@ const PERMISSIONS = {
   'warehousing.manage':     'Depo hesabı/tarife düzenler, ay sonu kapatır',
   'warehousing.delete':     'Depo hesabı siler',
 
+  // === ATR / EUR.1 dolaşım belgeleri ===
+  'certificates.read':      'ATR / EUR.1 belgelerini görür ve yazdırır',
+  'certificates.create':    'ATR / EUR.1 belgesi oluşturur',
+  'certificates.update':    'ATR / EUR.1 belgesi düzenler',
+  'certificates.delete':    'ATR / EUR.1 belgesi siler',
+
   // === Arşiv ===
   'archive.view':           'Arşivlenen kayıtları görür',
   'archive.restore':        'Arşivden geri yükler',
@@ -87,6 +93,7 @@ const DEFAULT_ROLE_PERMISSIONS = {
     'warehousing.*',
     'assignments.*',
     'documents.*',
+    'certificates.*',
     'audit.view',
     'reports.view',
     'statistics.view',
@@ -128,6 +135,11 @@ const DEFAULT_ROLE_PERMISSIONS = {
     'documents.upload',
     'documents.read',
     'documents.delete',
+
+    // ATR / EUR.1: belge doldurup yazdırır, silemez
+    'certificates.read',
+    'certificates.create',
+    'certificates.update',
 
     // İstatistik (kendi sevkiyatları)
     'statistics.view',

@@ -406,4 +406,45 @@ CREATE TABLE IF NOT EXISTS `wh_statements` (
   CONSTRAINT `fk_whst_creator` FOREIGN KEY (`created_by`) REFERENCES `users`(`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- ============================================================
+-- ATR / EUR.1 dolasim belgeleri (matbu forma ustten baski)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `certificates` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `cert_type` ENUM('atr','eur1') NOT NULL DEFAULT 'atr',
+  `cert_no` VARCHAR(50) DEFAULT '',
+  `shipment_id` INT NULL DEFAULT NULL,
+  `exporter` TEXT,
+  `consignee` TEXT,
+  `transport_doc_no` VARCHAR(100) DEFAULT '',
+  `transport_doc_date` DATE NULL DEFAULT NULL,
+  `export_country` VARCHAR(100) DEFAULT '',
+  `destination_country` VARCHAR(100) DEFAULT '',
+  `origin_country` VARCHAR(100) DEFAULT '',
+  `transport_info` TEXT,
+  `observations` TEXT,
+  `order_no` VARCHAR(50) DEFAULT '',
+  `goods_description` TEXT,
+  `gross_weight` VARCHAR(60) DEFAULT '',
+  `invoice_ref` VARCHAR(120) DEFAULT '',
+  `customs_doc_model` VARCHAR(50) DEFAULT '',
+  `customs_doc_no` VARCHAR(100) DEFAULT '',
+  `customs_doc_date` DATE NULL DEFAULT NULL,
+  `customs_office` VARCHAR(150) DEFAULT '',
+  `issue_country` VARCHAR(100) DEFAULT '',
+  `issue_place` VARCHAR(150) DEFAULT '',
+  `issue_date` DATE NULL DEFAULT NULL,
+  `declaration_place` VARCHAR(150) DEFAULT '',
+  `declaration_date` DATE NULL DEFAULT NULL,
+  `notes` TEXT,
+  `created_by` INT,
+  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` DATETIME NULL DEFAULT NULL,
+  `deleted_by` INT NULL DEFAULT NULL,
+  KEY `idx_cert_type` (`cert_type`),
+  KEY `idx_cert_no` (`cert_no`),
+  KEY `idx_cert_shipment` (`shipment_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 SET FOREIGN_KEY_CHECKS=1;
