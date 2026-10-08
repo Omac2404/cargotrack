@@ -369,6 +369,35 @@ const COVER_FIELDS = {
   ],
 };
 
+const isSeaShipment = (ship) => ship.transport_type === 'maritime' || ship.transport_type === 'sea';
+
+/**
+ * Kapak alanlari moda gore degisir (musteri istegi):
+ *   Deniz — TRANSPORTEUR yerine OPÉRATEUR / ARMATEUR, PLAQUE N° yerine
+ *   CONTENEUR N°; ayrica bosaltma limani ve tahmini varis eklenir.
+ */
+function coverFields(ship) {
+  if (!isSeaShipment(ship)) return COVER_FIELDS;
+  return {
+    left: [
+      ...COVER_FIELDS.left,
+      { key: 'port_dechargement', label: 'PORT DE DÉCHARGEMENT' },
+    ],
+    right: COVER_FIELDS.right
+      .map((f) => {
+        if (f.key === 'transporteur') return { key: f.key, label: 'OPÉRATEUR / ARMATEUR' };
+        if (f.key === 'plaque') return { key: f.key, label: 'CONTENEUR N°' };
+        return f;
+      })
+      .concat({ key: 'eta', label: 'ETA (ARRIVÉE PRÉVUE)' }),
+  };
+}
+
+/** Kapakta kullanilabilecek tum alan anahtarlari (mod farketmeksizin) */
+const ALL_COVER_KEYS = [
+  ...COVER_FIELDS.left, ...COVER_FIELDS.right,
+].map((f) => f.key).concat('port_dechargement', 'eta', 'observation');
+
 /**
  * Sevkiyattan kapak alanlarını otomatik doldurur.
  *
@@ -382,9 +411,28 @@ async function buildCoverFields(ship) {
 
   let transporteur = '';
   let plaque = '';
+  let extra = {};
   if (isSea) {
-    transporteur = modeData.vessel_name || '';
-    plaque = modeData.mbl_no || modeData.hbl_no || '';
+    // Musteri istegi: tasiyici alaninda armator (OOCL gibi), plaka alaninda
+    // konteyner numarasi yazar. Konteyner no once dosyadan, yoksa dosyaya
+    // yuklendigi gemi kaydindan gelir.
+    transporteur = modeData.operator || modeData.vessel_name || '';
+    plaque = modeData.container_no || '';
+    if (!plaque) {
+      const [ctr] = await pool.execute(
+        `SELECT v.container_numbers
+           FROM vehicle_assignments a
+           JOIN vehicles v ON v.id = a.vehicle_id
+          WHERE a.shipment_id = ? AND a.deleted_at IS NULL AND v.deleted_at IS NULL
+          ORDER BY a.created_at ASC`,
+        [ship.id]
+      );
+      plaque = [...new Set(ctr.map((r) => (r.container_numbers || '').trim()).filter(Boolean))].join(' · ');
+    }
+    extra = {
+      port_dechargement: modeData.pod || '',
+      eta: formatDateTr(modeData.eta) || '',
+    };
   } else if (isAir) {
     transporteur = modeData.airline_code ? `${modeData.airline_code} ${modeData.flight_no || ''}`.trim() : '';
     plaque = modeData.mawb_no || modeData.hawb_no || '';
@@ -428,6 +476,7 @@ async function buildCoverFields(ship) {
     transporteur,
     plaque,
     douane_import: ship.arrival_country || '',
+    ...extra,
     observation: ship.goods_description || '',
   };
 }
@@ -445,7 +494,7 @@ function parseSavedCover(raw) {
 function mergeCoverOverrides(auto, body) {
   const out = { ...auto };
   if (!body || typeof body !== 'object') return out;
-  const allKeys = [...COVER_FIELDS.left, ...COVER_FIELDS.right].map((f) => f.key).concat('observation');
+  const allKeys = ALL_COVER_KEYS;
   for (const key of allKeys) {
     if (body[key] !== undefined && body[key] !== null) {
       out[key] = String(body[key]).slice(0, key === 'observation' ? 2000 : 200);
@@ -520,7 +569,7 @@ router.get('/file-cover/:shipmentId/fields', verifyToken, async (req, res) => {
     // Kullanıcının daha önce kaydettiği düzenlemeler otomatiklerin üstüne biner;
     // `auto` ayrıca döner ki "otomatik değerlere dön" butonu çalışabilsin.
     const values = mergeCoverOverrides(auto, parseSavedCover(ship.cover_data));
-    res.json({ success: true, data: { shipment_no: ship.shipment_no, fields: COVER_FIELDS, values, auto } });
+    res.json({ success: true, data: { shipment_no: ship.shipment_no, fields: coverFields(ship), values, auto } });
   } catch (err) {
     console.error('[pdf/file-cover-fields]', err);
     sendError(res, 'Kapak alanları alınamadı', 500);
@@ -662,8 +711,14 @@ async function renderFileCover(req, res) {
     const colW = (innerW - colInset * 2 - colGap) / 2;     // her kolon genisligi
     const colLeftX = PAD + colInset;
     const colRightX = colLeftX + colW + colGap;
-    const fieldH = 38;                    // alan başına yükseklik (label + box)
-    const fieldGap = 12;                  // alan arası boşluk
+    // Alan listesi moda gore degisir (denizde iki alan fazla); satir arasi
+    // bosluk, OBSERVATION kutusu kucuk kalmasin diye buna gore daralir.
+    const fieldDefs = coverFields(ship);
+    const leftFields = fieldDefs.left.map((f) => [f.label, cover[f.key] || '']);
+    const rightFields = fieldDefs.right.map((f) => [f.label, cover[f.key] || '']);
+    const rowCount = Math.max(leftFields.length, rightFields.length);
+    const fieldH = 38;                              // alan başına yükseklik (label + box)
+    const fieldGap = rowCount > 7 ? 5 : 12;         // alan arası boşluk
 
     // Field çizen yardımcı
     const drawField = (x, fy, label, value) => {
@@ -690,9 +745,6 @@ async function renderFileCover(req, res) {
     // istekteki duzenlemeler (yukarida birlestirildi). Onceden burada alanlar
     // dogrudan sevkiyat verisinden yeniden hesaplaniyordu; kullanicinin diyalogda
     // girdigi degerler kaydediliyor ama PDF'e HIC BASILMIYORDU.
-    const leftFields = COVER_FIELDS.left.map((f) => [f.label, cover[f.key] || '']);
-    const rightFields = COVER_FIELDS.right.map((f) => [f.label, cover[f.key] || '']);
-
     const fieldsStartY = y;
     leftFields.forEach((f, i) => drawField(colLeftX, fieldsStartY + i * (fieldH + fieldGap), f[0], f[1]));
     rightFields.forEach((f, i) => drawField(colRightX, fieldsStartY + i * (fieldH + fieldGap), f[0], f[1]));
@@ -702,14 +754,14 @@ async function renderFileCover(req, res) {
     const midStartY = fieldsStartY + 20;
     const letters = 'MULTIMODALSERVICES'.split('');
     const totalLetters = letters.length;
-    const availableH = (fieldH + fieldGap) * 7 - 20;
+    const availableH = (fieldH + fieldGap) * rowCount - 20;
     const letterGap = availableH / totalLetters;
     doc.font(F.regular).fontSize(9).fillColor(COLORS.textLight);
     letters.forEach((ch, i) => {
       doc.text(ch, midX - 4, midStartY + i * letterGap);
     });
 
-    y = fieldsStartY + 7 * (fieldH + fieldGap) + 10;
+    y = fieldsStartY + rowCount * (fieldH + fieldGap) + 10;
 
     // === OBSERVATION kutusu (alt) ===
     const obsBoxW = 200;
