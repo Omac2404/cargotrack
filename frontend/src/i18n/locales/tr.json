@@ -1600,6 +1600,10 @@
       "pref_to": "Tercihli ticaret — taraf 2"
     },
     "print_scale": "Yazıcı ayarında ölçek %100 (gerçek boyut) olmalı, \"sayfaya sığdır\" kapalı.",
-    "cert_no_hint": "Numara matbu formda zaten basılı; buraya kayıt ve arama için yazılır, forma basılmaz."
+    "cert_no_hint": "Numara matbu formda zaten basılı; buraya kayıt ve arama için yazılır, forma basılmaz.",
+    "measured_h": "Ölçülen yatay ({{ref}} mm)",
+    "measured_v": "Ölçülen dikey ({{ref}} mm)",
+    "scale_now": "Uygulanan ölçek: %{{x}} yatay · %{{y}} dikey",
+    "measure_hint": "Hiza kontrolü çıktısında kırmızı artı işaretleri var. Cetvelle ölçün: yatayda {{h}} mm, dikeyde {{v}} mm olmalı. Farklı çıkıyorsa ölçtüğünüz değeri aşağıya yazın — alt satırlardaki kayma böyle düzelir."
   }
 }

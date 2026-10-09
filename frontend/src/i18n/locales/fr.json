@@ -1600,6 +1600,10 @@
       "pref_to": "et"
     },
     "print_scale": "Dans la boîte d'impression, mettez l'échelle sur 100 % (taille réelle) — pas « ajuster à la page ».",
-    "cert_no_hint": "Le numéro est déjà imprimé sur le formulaire ; il est saisi ici pour l'enregistrement et la recherche, il n'est pas imprimé."
+    "cert_no_hint": "Le numéro est déjà imprimé sur le formulaire ; il est saisi ici pour l'enregistrement et la recherche, il n'est pas imprimé.",
+    "measured_h": "Mesuré en largeur ({{ref}} mm)",
+    "measured_v": "Mesuré en hauteur ({{ref}} mm)",
+    "scale_now": "Échelle appliquée : {{x}} % en largeur · {{y}} % en hauteur",
+    "measure_hint": "La grille de contrôle comporte des croix rouges. Mesurez-les à la règle : {{h}} mm en largeur et {{v}} mm en hauteur. Si la mesure diffère, saisissez-la ci-dessous — c'est ce qui corrige le décalage qui augmente vers le bas de la page."
   }
 }

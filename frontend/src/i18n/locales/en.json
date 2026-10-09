@@ -1600,6 +1600,10 @@
       "pref_to": "and"
     },
     "print_scale": "In the print dialog set the scale to 100% (actual size) — not \"fit to page\".",
-    "cert_no_hint": "The number is pre-printed on the form; it is kept here for the record and search only, not printed."
+    "cert_no_hint": "The number is pre-printed on the form; it is kept here for the record and search only, not printed.",
+    "measured_h": "Measured width ({{ref}} mm)",
+    "measured_v": "Measured height ({{ref}} mm)",
+    "scale_now": "Applied scale: {{x}} % horizontal · {{y}} % vertical",
+    "measure_hint": "The alignment grid prints red crosses. Measure them with a ruler: {{h}} mm across and {{v}} mm down. If your measurement differs, enter it below — this fixes the drift that grows towards the bottom of the page."
   }
 }

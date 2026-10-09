@@ -1600,6 +1600,10 @@
       "pref_to": "und"
     },
     "print_scale": "Im Druckdialog die Skalierung auf 100 % (Originalgröße) stellen — nicht „an Seite anpassen“.",
-    "cert_no_hint": "Die Nummer ist bereits auf dem Vordruck gedruckt; sie wird hier nur erfasst und nicht gedruckt."
+    "cert_no_hint": "Die Nummer ist bereits auf dem Vordruck gedruckt; sie wird hier nur erfasst und nicht gedruckt.",
+    "measured_h": "Gemessene Breite ({{ref}} mm)",
+    "measured_v": "Gemessene Höhe ({{ref}} mm)",
+    "scale_now": "Angewandte Skalierung: {{x}} % horizontal · {{y}} % vertikal",
+    "measure_hint": "Das Kontrollraster druckt rote Kreuze. Messen Sie mit dem Lineal: {{h}} mm in der Breite, {{v}} mm in der Höhe. Weicht die Messung ab, tragen Sie sie unten ein — damit wird der nach unten zunehmende Versatz korrigiert."
   }
 }

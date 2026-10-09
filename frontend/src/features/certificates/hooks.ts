@@ -49,30 +49,59 @@ export function useDeleteCertificate() {
   })
 }
 
-/** Yazdırma ayarı (kalibrasyon) yazıcıya göre değişir → tarayıcıda saklanır */
-export interface PrintOffset { dx: number; dy: number }
+/**
+ * Yazdırma kalibrasyonu — yazıcıya göre değişir, tarayıcıda saklanır.
+ *
+ * dx / dy : baskının tamamını milimetre kaydırır.
+ * mv / mh : kalibrasyon sayfasındaki işaretler arasında CETVELLE ÖLÇÜLEN
+ *           mesafe (olması gereken 250 mm dikey, 170 mm yatay). Yazıcılar
+ *           sayfayı çoğu zaman biraz küçültür; bu yüzden kayma sayfanın
+ *           altına inildikçe büyür. Ölçülen değerden ölçek hesaplanır.
+ */
+export interface PrintOffset { dx: number; dy: number; mv: number; mh: number }
 const OFFSET_KEY = 'ct_cert_offset'
+export const CAL_V = 250
+export const CAL_H = 170
+
+const num = (v: unknown, fallback: number) => {
+  const n = Number(v)
+  return Number.isFinite(n) && n !== 0 ? n : fallback
+}
 
 export function loadPrintOffset(): PrintOffset {
   try {
     const raw = localStorage.getItem(OFFSET_KEY)
     if (raw) {
       const v = JSON.parse(raw)
-      return { dx: Number(v.dx) || 0, dy: Number(v.dy) || 0 }
+      return {
+        dx: Number(v.dx) || 0,
+        dy: Number(v.dy) || 0,
+        mv: num(v.mv, CAL_V),
+        mh: num(v.mh, CAL_H),
+      }
     }
   } catch { /* tarayıcı depolaması kapalı olabilir */ }
-  return { dx: 0, dy: 0 }
+  return { dx: 0, dy: 0, mv: CAL_V, mh: CAL_H }
 }
 
 export function savePrintOffset(offset: PrintOffset) {
   try { localStorage.setItem(OFFSET_KEY, JSON.stringify(offset)) } catch { /* yoksay */ }
 }
 
+/** Ölçülen mesafelerden baskı ölçeği (1 = birebir) */
+export function printScale(offset: PrintOffset) {
+  const clamp = (v: number) => (Number.isFinite(v) && v >= 0.9 && v <= 1.1 ? v : 1)
+  return { sx: clamp(CAL_H / (offset.mh || CAL_H)), sy: clamp(CAL_V / (offset.mv || CAL_V)) }
+}
+
 export function getCertificateUrl(id: number, offset: PrintOffset, grid = false) {
   const token = getToken()
+  const { sx, sy } = printScale(offset)
   const qs = new URLSearchParams()
   if (offset.dx) qs.set('dx', String(offset.dx))
   if (offset.dy) qs.set('dy', String(offset.dy))
+  if (sx !== 1) qs.set('sx', sx.toFixed(5))
+  if (sy !== 1) qs.set('sy', sy.toFixed(5))
   if (grid) qs.set('grid', '1')
   if (token) qs.set('token', token)
   const q = qs.toString()

@@ -8,9 +8,12 @@
  * formların (CERFA 10526*01 A.TR. ve 11009*01 EUR.1) taramaları piksel
  * piksel ölçülerek çıkarıldı; çerçeve 182 × 280 mm ve A4'te ortalı.
  *
- *   dx / dy : yazıcıya göre tüm baskıyı milimetre kaydırır (kalibrasyon)
- *   grid=1  : form çerçevesini ve kutu çizgilerini de çizer; boş kağıda basıp
- *             matbu formla üst üste tutarak hizayı kontrol etmek için.
+ *   dx / dy : baskıyı milimetre kaydırır (kalibrasyon)
+ *   sx / sy : baskı ölçeği. Yazıcılar sayfayı çoğu zaman %1-3 küçültür; bu
+ *             kayma sayfanın altına inildikçe büyür. Kullanıcı kontrol
+ *             sayfasındaki iki işaret arasını cetvelle ölçer, fark buradan
+ *             telafi edilir. Ölçekleme çerçevenin sol üst köşesine göredir.
+ *   grid=1  : kalibrasyon sayfası — form çizgileri + ölçüm işaretleri.
  *
  * Belge numarası (A 575914 gibi) forma zaten basılı geldiği için YAZILMAZ;
  * sistemde sadece kayıt ve arama için tutulur.
@@ -32,6 +35,9 @@ const frDate = (iso) => (iso ? String(iso).slice(0, 10).split('-').reverse().joi
 
 // Form çerçevesinin kağıttaki yeri (A4'te ortalı: (210-182)/2 = 14)
 const FRAME = { x: 14, y: 9, w: 182, h: 280 };
+
+/** Kalibrasyon sayfasındaki ölçüm işaretleri (kağıda göre, mm) */
+const CAL_MARKS = { vTop: 25, vBottom: 275, vDist: 250, hLeft: 20, hRight: 190, hDist: 170 };
 
 /**
  * Alanlar — koordinatlar ÇERÇEVEYE GÖRE milimetre (sol üst köşe 0,0).
@@ -111,15 +117,15 @@ const LAYOUT = {
 };
 
 /** Değeri kutuya sığacak şekilde (gerekirse küçülterek) yazar */
-function drawValue(doc, F, cfg, value, dx, dy) {
+function drawValue(doc, F, cfg, value, cal) {
   const text = String(value == null ? '' : value).trim();
   if (!text) return;
 
-  const x = mm(FRAME.x + cfg.x + dx);
-  const y = mm(FRAME.y + cfg.y + dy);
-  const width = mm(cfg.w);
+  const x = mm(FRAME.x + cal.dx + cfg.x * cal.sx);
+  const y = mm(FRAME.y + cal.dy + cfg.y * cal.sy);
+  const width = mm(cfg.w * cal.sx);
   const maxLines = cfg.lines || 1;
-  const lineHeight = mm(cfg.lh || 4.3);
+  const lineHeight = mm((cfg.lh || 4.3) * cal.sy);
 
   // Elle girilen satır sonları korunur, uzun satırlar kutuya göre bölünür
   const raw = text.split(/\r?\n/).filter((l) => l.trim() !== '');
@@ -162,21 +168,47 @@ function drawValue(doc, F, cfg, value, dx, dy) {
   });
 }
 
-/** Hizalama kontrolü: formun kutu çizgileri + alan adları */
-function drawGrid(doc, F, layout, dx, dy) {
+/** Ölçüm işareti: artı + kısa cetvel çizgileri */
+function drawMark(doc, xmm, ymm) {
+  doc.lineWidth(0.6).strokeColor('#c0392b');
+  doc.moveTo(mm(xmm - 4), mm(ymm)).lineTo(mm(xmm + 4), mm(ymm)).stroke();
+  doc.moveTo(mm(xmm), mm(ymm - 4)).lineTo(mm(xmm), mm(ymm + 4)).stroke();
+  doc.circle(mm(xmm), mm(ymm), mm(1.6)).stroke();
+}
+
+/**
+ * Kalibrasyon sayfası: formun kutu çizgileri, alan kutucukları ve cetvelle
+ * ölçülecek iki işaret çifti (dikey 250 mm, yatay 170 mm).
+ */
+function drawGrid(doc, F, layout, cal) {
+  const X = (v) => mm(FRAME.x + cal.dx + v * cal.sx);
+  const Y = (v) => mm(FRAME.y + cal.dy + v * cal.sy);
+
   doc.lineWidth(0.5).strokeColor('#9fb4c7');
   for (const [x1, y1, x2, y2] of layout.rules) {
-    doc.moveTo(mm(FRAME.x + x1 + dx), mm(FRAME.y + y1 + dy))
-      .lineTo(mm(FRAME.x + x2 + dx), mm(FRAME.y + y2 + dy)).stroke();
+    doc.moveTo(X(x1), Y(y1)).lineTo(X(x2), Y(y2)).stroke();
   }
   doc.lineWidth(0.3).strokeColor('#d8c4a0');
   for (const cfg of Object.values(layout.fields)) {
     const h = (cfg.lines || 1) * (cfg.lh || 4.3);
-    doc.rect(mm(FRAME.x + cfg.x + dx) - 1.5, mm(FRAME.y + cfg.y + dy) - 1.5, mm(cfg.w), mm(h)).stroke();
+    doc.rect(X(cfg.x) - 1.5, Y(cfg.y) - 1.5, mm(cfg.w * cal.sx), mm(h * cal.sy)).stroke();
   }
-  doc.font(F.regular).fontSize(6).fillColor('#8aa0b4').text(
-    `Grille de contrôle — ${layout.title} · décalage ${dx} / ${dy} mm · échelle 100 %`,
-    mm(14), mm(292), { lineBreak: false }
+
+  // Ölçüm işaretleri — kağıda göre sabit, ölçekten etkilenmez
+  const { vTop, vBottom, vDist, hLeft, hRight, hDist } = CAL_MARKS;
+  drawMark(doc, 105, vTop);
+  drawMark(doc, 105, vBottom);
+  drawMark(doc, hLeft, 150);
+  drawMark(doc, hRight, 150);
+  doc.font(F.bold).fontSize(7).fillColor('#c0392b');
+  doc.text(`${vDist} mm`, mm(108), mm((vTop + vBottom) / 2), { lineBreak: false });
+  doc.text(`${hDist} mm`, mm((hLeft + hRight) / 2 - 8), mm(146), { lineBreak: false });
+
+  doc.font(F.regular).fontSize(7).fillColor('#8aa0b4').text(
+    `Grille de contrôle ${layout.title} — décalage ${cal.dx} / ${cal.dy} mm · échelle `
+    + `${(cal.sx * 100).toFixed(1)} % / ${(cal.sy * 100).toFixed(1)} %. `
+    + `Mesurez les croix : ${hDist} mm en largeur, ${vDist} mm en hauteur.`,
+    mm(12), mm(291), { width: mm(190), lineBreak: false }
   );
 }
 
@@ -190,10 +222,19 @@ router.get('/certificate/:id', verifyTokenFlexible, async (req, res) => {
     if (!cert) return sendError(res, 'Belge bulunamadı', 404);
 
     const layout = LAYOUT[cert.cert_type] || LAYOUT.atr;
-    // Kalibrasyon: yazıcıdan yazıcıya değişen kaymayı kullanıcı milimetre ile düzeltir
+    // Kalibrasyon: kayma (mm) + ölçek. Ölçek, yazıcının sayfayı küçültmesini
+    // telafi eder; sayfanın altına inildikçe büyüyen kayma bundan kaynaklanır.
     const clamp = (v) => Math.max(-25, Math.min(25, Number(v) || 0));
-    const dx = clamp(req.query.dx);
-    const dy = clamp(req.query.dy);
+    const clampScale = (v) => {
+      const n = Number(v);
+      return Number.isFinite(n) && n >= 0.9 && n <= 1.1 ? n : 1;
+    };
+    const cal = {
+      dx: clamp(req.query.dx),
+      dy: clamp(req.query.dy),
+      sx: clampScale(req.query.sx),
+      sy: clampScale(req.query.sy),
+    };
     const grid = ['1', 'true', 'yes'].includes(String(req.query.grid || '').toLowerCase());
 
     const doc = new PDFDocument({ size: 'A4', margin: 0 });
@@ -201,11 +242,11 @@ router.get('/certificate/:id', verifyTokenFlexible, async (req, res) => {
     setupPdfHeaders(res, `${layout.title}_${cert.cert_no || cert.id}.pdf`);
     doc.pipe(res);
 
-    if (grid) drawGrid(doc, F, layout, dx, dy);
+    if (grid) drawGrid(doc, F, layout, cal);
 
     for (const [key, cfg] of Object.entries(layout.fields)) {
       const value = cfg.date ? frDate(cert[key]) : cert[key];
-      drawValue(doc, F, cfg, value, dx, dy);
+      drawValue(doc, F, cfg, value, cal);
     }
 
     doc.end();
@@ -219,3 +260,4 @@ router.get('/certificate/:id', verifyTokenFlexible, async (req, res) => {
 module.exports = router;
 module.exports.LAYOUT = LAYOUT;
 module.exports.FRAME = FRAME;
+module.exports.CAL_MARKS = CAL_MARKS;

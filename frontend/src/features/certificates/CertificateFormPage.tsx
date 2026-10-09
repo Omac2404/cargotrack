@@ -15,7 +15,7 @@ import { openPdf } from '@/features/pdf/hooks'
 import { useShipments } from '@/features/shipments/hooks'
 import {
   useCertificate, useSaveCertificate, getCertificateUrl,
-  loadPrintOffset, savePrintOffset,
+  loadPrintOffset, savePrintOffset, printScale, CAL_V, CAL_H,
 } from './hooks'
 import type { Certificate, CertificateType, Shipment } from '@/types/api'
 
@@ -54,7 +54,15 @@ function CertificateEditor({ initial, isEdit, id }: { initial?: Certificate; isE
   const savedOffset = loadPrintOffset()
   const [dxText, setDxText] = useState(String(savedOffset.dx))
   const [dyText, setDyText] = useState(String(savedOffset.dy))
-  const offset = { dx: parseFloat(dxText) || 0, dy: parseFloat(dyText) || 0 }
+  const [mvText, setMvText] = useState(String(savedOffset.mv))
+  const [mhText, setMhText] = useState(String(savedOffset.mh))
+  const offset = {
+    dx: parseFloat(dxText) || 0,
+    dy: parseFloat(dyText) || 0,
+    mv: parseFloat(mvText) || CAL_V,
+    mh: parseFloat(mhText) || CAL_H,
+  }
+  const scale = printScale(offset)
 
   const set = (key: keyof Certificate, value: string | number | null) =>
     setForm((prev) => ({ ...prev, [key]: value }))
@@ -260,6 +268,7 @@ function CertificateEditor({ initial, isEdit, id }: { initial?: Certificate; isE
         <h2 className="text-sm font-semibold">{t('cert.sections.print')}</h2>
         <p className="text-xs text-muted-foreground">{t('cert.print_hint')}</p>
         <p className="text-xs text-muted-foreground">{t('cert.print_scale')}</p>
+        <p className="text-xs text-muted-foreground">{t('cert.measure_hint', { v: CAL_V, h: CAL_H })}</p>
         <div className="flex flex-wrap items-end gap-4">
           <div className="space-y-1.5 w-32">
             <Label htmlFor="dx">{t('cert.offset_x')}</Label>
@@ -271,6 +280,21 @@ function CertificateEditor({ initial, isEdit, id }: { initial?: Certificate; isE
             <Input id="dy" type="number" step="0.5" value={dyText}
                    onChange={(e) => setDyText(e.target.value)} />
           </div>
+          {/* Yazıcı sayfayı küçültünce kayma aşağı indikçe büyür; ölçülen
+              mesafeden ölçek hesaplanıp telafi edilir */}
+          <div className="space-y-1.5 w-40">
+            <Label htmlFor="mh">{t('cert.measured_h', { ref: CAL_H })}</Label>
+            <Input id="mh" type="number" step="0.5" value={mhText}
+                   onChange={(e) => setMhText(e.target.value)} />
+          </div>
+          <div className="space-y-1.5 w-40">
+            <Label htmlFor="mv">{t('cert.measured_v', { ref: CAL_V })}</Label>
+            <Input id="mv" type="number" step="0.5" value={mvText}
+                   onChange={(e) => setMvText(e.target.value)} />
+          </div>
+          <p className="text-xs text-muted-foreground pb-2">
+            {t('cert.scale_now', { x: (scale.sx * 100).toFixed(1), y: (scale.sy * 100).toFixed(1) })}
+          </p>
           <Button type="button" variant="outline" size="sm"
                   onClick={() => { savePrintOffset(offset); toast.success(t('cert.offset_saved')) }}>
             <Download className="w-4 h-4" />
