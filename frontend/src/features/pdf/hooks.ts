@@ -25,8 +25,9 @@ export function getAirWaybillUrl(shipmentId: number) {
   return makePdfUrl(`/api/pdf/air-waybill/${shipmentId}`)
 }
 
-export function getProformaUrl(shipmentId: number) {
-  return makePdfUrl(`/api/pdf/proforma/${shipmentId}`)
+/** party=2 → ikinci müşterinin faturası (aynı dosyadan iki fatura kesilen işler) */
+export function getProformaUrl(shipmentId: number, party: 1 | 2 = 1) {
+  return makePdfUrl(`/api/pdf/proforma/${shipmentId}${party === 2 ? '?party=2' : ''}`)
 }
 
 /** Sözleşmeli depoculuk — aylık döküm ve stok fişi (Fransızca) */

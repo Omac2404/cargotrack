@@ -130,6 +130,12 @@ async function migrate() {
   await ensureColumn('vehicles', 'bl_number', 'VARCHAR(100) NULL');
   // Deniz/hava: ayni gemi farkli seferlerle ayni anda yolda olabilir
   await ensureColumn('vehicles', 'voyage_no', 'VARCHAR(50) NULL');
+  // Bir dosyadan iki ayri fatura: 2. musteri ve 2. fatura alanlari
+  await ensureColumn('shipments', 'client_billing_2', 'VARCHAR(200) NULL');
+  await ensureColumn('shipments', 'invoice_no_2', 'VARCHAR(50) NULL');
+  await ensureColumn('shipments', 'invoice_date_2', 'DATE NULL');
+  await ensureColumn('shipments', 'invoice_amount_2', 'DECIMAL(15,2) NULL');
+  await ensureColumn('shipments', 'payment_received_2', 'TINYINT(1) NOT NULL DEFAULT 0');
   // ATR / EUR.1: EUR.1 formunun 2. kutusu (tercihli ticaret taraflari)
   await ensureColumn('certificates', 'pref_from', "VARCHAR(150) NULL DEFAULT ''");
   await ensureColumn('certificates', 'pref_to', "VARCHAR(150) NULL DEFAULT ''");

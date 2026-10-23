@@ -115,6 +115,8 @@ CREATE TABLE IF NOT EXISTS `shipments` (
 
   -- Taraflar
   `client_billing` VARCHAR(200),
+  -- Ayni dosyadan iki ayri fatura kesilebilsin diye 2. fatura musterisi
+  `client_billing_2` VARCHAR(200) DEFAULT NULL,
   `sender` VARCHAR(200),
   `receiver` VARCHAR(200),
   `agent` VARCHAR(200),
@@ -215,6 +217,11 @@ CREATE TABLE IF NOT EXISTS `shipments` (
   `invoice_date` DATE,
   `invoice_amount` DECIMAL(15,2),
   `payment_received` TINYINT(1) DEFAULT 0,
+  -- 2. musteri faturasi
+  `invoice_no_2` VARCHAR(50) DEFAULT NULL,
+  `invoice_date_2` DATE DEFAULT NULL,
+  `invoice_amount_2` DECIMAL(15,2) DEFAULT NULL,
+  `payment_received_2` TINYINT(1) DEFAULT 0,
   `payment_type` VARCHAR(50) DEFAULT '',
   `payment_notes` TEXT DEFAULT NULL,
 

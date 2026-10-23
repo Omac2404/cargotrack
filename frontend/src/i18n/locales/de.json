@@ -112,7 +112,8 @@
       "financial_items": "Finanzposten ({{mode}})",
       "document_status": "Dokumentenstatus",
       "warehouse_info": "Lagerinformationen",
-      "invoice_info": "Rechnungsinformationen"
+      "invoice_info": "Rechnungsinformationen",
+      "invoice_info_2": "Rechnung 2 — {{name}}"
     },
     "fields": {
       "created_date": "Erstellungsdatum",
@@ -132,7 +133,12 @@
       "payment_type": "Zahlungsart",
       "payment_received": "Zahlung Erhalten",
       "departure_country": "Abgang",
-      "arrival_country": "Ziel"
+      "arrival_country": "Ziel",
+      "client_billing_2": "Zweiter Rechnungsempfänger (optional)",
+      "client_billing_2_ph": "Firma wählen, wenn zwei Rechnungen erstellt werden",
+      "client_billing_2_hint": "Wird diese Akte an zwei Firmen fakturiert, tragen Sie hier die zweite ein. Im Reiter Finanzen wählen Sie je Position die zugehörige Rechnung.",
+      "invoice_2_hint": "Diese Rechnung umfasst die im Reiter Finanzen mit „2\" markierten Positionen. Die Proforma drucken Sie oben über die Schaltfläche 2.",
+      "invoice_2_empty": "Für eine zweite Rechnung zuerst im Reiter Beteiligte den zweiten Rechnungsempfänger wählen."
     },
     "payment_types": {
       "wire": "Überweisung / EFT",
@@ -692,7 +698,10 @@
       "margin": "Marge",
       "currency": "Waehrung",
       "items_title": "Finanzpositionen",
-      "other_mode_items": "Weitere Posten (anderer Modus / Altbestand)"
+      "other_mode_items": "Weitere Posten (anderer Modus / Altbestand)",
+      "invoice_1": "Rechnung 1",
+      "invoice_2": "Rechnung 2",
+      "party_pick": "Auf welcher Rechnung soll diese Position erscheinen?"
     }
   },
   "cover": {
@@ -1354,7 +1363,8 @@
     "veh_voyage_hint": "Dasselbe Schiff kann mehrere offene Datensätze mit unterschiedlichen Reisen haben. Ein neuer Datensatz wird nur blockiert, wenn Name und Reise-Nr. übereinstimmen.",
     "sea_vessel_containers": "Container des gewählten Schiffs: {{list}}",
     "sea_use_containers": "in die Akte übernehmen",
-    "dcl_add_other": "Weiteres Dokument hinzufügen"
+    "dcl_add_other": "Weiteres Dokument hinzufügen",
+    "proforma_for": "Proforma-Rechnung — {{name}}"
   },
   "invoice": {
     "invoice_no": "Rechnungsnr.",

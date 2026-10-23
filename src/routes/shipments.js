@@ -49,6 +49,8 @@ const COL_DEFS = {
   client_reference: { type: 'text' },
 
   client_billing: { type: 'text' },
+  // Ikinci fatura musterisi (ayni dosyadan iki fatura kesilen isler)
+  client_billing_2: { type: 'text' },
   sender: { type: 'text' },
   receiver: { type: 'text' },
   agent: { type: 'text' },
@@ -134,6 +136,11 @@ const COL_DEFS = {
   invoice_date: { type: 'date' },
   invoice_amount: { type: 'float' },
   payment_received: { type: 'bool' },
+  // 2. musteri faturasi
+  invoice_no_2: { type: 'text' },
+  invoice_date_2: { type: 'date' },
+  invoice_amount_2: { type: 'float' },
+  payment_received_2: { type: 'bool' },
   payment_type: { type: 'text' },
   payment_notes: { type: 'text' }
 };

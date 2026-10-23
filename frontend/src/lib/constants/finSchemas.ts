@@ -126,6 +126,11 @@ export interface FinLineEntry {
   note?: string
   /** Kullanıcı-eklenmiş custom kalemler için düzenlenebilir etiket */
   label?: string
+  /**
+   * Bu kalem hangi faturaya yazılacak — bir dosyadan iki ayrı fatura
+   * kesilen işler için. '1' (varsayılan) veya '2'. Boşsa 1. fatura.
+   */
+  party?: '1' | '2'
 }
 
 export type FinancialData = Record<string, FinLineEntry>

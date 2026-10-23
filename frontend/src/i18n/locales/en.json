@@ -112,7 +112,8 @@
       "financial_items": "Financial Items ({{mode}})",
       "document_status": "Document Status",
       "warehouse_info": "Warehouse Information",
-      "invoice_info": "Invoice Information"
+      "invoice_info": "Invoice Information",
+      "invoice_info_2": "Invoice 2 — {{name}}"
     },
     "fields": {
       "created_date": "Created Date",
@@ -132,7 +133,12 @@
       "payment_type": "Payment Type",
       "payment_received": "Payment Received",
       "departure_country": "Origin",
-      "arrival_country": "Destination"
+      "arrival_country": "Destination",
+      "client_billing_2": "Second billing customer (optional)",
+      "client_billing_2_ph": "Pick the company if a second invoice is issued",
+      "client_billing_2_hint": "If this file is billed to two companies, enter the second one here. In the Financial tab you choose which invoice each line belongs to.",
+      "invoice_2_hint": "This invoice covers the lines marked \"2\" in the Financial tab. Print its proforma with button 2 at the top.",
+      "invoice_2_empty": "For a second invoice, first pick the second billing customer in the Parties tab."
     },
     "payment_types": {
       "wire": "Wire Transfer / EFT",
@@ -692,7 +698,10 @@
       "margin": "Margin",
       "currency": "Currency",
       "items_title": "Financial Items",
-      "other_mode_items": "Other items (from another mode / legacy)"
+      "other_mode_items": "Other items (from another mode / legacy)",
+      "invoice_1": "Invoice 1",
+      "invoice_2": "Invoice 2",
+      "party_pick": "Which invoice should this line go on?"
     }
   },
   "cover": {
@@ -1354,7 +1363,8 @@
     "veh_voyage_hint": "The same vessel or aircraft can have several open records with different voyages. A new record is blocked only when both the name and the voyage number match.",
     "sea_vessel_containers": "Containers of the selected vessel: {{list}}",
     "sea_use_containers": "copy to file",
-    "dcl_add_other": "Add another document"
+    "dcl_add_other": "Add another document",
+    "proforma_for": "Proforma invoice — {{name}}"
   },
   "invoice": {
     "invoice_no": "Invoice No",

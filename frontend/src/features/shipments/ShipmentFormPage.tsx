@@ -103,7 +103,7 @@ const FIELD_TAB: Record<string, string> = {
   status: 'general', currency_code: 'general', transport_type: 'general',
   incoterm: 'general', incoterm_location: 'general', mode_data: 'general', direct_vehicle_id: 'general',
 
-  client_billing: 'parties', sender: 'parties', receiver: 'parties', agent: 'parties',
+  client_billing: 'parties', client_billing_2: 'parties', sender: 'parties', receiver: 'parties', agent: 'parties',
   client_contact: 'parties', client_phone: 'parties', client_email: 'parties',
   client_delivery_address: 'parties', departure_country: 'parties',
   arrival_country: 'parties', parties_data: 'parties',
@@ -128,6 +128,7 @@ const FIELD_TAB: Record<string, string> = {
   ellecleme_depo_cikis: 'storage',
 
   invoice_no: 'invoice', invoice_date: 'invoice', invoice_amount: 'invoice',
+  invoice_no_2: 'invoice', invoice_date_2: 'invoice', invoice_amount_2: 'invoice',
   payment_type: 'invoice', payment_received: 'invoice', payment_notes: 'invoice',
   invoice_generated: 'invoice',
 }
@@ -275,7 +276,8 @@ export function ShipmentFormPage() {
     const values: Partial<ShipmentFormValues> = {}
     for (const k of Object.keys(existing) as Array<keyof typeof existing>) {
       const v = existing[k]
-      if (k === 'dangerous_goods' || k === 'temperature_controlled' || k === 'insurance' || k === 'payment_received') {
+      if (k === 'dangerous_goods' || k === 'temperature_controlled' || k === 'insurance'
+          || k === 'payment_received' || k === 'payment_received_2') {
         ;(values as Record<string, unknown>)[k] = Number(v) === 1
       } else if (v !== null) {
         ;(values as Record<string, unknown>)[k] = v
@@ -368,6 +370,8 @@ export function ShipmentFormPage() {
 
   // Müşteri seçilince boş alanları partner kaydından doldur (sadece boşsa)
   const clientBilling = watch('client_billing')
+  // Ikinci fatura musterisi secilirse fatura ve finansal sekmeleri ikiye ayrilir
+  const secondClient = (watch('client_billing_2') || '').trim()
   const lastFilledFor = useRef<string>('')
   useEffect(() => {
     if (!clientBilling || clientBilling === lastFilledFor.current) return
@@ -523,9 +527,19 @@ export function ShipmentFormPage() {
                   <Button type="button" variant="outline" size="sm" onClick={() => setCoverOpen(true)} title={t('cover.title', { defaultValue: 'Dosya Kapağı' })}>
                     <FileBadge2 className="w-4 h-4" />
                   </Button>
-                  <Button type="button" variant="outline" size="sm" onClick={() => openPdf(getProformaUrl(Number(id)))} title={t('ui.proforma_fatura_pdf')}>
+                  <Button type="button" variant="outline" size="sm" onClick={() => openPdf(getProformaUrl(Number(id)))}
+                          title={secondClient ? t('ui.proforma_for', { name: watch('client_billing') || '1' }) : t('ui.proforma_fatura_pdf')}>
                     <FileCheck2 className="w-4 h-4" />
+                    {secondClient && <span className="text-[10px]">1</span>}
                   </Button>
+                  {/* Ikinci musteri varsa onun faturasi ayri basilir */}
+                  {secondClient && (
+                    <Button type="button" variant="outline" size="sm" onClick={() => openPdf(getProformaUrl(Number(id), 2))}
+                            title={t('ui.proforma_for', { name: secondClient })}>
+                      <FileCheck2 className="w-4 h-4" />
+                      <span className="text-[10px]">2</span>
+                    </Button>
+                  )}
                   <Button type="button" variant="outline" size="sm" onClick={() => openPdf(getBarcodesUrl(Number(id)))} title={t('ui.barkod_yapragi')}>
                     <Barcode className="w-4 h-4" />
                   </Button>
@@ -747,6 +761,35 @@ export function ShipmentFormPage() {
                     data={partiesData.client || {}}
                     onChange={(v) => setPartiesData('client', v)}
                   />
+
+                  {/* Ikinci fatura musterisi: ayni dosyadan iki ayri fatura kesilen isler.
+                      Bos birakilirsa hicbir sey degismez. */}
+                  <div className="pt-3 border-t space-y-1.5">
+                    <Label>{t('shipment.fields.client_billing_2')}</Label>
+                    <div className="flex items-center gap-1">
+                      <div className="flex-1">
+                        <Combobox value={watch('client_billing_2') || ''} onChange={(v) => setValue('client_billing_2', v, { shouldDirty: true })}
+                          options={partnerOptionsByRole.customer} placeholder={t('shipment.fields.client_billing_2_ph')}
+                          searchPlaceholder={t('shipment.fields.company_search')} allowCustom />
+                      </div>
+                      <Button type="button" variant="outline" size="icon" className="h-9 w-9 shrink-0"
+                        title={t('shipment.fields.add_new_customer')}
+                        onClick={() => setQuickAddType('customer')}>
+                        <Plus className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">{t('shipment.fields.client_billing_2_hint')}</p>
+                    {!!watch('client_billing_2') && (
+                      <>
+                        <PartyInfoCard partner={findPartnerByName(watch('client_billing_2'))} showCustomerExtras />
+                        <PartySecondaryFields
+                          partyKey="client2"
+                          data={partiesData.client2 || {}}
+                          onChange={(v) => setPartiesData('client2', v)}
+                        />
+                      </>
+                    )}
+                  </div>
                 </div>
               </Card>
 
@@ -1023,6 +1066,9 @@ export function ShipmentFormPage() {
                 currency={watch('currency_code') || 'EUR'}
                 value={financialData}
                 onChange={setFinancialData}
+                billingParties={secondClient
+                  ? { first: (watch('client_billing') || '').trim() || '1', second: secondClient }
+                  : undefined}
               />
 
               {/* Eski özet alanlar (geriye uyumluluk - üst seviye satış/maliyet) */}
@@ -1278,6 +1324,24 @@ export function ShipmentFormPage() {
               </div>
               <FieldArea label={t('invoice.payment_notes', { defaultValue: 'Ödeme Notları' })} name="payment_notes" register={register} errors={errors} />
             </Card>
+
+            {/* Ikinci fatura — sadece Taraflar'da ikinci musteri secildiyse */}
+            {secondClient ? (
+              <Card className="p-5 space-y-4 mt-4">
+                <SectionTitle>{t('shipment.sections.invoice_info_2', { name: secondClient })}</SectionTitle>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <Field label={t('invoice.invoice_no')} name="invoice_no_2" register={register} errors={errors} />
+                  <Field label={t('invoice.invoice_date')} name="invoice_date_2" register={register} errors={errors} type="date" />
+                  <Field label={t('invoice.invoice_amount')} name="invoice_amount_2" register={register} errors={errors} type="number" step="0.01" />
+                  <CheckboxField label={t('shipment.fields.payment_received')} name="payment_received_2" form={form} />
+                </div>
+                <p className="text-xs text-muted-foreground">{t('shipment.fields.invoice_2_hint')}</p>
+              </Card>
+            ) : (
+              <Card className="p-4 mt-4 bg-muted/30">
+                <p className="text-xs text-muted-foreground">{t('shipment.fields.invoice_2_empty')}</p>
+              </Card>
+            )}
             <TabSaveBar isEdit={isEdit} isPending={saveMut.isPending} errorLabels={errorFieldLabels} onErrorClick={goToFirstError} />
           </TabsContent>
 

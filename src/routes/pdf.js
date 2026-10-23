@@ -821,10 +821,24 @@ router.get('/proforma/:shipmentId', verifyTokenFlexible, async (req, res) => {
     const ship = await loadShipment(id, req.user);
     if (!ship) return sendError(res, 'Sevkiyat bulunamadı', 404);
 
-    const financial = parseJsonField(ship.financial_data);
-    const filename = `Proforma_${ship.shipment_no}.pdf`;
+    // Bir dosyadan iki ayri fatura kesilebiliyor: party=2 ikinci musterinin
+    // faturasini basar. Kalemler, finansal sekmede isaretlenen faturaya gore
+    // ayrilir (isaretsiz kalemler 1. faturaya aittir).
+    const party = String(req.query.party || '1') === '2' ? 2 : 1;
+    const hasSecond = !!(ship.client_billing_2 || '').trim();
+    const allFinancial = parseJsonField(ship.financial_data);
+    const financial = {};
+    for (const [key, entry] of Object.entries(allFinancial || {})) {
+      const entryParty = String((entry && entry.party) || '1') === '2' ? 2 : 1;
+      if (!hasSecond || entryParty === party) financial[key] = entry;
+    }
+    const billingClient = party === 2 ? ship.client_billing_2 : ship.client_billing;
+    const invoiceNo = party === 2
+      ? (ship.invoice_no_2 || `${ship.shipment_no}/2`)
+      : (ship.invoice_no || ship.shipment_no);
+    const filename = `Proforma_${ship.shipment_no}${party === 2 ? '-2' : ''}.pdf`;
     setupPdfHeaders(res, filename);
-    await logAudit(req, 'download', 'documents', id, `proforma/${ship.shipment_no}`);
+    await logAudit(req, 'download', 'documents', id, `proforma/${ship.shipment_no}${party === 2 ? '/2' : ''}`);
 
     // bufferPages: true → watermark'ı tüm içerik yazıldıktan sonra overlay edebileceğiz
     // bottom margin 0 → footer y=810'a basıldığında yeni sayfa açmasın
@@ -921,13 +935,13 @@ router.get('/proforma/:shipmentId', verifyTokenFlexible, async (req, res) => {
     let infoY = cardY + 15;
     // Row 1
     infoLabel('N° DE FACTURE', colL, infoY);
-    infoValue(ship.shipment_no, colL, infoY);
+    infoValue(invoiceNo, colL, infoY);
     infoLabel('DATE', colR, infoY);
     infoValue(formatDateFr(new Date()), colR, infoY);
     infoY += 30;
     // Row 2
     infoLabel('CLIENT', colL, infoY);
-    infoValue(ship.client_billing, colL, infoY);
+    infoValue(billingClient, colL, infoY);
     infoLabel('N° DE DOSSIER', colR, infoY);
     infoValue(ship.shipment_no, colR, infoY);
     infoY += 30;

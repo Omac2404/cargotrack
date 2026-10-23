@@ -112,7 +112,8 @@
       "financial_items": "Éléments Financiers ({{mode}})",
       "document_status": "Statut des Documents",
       "warehouse_info": "Informations Entrepôt",
-      "invoice_info": "Informations Facture"
+      "invoice_info": "Informations Facture",
+      "invoice_info_2": "Facture 2 — {{name}}"
     },
     "fields": {
       "created_date": "Date de Création",
@@ -132,7 +133,12 @@
       "payment_type": "Type de Paiement",
       "payment_received": "Paiement Reçu",
       "departure_country": "Départ",
-      "arrival_country": "Destination"
+      "arrival_country": "Destination",
+      "client_billing_2": "Deuxième client à facturer (facultatif)",
+      "client_billing_2_ph": "Si deux factures sont émises, choisissez la société",
+      "client_billing_2_hint": "Si ce dossier donne lieu à deux factures, indiquez ici la deuxième société. Dans l'onglet Financier, vous choisissez pour chaque poste la facture concernée.",
+      "invoice_2_hint": "Cette facture reprend les postes marqués « 2 » dans l'onglet Financier. La proforma correspondante s'imprime avec le bouton 2 en haut.",
+      "invoice_2_empty": "Pour une deuxième facture, choisissez d'abord le deuxième client dans l'onglet Parties."
     },
     "payment_types": {
       "wire": "Virement / EFT",
@@ -692,7 +698,10 @@
       "margin": "Marge",
       "currency": "Devise",
       "items_title": "Éléments financiers",
-      "other_mode_items": "Autres postes (autre mode / ancien dossier)"
+      "other_mode_items": "Autres postes (autre mode / ancien dossier)",
+      "invoice_1": "Facture 1",
+      "invoice_2": "Facture 2",
+      "party_pick": "Sur quelle facture ce poste doit-il figurer ?"
     }
   },
   "cover": {
@@ -1354,7 +1363,8 @@
     "veh_voyage_hint": "Un même navire peut avoir plusieurs voyages ouverts en même temps. Un nouveau dossier n’est bloqué que si le navire et le n° de voyage sont identiques.",
     "sea_vessel_containers": "Conteneurs du navire sélectionné : {{list}}",
     "sea_use_containers": "reprendre dans le dossier",
-    "dcl_add_other": "Ajouter un autre document"
+    "dcl_add_other": "Ajouter un autre document",
+    "proforma_for": "Facture proforma — {{name}}"
   },
   "invoice": {
     "invoice_no": "N° de facture",

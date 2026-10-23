@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 
-export type PartyKey = 'client' | 'sender' | 'receiver' | 'agent'
+export type PartyKey = 'client' | 'client2' | 'sender' | 'receiver' | 'agent'
 
 export type PartySecondaryData = Partial<{
   /** Müşteri için 2. teslim adresi (sevkiyata özel) */
@@ -34,6 +34,7 @@ interface Props {
 const FIELD_LABELS: Record<PartyKey, { label: string; addressKey: 'delivery_address_2' | 'address'; addressLabel: string }> = {
   // i18n key'leri — render sırasında t() ile çevrilir
   client:   { label: 'partner.types.customer', addressKey: 'delivery_address_2', addressLabel: 'ui.pty_delivery_address_2' },
+  client2:  { label: 'partner.types.customer', addressKey: 'delivery_address_2', addressLabel: 'ui.pty_delivery_address_2' },
   sender:   { label: 'partner.types.sender',   addressKey: 'address',            addressLabel: 'ui.pty_address_for_shipment' },
   receiver: { label: 'partner.types.receiver', addressKey: 'address',            addressLabel: 'ui.pty_address_for_shipment' },
   agent:    { label: 'partner.types.agent',    addressKey: 'address',            addressLabel: 'ui.pty_address_for_shipment' },

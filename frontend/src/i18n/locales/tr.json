@@ -112,7 +112,8 @@
       "financial_items": "Finansal Kalemler ({{mode}})",
       "document_status": "Belge Durumu",
       "warehouse_info": "Depo Bilgileri",
-      "invoice_info": "Fatura Bilgileri"
+      "invoice_info": "Fatura Bilgileri",
+      "invoice_info_2": "2. Fatura — {{name}}"
     },
     "fields": {
       "created_date": "Oluşturma Tarihi",
@@ -132,7 +133,12 @@
       "payment_type": "Ödeme Tipi",
       "payment_received": "Ödeme Alındı",
       "departure_country": "Çıkış",
-      "arrival_country": "Varış"
+      "arrival_country": "Varış",
+      "client_billing_2": "İkinci fatura müşterisi (opsiyonel)",
+      "client_billing_2_ph": "İkinci fatura kesilecekse firmayı seçin",
+      "client_billing_2_hint": "Bu dosyadan iki ayrı fatura kesiliyorsa ikinci firmayı buraya yazın. Finansal sekmesinde her kalemi hangi faturaya yazacağınızı seçersiniz.",
+      "invoice_2_hint": "Bu fatura, finansal sekmesinde \"2\" olarak işaretlenen kalemleri kapsar. Proforma çıktısını üstteki 2 numaralı düğmeden alırsınız.",
+      "invoice_2_empty": "İkinci fatura için Taraflar sekmesinden ikinci fatura müşterisini seçin."
     },
     "payment_types": {
       "wire": "Havale / EFT",
@@ -692,7 +698,10 @@
       "margin": "Marj",
       "currency": "Para birimi",
       "items_title": "Finansal Kalemler",
-      "other_mode_items": "Diğer Kalemler (başka moddan / eski kayıt)"
+      "other_mode_items": "Diğer Kalemler (başka moddan / eski kayıt)",
+      "invoice_1": "1. Fatura",
+      "invoice_2": "2. Fatura",
+      "party_pick": "Bu kalem hangi faturaya yazılsın?"
     }
   },
   "cover": {
@@ -1354,7 +1363,8 @@
     "veh_voyage_hint": "Aynı gemi/uçak farklı seferlerle aynı anda kayıtlı olabilir. Sadece gemi adı ve sefer no birlikte aynıysa yeni kayıt engellenir.",
     "sea_vessel_containers": "Seçili geminin konteynerleri: {{list}}",
     "sea_use_containers": "dosyaya aktar",
-    "dcl_add_other": "Başka belge ekle"
+    "dcl_add_other": "Başka belge ekle",
+    "proforma_for": "Proforma fatura — {{name}}"
   },
   "invoice": {
     "invoice_no": "Fatura No",

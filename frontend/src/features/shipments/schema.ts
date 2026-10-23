@@ -65,6 +65,8 @@ export const shipmentSchema = z.object({
 
   // Taraflar
   client_billing: optString,
+  /** İkinci fatura müşterisi — bir dosyadan iki ayrı fatura kesilen işler */
+  client_billing_2: optString,
   sender: optString,
   receiver: optString,
   agent: optString,
@@ -141,6 +143,11 @@ export const shipmentSchema = z.object({
   invoice_date: optString,
   invoice_amount: numericString,
   payment_received: z.boolean().or(z.number()).default(0).transform((v) => (v ? 1 : 0)),
+  // 2. müşterinin faturası
+  invoice_no_2: optString,
+  invoice_date_2: optString,
+  invoice_amount_2: numericString,
+  payment_received_2: z.boolean().or(z.number()).default(0).transform((v) => (v ? 1 : 0)),
   payment_type: optString,
   payment_notes: optString,
   invoice_generated: z.boolean().or(z.number()).default(0).transform((v) => (v ? 1 : 0)),

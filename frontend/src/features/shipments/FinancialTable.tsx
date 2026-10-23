@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { TrendingUp, TrendingDown, Coins, Plus, Trash2, StickyNote } from 'lucide-react'
+import { TrendingUp, TrendingDown, Coins, Plus, Trash2, StickyNote, Receipt } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import {
@@ -15,11 +15,16 @@ import {
 import { useTranslation } from 'react-i18next'
 import { currencySymbol } from '@/lib/constants'
 
+/** Bir dosyadan iki ayrı fatura kesiliyorsa iki müşterinin adı */
+export interface BillingParties { first: string; second: string }
+
 interface Props {
   mode: string
   currency: string
   value: FinancialData
   onChange: (data: FinancialData) => void
+  /** Dolu ise her kalemin hangi faturaya ait olduğu seçilebilir */
+  billingParties?: BillingParties
 }
 
 /**
@@ -48,7 +53,7 @@ function isEmptyEntry(e: FinLineEntry | undefined): boolean {
  * Her kalem için: Gelir + KDV%, Gider + KDV%
  * Sonunda: Ara toplam, KDV toplam, Genel toplam, Kâr, Marj %
  */
-export function FinancialTable({ mode, currency, value, onChange }: Props) {
+export function FinancialTable({ mode, currency, value, onChange, billingParties }: Props) {
   const { t } = useTranslation()
   const schema = useMemo(() => getFinSchema(mode), [mode])
   const sym = currencySymbol(currency)
@@ -96,6 +101,18 @@ export function FinancialTable({ mode, currency, value, onChange }: Props) {
 
   const totals = useMemo(() => calcFinTotals(schema, value), [schema, value])
 
+  // Fatura bazlı ciro (KDV hariç) — kalemlerdeki işarete göre
+  const partyTotals = useMemo(() => {
+    let first = 0, second = 0
+    for (const entry of Object.values(value || {})) {
+      const income = Number(entry?.income || 0)
+      if (!income) continue
+      if (String(entry?.party || '1') === '2') second += income
+      else first += income
+    }
+    return { first, second }
+  }, [value])
+
   return (
     <div className="space-y-3">
       <div className="overflow-x-auto rounded-lg border">
@@ -132,6 +149,7 @@ export function FinancialTable({ mode, currency, value, onChange }: Props) {
                 onSetEntry={setEntry}
                 onRemoveEntry={removeEntry}
                 sym={sym}
+                billingParties={billingParties}
               />
             ))}
 
@@ -152,6 +170,7 @@ export function FinancialTable({ mode, currency, value, onChange }: Props) {
                       onSetEntry={setEntry}
                       onRemove={removeEntry}
                       sym={sym}
+                      billingParties={billingParties}
                     />
                   ) : (
                     <FinRow
@@ -160,6 +179,7 @@ export function FinancialTable({ mode, currency, value, onChange }: Props) {
                       entry={value[key] || {}}
                       onSetEntry={setEntry}
                       sym={sym}
+                      billingParties={billingParties}
                     />
                   )
                 )}
@@ -224,6 +244,18 @@ export function FinancialTable({ mode, currency, value, onChange }: Props) {
         </table>
       </div>
 
+      {/* Fatura bazlı ciro — iki müşteriye ayrı fatura kesilen dosyalarda */}
+      {billingParties && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          <SummaryBox icon={<Receipt className="w-3.5 h-3.5" />}
+                      label={`${t('fin.ui.invoice_1')} — ${billingParties.first}`}
+                      value={formatMoney(partyTotals.first, currency)} variant="primary" />
+          <SummaryBox icon={<Receipt className="w-3.5 h-3.5" />}
+                      label={`${t('fin.ui.invoice_2')} — ${billingParties.second}`}
+                      value={formatMoney(partyTotals.second, currency)} variant="primary" />
+        </div>
+      )}
+
       {/* Özet kartları */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
         <SummaryBox icon={<TrendingUp className="w-3.5 h-3.5" />} label={t('fin.ui.total_revenue')} value={formatMoney(totals.grossIncome, currency)} variant="success" />
@@ -237,6 +269,7 @@ export function FinancialTable({ mode, currency, value, onChange }: Props) {
 
 interface FinGroupProps {
   groupName: string
+  billingParties?: BillingParties
   items: ReturnType<typeof getFinSchema>
   value: FinancialData
   onSetEntry: (key: string, patch: Partial<FinLineEntry>) => void
@@ -259,7 +292,7 @@ function slugifyGroup(name: string): string {
     .replace(/^_+|_+$/g, '')
 }
 
-function FinGroup({ groupName, items, value, onSetEntry, onRemoveEntry, sym }: FinGroupProps) {
+function FinGroup({ groupName, items, value, onSetEntry, onRemoveEntry, sym, billingParties }: FinGroupProps) {
   const { t } = useTranslation()
   const customKeys = getCustomKeysForGroup(value, groupName)
 
@@ -290,7 +323,8 @@ function FinGroup({ groupName, items, value, onSetEntry, onRemoveEntry, sym }: F
         </td>
       </tr>
       {items.map((item) => (
-        <FinRow key={item.key} item={item} entry={value[item.key] || {}} onSetEntry={onSetEntry} sym={sym} />
+        <FinRow key={item.key} item={item} entry={value[item.key] || {}} onSetEntry={onSetEntry} sym={sym}
+                billingParties={billingParties} />
       ))}
 
       {/* Custom (kullanıcı-eklenmiş) kalemler */}
@@ -302,9 +336,41 @@ function FinGroup({ groupName, items, value, onSetEntry, onRemoveEntry, sym }: F
           onSetEntry={onSetEntry}
           onRemove={onRemoveEntry}
           sym={sym}
+          billingParties={billingParties}
         />
       ))}
     </>
+  )
+}
+
+/**
+ * Kalemin hangi faturaya yazılacağı — satır etiketinin altında küçük bir seçim.
+ * Tabloya yeni kolon eklemek yerine burada duruyor; işaretlenmeyen kalemler
+ * 1. faturaya aittir.
+ */
+function PartyPicker({
+  entry, rowKey, onSetEntry, parties,
+}: {
+  entry: FinLineEntry
+  rowKey: string
+  onSetEntry: (key: string, patch: Partial<FinLineEntry>) => void
+  parties: BillingParties
+}) {
+  const { t } = useTranslation()
+  const current = String(entry.party || '1') === '2' ? '2' : '1'
+  return (
+    <div className="flex items-center gap-1 mt-1">
+      <Receipt className="w-3 h-3 text-muted-foreground shrink-0" />
+      <select
+        value={current}
+        onChange={(e) => onSetEntry(rowKey, { party: e.target.value === '2' ? '2' : '1' })}
+        className="h-6 text-[10px] rounded border border-dashed bg-background px-1 max-w-[150px] text-muted-foreground"
+        title={t('fin.ui.party_pick')}
+      >
+        <option value="1">{`1 · ${parties.first}`}</option>
+        <option value="2">{`2 · ${parties.second}`}</option>
+      </select>
+    </div>
   )
 }
 
@@ -314,12 +380,13 @@ function FinGroup({ groupName, items, value, onSetEntry, onRemoveEntry, sym }: F
  * doluysa alan kalıcı olarak açık kalır.
  */
 function FinRow({
-  item, entry, onSetEntry, sym,
+  item, entry, onSetEntry, sym, billingParties,
 }: {
   item: ReturnType<typeof getFinSchema>[number]
   entry: FinLineEntry
   onSetEntry: (key: string, patch: Partial<FinLineEntry>) => void
   sym: string
+  billingParties?: BillingParties
 }) {
   const { t } = useTranslation()
   const [noteOpen, setNoteOpen] = useState(false)
@@ -353,6 +420,9 @@ function FinRow({
             className="h-6 text-[11px] mt-1 text-muted-foreground border-dashed"
             autoFocus={noteOpen && !entry.note}
           />
+        )}
+        {billingParties && (
+          <PartyPicker entry={entry} rowKey={item.key} onSetEntry={onSetEntry} parties={billingParties} />
         )}
       </td>
 
@@ -433,9 +503,10 @@ interface CustomFinRowProps {
   onSetEntry: (key: string, patch: Partial<FinLineEntry>) => void
   onRemove: (key: string) => void
   sym: string
+  billingParties?: BillingParties
 }
 
-function CustomFinRow({ rowKey, entry, onSetEntry, onRemove, sym }: CustomFinRowProps) {
+function CustomFinRow({ rowKey, entry, onSetEntry, onRemove, sym, billingParties }: CustomFinRowProps) {
   const { t } = useTranslation()
   return (
     <tr className="border-b border-border/40 hover:bg-muted/20 bg-primary/5">
@@ -467,6 +538,9 @@ function CustomFinRow({ rowKey, entry, onSetEntry, onRemove, sym }: CustomFinRow
             placeholder={t('fin.ui.note_ph')}
             className="h-6 text-[11px] text-muted-foreground border-dashed"
           />
+          {billingParties && (
+            <PartyPicker entry={entry} rowKey={rowKey} onSetEntry={onSetEntry} parties={billingParties} />
+          )}
         </div>
       </td>
       <td className="px-2 py-1">

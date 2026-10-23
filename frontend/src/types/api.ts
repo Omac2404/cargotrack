@@ -313,6 +313,8 @@ export interface Shipment {
   status: ShipmentStatus
   created_date?: string | null
   client_billing?: string
+  /** Ayrı fatura kesilen ikinci müşteri (opsiyonel) */
+  client_billing_2?: string | null
   sender?: string
   receiver?: string
   agent?: string
