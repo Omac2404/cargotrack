@@ -87,7 +87,10 @@ export function FinancialTable({ mode, currency, value, onChange, billingParties
     // Şema kalemleri boşaltılınca temizlenir; kullanıcının eklediği özel kalemler
     // yalnızca çöp kutusu butonuyla silinir — yoksa adını silip yeniden yazmaya
     // çalışırken satır ortadan kayboluyor.
-    if (!isCustomKey(key) && isEmptyEntry(next[key])) {
+    // Tutarı henüz girilmemiş bir kalem 2. faturaya işaretlendiyse bu işaret
+    // korunmalı — yoksa satır silinip seçim anında 1'e geri dönüyordu.
+    const markedSecond = String(next[key]?.party || '1') === '2'
+    if (!isCustomKey(key) && !markedSecond && isEmptyEntry(next[key])) {
       delete next[key]
     }
     onChange(next)
