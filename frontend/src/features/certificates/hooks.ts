@@ -50,7 +50,9 @@ export function useDeleteCertificate() {
 }
 
 /**
- * Yazdırma kalibrasyonu — yazıcıya göre değişir, tarayıcıda saklanır.
+ * Yazdırma kalibrasyonu — yazıcıya göre değişir, SUNUCUDA herkes için ortak
+ * saklanır (eskiden tarayıcıdaydı; önbellek temizlenince ya da başka
+ * bilgisayardan basılınca sıfırlanıp çıktı yeniden kayıyordu).
  *
  * dx / dy : baskının tamamını milimetre kaydırır.
  * mv / mh : kalibrasyon sayfasındaki işaretler arasında CETVELLE ÖLÇÜLEN
@@ -59,33 +61,24 @@ export function useDeleteCertificate() {
  *           altına inildikçe büyür. Ölçülen değerden ölçek hesaplanır.
  */
 export interface PrintOffset { dx: number; dy: number; mv: number; mh: number }
-const OFFSET_KEY = 'ct_cert_offset'
 export const CAL_V = 250
 export const CAL_H = 170
+const CAL_URL = '/api/certificates/print-calibration'
 
-const num = (v: unknown, fallback: number) => {
-  const n = Number(v)
-  return Number.isFinite(n) && n !== 0 ? n : fallback
+export function usePrintCalibration() {
+  return useQuery({
+    queryKey: ['cert-print-calibration'],
+    queryFn: () => api.get<PrintOffset & { defaults: PrintOffset }>(CAL_URL),
+    staleTime: 0,
+  })
 }
 
-export function loadPrintOffset(): PrintOffset {
-  try {
-    const raw = localStorage.getItem(OFFSET_KEY)
-    if (raw) {
-      const v = JSON.parse(raw)
-      return {
-        dx: Number(v.dx) || 0,
-        dy: Number(v.dy) || 0,
-        mv: num(v.mv, CAL_V),
-        mh: num(v.mh, CAL_H),
-      }
-    }
-  } catch { /* tarayıcı depolaması kapalı olabilir */ }
-  return { dx: 0, dy: 0, mv: CAL_V, mh: CAL_H }
-}
-
-export function savePrintOffset(offset: PrintOffset) {
-  try { localStorage.setItem(OFFSET_KEY, JSON.stringify(offset)) } catch { /* yoksay */ }
+export function useSavePrintCalibration() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (offset: PrintOffset) => api.put<PrintOffset>(CAL_URL, offset),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['cert-print-calibration'] }),
+  })
 }
 
 /** Ölçülen mesafelerden baskı ölçeği (1 = birebir) */
@@ -94,14 +87,20 @@ export function printScale(offset: PrintOffset) {
   return { sx: clamp(CAL_H / (offset.mh || CAL_H)), sy: clamp(CAL_V / (offset.mv || CAL_V)) }
 }
 
-export function getCertificateUrl(id: number, offset: PrintOffset, grid = false) {
+/**
+ * offset verilirse ekrandaki değerler aynen basılır; verilmezse (liste
+ * sayfasından yazdırma) sunucu kayıtlı ortak kalibrasyonu uygular.
+ */
+export function getCertificateUrl(id: number, offset?: PrintOffset, grid = false) {
   const token = getToken()
-  const { sx, sy } = printScale(offset)
   const qs = new URLSearchParams()
-  if (offset.dx) qs.set('dx', String(offset.dx))
-  if (offset.dy) qs.set('dy', String(offset.dy))
-  if (sx !== 1) qs.set('sx', sx.toFixed(5))
-  if (sy !== 1) qs.set('sy', sy.toFixed(5))
+  if (offset) {
+    const { sx, sy } = printScale(offset)
+    qs.set('dx', String(offset.dx || 0))
+    qs.set('dy', String(offset.dy || 0))
+    qs.set('sx', sx.toFixed(5))
+    qs.set('sy', sy.toFixed(5))
+  }
   if (grid) qs.set('grid', '1')
   if (token) qs.set('token', token)
   const q = qs.toString()

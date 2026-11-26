@@ -1570,11 +1570,12 @@
     "filled_from_file": "Aus Akte {{no}} gefüllt",
     "multiline_hint": "Jede Zeile wird als eigene Zeile gedruckt (Name, Anschrift, Land).",
     "goods_hint": "Wird genau so gedruckt. Z. B. 3 PALETTES (96 COLIS) - RESSORTS POUR L INDUSTRIE AUTOMOBILE",
-    "print_hint": "Je nach Drucker verschiebt sich der Druck um einige Millimeter. Einmal messen und hier eintragen — es wird auf diesem Rechner gemerkt.",
+    "print_hint": "Die Ausrichtung wird auf dem Server gespeichert und gilt für alle – egal von welchem Rechner gedruckt wird.",
     "offset_x": "Horizontaler Versatz (mm)",
     "offset_y": "Vertikaler Versatz (mm)",
     "offset_save": "Kalibrierung speichern",
     "offset_saved": "Kalibrierung gespeichert",
+    "offset_reset": "Auf gemessenen Standard zurücksetzen",
     "sections": {
       "parties": "Beteiligte und Transport",
       "goods": "Ware",
@@ -1609,7 +1610,7 @@
       "pref_from": "Präferenzhandel zwischen (Feld 2)",
       "pref_to": "und"
     },
-    "print_scale": "Im Druckdialog die Skalierung auf 100 % (Originalgröße) stellen — nicht „an Seite anpassen“.",
+    "print_scale": "Immer mit demselben Drucker und denselben Einstellungen drucken (Skalierung nicht ändern). Ändert sich Drucker oder Skalierung, mit dem Kontrollraster neu messen.",
     "cert_no_hint": "Die Nummer ist bereits auf dem Vordruck gedruckt; sie wird hier nur erfasst und nicht gedruckt.",
     "measured_h": "Gemessene Breite ({{ref}} mm)",
     "measured_v": "Gemessene Höhe ({{ref}} mm)",

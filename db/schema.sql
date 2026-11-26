@@ -456,4 +456,15 @@ CREATE TABLE IF NOT EXISTS `certificates` (
   KEY `idx_cert_shipment` (`shipment_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- ============================================================
+-- Uygulama geneli ayarlar (anahtar → JSON metin). Ilk kullanim:
+-- ATR / EUR.1 yazici kalibrasyonu — tarayici yerine sunucuda, herkes icin ortak.
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `app_settings` (
+  `k` VARCHAR(64) NOT NULL PRIMARY KEY,
+  `v` TEXT,
+  `updated_by` INT NULL DEFAULT NULL,
+  `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 SET FOREIGN_KEY_CHECKS=1;

@@ -15,6 +15,9 @@
  *             telafi edilir. Ölçekleme çerçevenin sol üst köşesine göredir.
  *   grid=1  : kalibrasyon sayfası — form çizgileri + ölçüm işaretleri.
  *
+ * dx/dy/sx/sy hiç gönderilmezse sunucuda kayıtlı ortak kalibrasyon
+ * (app_settings, bkz. certificates.js) kullanılır.
+ *
  * Belge numarası (A 575914 gibi) forma zaten basılı geldiği için YAZILMAZ;
  * sistemde sadece kayıt ve arama için tutulur.
  */
@@ -22,7 +25,7 @@ const express = require('express');
 const PDFDocument = require('pdfkit');
 const { logAudit } = require('../helpers/audit');
 const { sendError, toInt } = require('../helpers/utils');
-const { loadCertificate } = require('./certificates');
+const { loadCertificate, loadPrintCalibration, calToPdf } = require('./certificates');
 const { verifyTokenFlexible, setupFonts, setupPdfHeaders } = require('./pdf').shared;
 const { can } = require('../config/permissions');
 
@@ -65,9 +68,13 @@ const LAYOUT = {
       destination_country: { x: 139,  y: 58.5,  w: 40, size: 9 },
       transport_info:      { x: 3,    y: 75,    w: 84, size: 8.5, lines: 5, lh: 4.3 },
       observations:        { x: 93,   y: 75,    w: 85, size: 8.5, lines: 5, lh: 4.3 },
-      order_no:            { x: -11,  y: 112,   w: 9,  size: 8.5 },
-      goods_description:   { x: 3,    y: 113,   w: 153, size: 9, lines: 23, lh: 4.6 },
-      gross_weight:        { x: 161,  y: 124,   w: 19, size: 8.5 },
+      // Sıra no, mal tanımının ilk satırı ve brüt ağırlık AYNI satırda: 11.
+      // kutunun matbu başlığı ("Masse brute (kg) ou autre mesure...") 122 mm'de
+      // bittiği için ortak satır 124 mm. Eskiden mal 113'te, ağırlık 124'te
+      // basılıyordu; palet ve kilo farklı satırlara düşüyordu.
+      order_no:            { x: -11,  y: 124,   w: 9,  size: 9 },
+      goods_description:   { x: 3,    y: 124,   w: 153, size: 9, lines: 21, lh: 4.6 },
+      gross_weight:        { x: 161,  y: 124,   w: 19, size: 9 },
       customs_doc_model:   { x: 16,   y: 243.1, w: 20, size: 8 },
       customs_doc_no:      { x: 41,   y: 243.1, w: 30, size: 8 },
       customs_doc_date:    { x: 10,   y: 247.3, w: 25, size: 8, date: true },
@@ -164,7 +171,11 @@ function drawValue(doc, F, cfg, value, cal) {
 
   doc.fontSize(size).fillColor('#000000');
   lines.forEach((l, i) => {
-    doc.text(l, x, y + i * lineHeight, { width, lineBreak: false });
+    // Tek satırlık kutuda genişlik verilmez: pdfkit genişlik görünce en küçük
+    // puntoda da sığmayan metni yine alt satıra kaydırıyordu (gümrük idaresi
+    // "AULNAY SOUS BOIS - / FR005340" iki satıra bölünüp alttaki satıra taştı).
+    const opts = maxLines === 1 ? { lineBreak: false } : { width, lineBreak: false };
+    doc.text(l, x, y + i * lineHeight, opts);
   });
 }
 
@@ -229,11 +240,15 @@ router.get('/certificate/:id', verifyTokenFlexible, async (req, res) => {
       const n = Number(v);
       return Number.isFinite(n) && n >= 0.9 && n <= 1.1 ? n : 1;
     };
+    const q = req.query;
+    const explicit = ['dx', 'dy', 'sx', 'sy'].some((k) => q[k] !== undefined && q[k] !== '');
+    // Parametre yoksa (eski bağlantılar, başka ekranlar) ortak kayıtlı kalibrasyon
+    const src = explicit ? q : calToPdf(await loadPrintCalibration());
     const cal = {
-      dx: clamp(req.query.dx),
-      dy: clamp(req.query.dy),
-      sx: clampScale(req.query.sx),
-      sy: clampScale(req.query.sy),
+      dx: clamp(src.dx),
+      dy: clamp(src.dy),
+      sx: clampScale(src.sx),
+      sy: clampScale(src.sy),
     };
     const grid = ['1', 'true', 'yes'].includes(String(req.query.grid || '').toLowerCase());
 

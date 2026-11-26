@@ -70,6 +70,79 @@ router.get('/', verifyToken, requirePermission('certificates.read'), async (req,
   }
 });
 
+// ============ Yazıcı kalibrasyonu (ortak, sunucuda) ============
+// Eskiden tarayıcının localStorage'ında duruyordu: önbellek temizlenince ya da
+// başka bilgisayardan basılınca sıfırlanıyor, çıktı yeniden kayıyordu. Artık
+// tek kayıt, herkes için geçerli.
+//
+//   dx / dy : mm kaydırma · mh / mv : kontrol sayfasında cetvelle ölçülen
+//   mesafe (olması gereken 170 / 250 mm) → ölçek = 170/mh, 250/mv
+//
+// Varsayılan değerler müşterinin 26.11.2026 tarihli gerçek ATR çıktısının
+// fotoğrafından ölçüldü: yazıcı sayfayı %96,7'ye küçültüp ~3 mm sola,
+// ~9,5 mm aşağı basıyordu ("sayfaya sığdır" baskısı). Bu değerler o baskıyı
+// birebir telafi eder.
+const CAL_KEY = 'cert_print_calibration';
+const CAL_REF = { h: 170, v: 250 };
+const DEFAULT_PRINT_CAL = { dx: 2.9, dy: -9.8, mh: 164.5, mv: 241.4 };
+
+function normalizeCal(raw) {
+  const n = (v, def) => (Number.isFinite(Number(v)) && v !== '' && v !== null ? Number(v) : def);
+  const clampMm = (v) => Math.max(-25, Math.min(25, n(v, 0)));
+  // Ölçek 0.9–1.1 dışına çıkacak ölçümler geçersiz → birebir (referans değer)
+  const measured = (v, ref) => {
+    const m = n(v, ref);
+    return m > 0 && ref / m >= 0.9 && ref / m <= 1.1 ? m : ref;
+  };
+  return {
+    dx: Math.round(clampMm(raw.dx) * 100) / 100,
+    dy: Math.round(clampMm(raw.dy) * 100) / 100,
+    mh: measured(raw.mh, CAL_REF.h),
+    mv: measured(raw.mv, CAL_REF.v),
+  };
+}
+
+async function loadPrintCalibration() {
+  try {
+    const [rows] = await pool.execute('SELECT v FROM app_settings WHERE k = ? LIMIT 1', [CAL_KEY]);
+    if (rows[0] && rows[0].v) return normalizeCal(JSON.parse(rows[0].v));
+  } catch (err) {
+    console.error('[certificates/calibration] okunamadı, varsayılan kullanılıyor:', err.message);
+  }
+  return { ...DEFAULT_PRINT_CAL };
+}
+
+/** Kalibrasyonu PDF ucunun beklediği biçime çevirir (dx, dy, sx, sy) */
+function calToPdf(cal) {
+  return { dx: cal.dx, dy: cal.dy, sx: CAL_REF.h / cal.mh, sy: CAL_REF.v / cal.mv };
+}
+
+// ============ GET /api/certificates/print-calibration ============
+router.get('/print-calibration', verifyToken, requirePermission('certificates.read'), async (req, res) => {
+  sendSuccess(res, { ...(await loadPrintCalibration()), defaults: DEFAULT_PRINT_CAL });
+});
+
+// ============ PUT /api/certificates/print-calibration ============
+router.put('/print-calibration', verifyToken, async (req, res) => {
+  try {
+    if (!can(req.user, 'certificates.update') && !can(req.user, 'certificates.create')) {
+      return sendError(res, 'Bu işlem için yetkiniz yok (certificates.update)', 403);
+    }
+    const cal = normalizeCal(req.body || {});
+    await pool.execute(
+      `INSERT INTO app_settings (k, v, updated_by) VALUES (?, ?, ?)
+       ON DUPLICATE KEY UPDATE v = VALUES(v), updated_by = VALUES(updated_by)`,
+      [CAL_KEY, JSON.stringify(cal), req.user && req.user.id ? req.user.id : null]
+    );
+    await logAudit(req, 'update', 'certificates', 0,
+      `Yazıcı kalibrasyonu: ${cal.dx}/${cal.dy} mm, ölçülen ${cal.mh}/${cal.mv} mm`);
+    sendSuccess(res, cal);
+  } catch (err) {
+    console.error('[certificates/calibration]', err);
+    sendError(res, 'Kalibrasyon kaydedilemedi', 500);
+  }
+});
+
 // ============ GET /api/certificates/:id ============
 router.get('/:id', verifyToken, requirePermission('certificates.read'), async (req, res) => {
   try {
@@ -176,3 +249,6 @@ router.delete('/:id', verifyToken, requirePermission('certificates.delete'), asy
 
 module.exports = router;
 module.exports.loadCertificate = loadCertificate;
+module.exports.loadPrintCalibration = loadPrintCalibration;
+module.exports.calToPdf = calToPdf;
+module.exports.DEFAULT_PRINT_CAL = DEFAULT_PRINT_CAL;

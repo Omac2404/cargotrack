@@ -1570,11 +1570,12 @@
     "filled_from_file": "{{no}} dosyasından dolduruldu",
     "multiline_hint": "Her satır forma ayrı satır olarak basılır (ad, adres, ülke).",
     "goods_hint": "Forma yazıldığı gibi basılır. Örn: 3 PALETTES (96 COLIS) - RESSORTS POUR L INDUSTRIE AUTOMOBILE",
-    "print_hint": "Yazıcıya göre baskı birkaç milimetre kayabilir. Bir kez ölçüp buraya yazın; bu bilgisayarda hatırlanır ve bir daha kaymaz.",
+    "print_hint": "Hiza ayarı sunucuda herkes için ortak kaydedilir; hangi bilgisayardan basılırsa basılsın aynı değerler kullanılır.",
     "offset_x": "Yatay kayma (mm)",
     "offset_y": "Dikey kayma (mm)",
     "offset_save": "Kalibrasyonu kaydet",
     "offset_saved": "Kalibrasyon kaydedildi",
+    "offset_reset": "Ölçülen varsayılana dön",
     "sections": {
       "parties": "Taraflar ve taşıma",
       "goods": "Mal bilgisi",
@@ -1609,7 +1610,7 @@
       "pref_from": "Tercihli ticaret — taraf 1 (EUR.1 kutu 2)",
       "pref_to": "Tercihli ticaret — taraf 2"
     },
-    "print_scale": "Yazıcı ayarında ölçek %100 (gerçek boyut) olmalı, \"sayfaya sığdır\" kapalı.",
+    "print_scale": "Hep aynı yazıcı ve aynı yazdırma ayarıyla basın (ölçeği değiştirmeyin). Yazıcı ya da ölçek ayarı değişirse hiza kontrolü çıktısıyla yeniden ölçün.",
     "cert_no_hint": "Numara matbu formda zaten basılı; buraya kayıt ve arama için yazılır, forma basılmaz.",
     "measured_h": "Ölçülen yatay ({{ref}} mm)",
     "measured_v": "Ölçülen dikey ({{ref}} mm)",

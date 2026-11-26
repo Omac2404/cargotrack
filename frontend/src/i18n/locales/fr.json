@@ -1570,11 +1570,12 @@
     "filled_from_file": "Rempli depuis le dossier {{no}}",
     "multiline_hint": "Chaque ligne est imprimée telle quelle (nom, adresse, pays).",
     "goods_hint": "Imprimé tel quel. Ex. : 3 PALETTES (96 COLIS) - RESSORTS POUR L INDUSTRIE AUTOMOBILE",
-    "print_hint": "Selon l'imprimante, l'impression peut se décaler de quelques millimètres. Mesurez une fois, saisissez le décalage ici : il est mémorisé sur cet ordinateur et ne bouge plus.",
+    "print_hint": "Le réglage d'alignement est enregistré sur le serveur et partagé par tous : il s'applique quel que soit l'ordinateur utilisé.",
     "offset_x": "Décalage horizontal (mm)",
     "offset_y": "Décalage vertical (mm)",
     "offset_save": "Enregistrer le réglage",
     "offset_saved": "Réglage enregistré",
+    "offset_reset": "Revenir au réglage mesuré",
     "sections": {
       "parties": "Parties et transport",
       "goods": "Marchandises",
@@ -1609,7 +1610,7 @@
       "pref_from": "Échanges préférentiels entre (case 2)",
       "pref_to": "et"
     },
-    "print_scale": "Dans la boîte d'impression, mettez l'échelle sur 100 % (taille réelle) — pas « ajuster à la page ».",
+    "print_scale": "Imprimez toujours avec la même imprimante et les mêmes réglages (ne changez pas l'échelle). Si l'imprimante ou l'échelle change, refaites la mesure avec la grille de contrôle.",
     "cert_no_hint": "Le numéro est déjà imprimé sur le formulaire ; il est saisi ici pour l'enregistrement et la recherche, il n'est pas imprimé.",
     "measured_h": "Mesuré en largeur ({{ref}} mm)",
     "measured_v": "Mesuré en hauteur ({{ref}} mm)",

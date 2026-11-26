@@ -19,7 +19,7 @@ import { useCan } from '@/hooks/useCan'
 import { openPdf } from '@/features/pdf/hooks'
 import {
   useCertificates, useDeleteCertificate, useCopyCertificate,
-  getCertificateUrl, loadPrintOffset,
+  getCertificateUrl,
 } from './hooks'
 import type { Certificate, CertificateType } from '@/types/api'
 
@@ -36,7 +36,7 @@ export function CertificatesListPage() {
   const canCreate = useCan('certificates.create')
   const canDelete = useCan('certificates.delete')
 
-  const print = (c: Certificate) => openPdf(getCertificateUrl(c.id, loadPrintOffset()))
+  const print = (c: Certificate) => openPdf(getCertificateUrl(c.id))
 
   return (
     <div className="space-y-4">

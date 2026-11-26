@@ -1570,11 +1570,12 @@
     "filled_from_file": "Filled from file {{no}}",
     "multiline_hint": "Each line is printed as its own line (name, address, country).",
     "goods_hint": "Printed exactly as typed. E.g. 3 PALETTES (96 COLIS) - RESSORTS POUR L INDUSTRIE AUTOMOBILE",
-    "print_hint": "Printers shift the print by a few millimetres. Measure once, enter it here: it is remembered on this computer.",
+    "print_hint": "The alignment is saved on the server and shared by everyone, whichever computer prints.",
     "offset_x": "Horizontal offset (mm)",
     "offset_y": "Vertical offset (mm)",
     "offset_save": "Save calibration",
     "offset_saved": "Calibration saved",
+    "offset_reset": "Reset to measured default",
     "sections": {
       "parties": "Parties and transport",
       "goods": "Goods",
@@ -1609,7 +1610,7 @@
       "pref_from": "Preferential trade between (box 2)",
       "pref_to": "and"
     },
-    "print_scale": "In the print dialog set the scale to 100% (actual size) — not \"fit to page\".",
+    "print_scale": "Always print with the same printer and settings (do not change the scale). If the printer or scale changes, measure again with the control grid.",
     "cert_no_hint": "The number is pre-printed on the form; it is kept here for the record and search only, not printed.",
     "measured_h": "Measured width ({{ref}} mm)",
     "measured_v": "Measured height ({{ref}} mm)",

@@ -15,8 +15,9 @@ import { openPdf } from '@/features/pdf/hooks'
 import { useShipments } from '@/features/shipments/hooks'
 import {
   useCertificate, useSaveCertificate, getCertificateUrl,
-  loadPrintOffset, savePrintOffset, printScale, CAL_V, CAL_H,
+  usePrintCalibration, useSavePrintCalibration, printScale, CAL_V, CAL_H,
 } from './hooks'
+import type { PrintOffset } from './hooks'
 import type { Certificate, CertificateType, Shipment } from '@/types/api'
 
 type FormState = Partial<Certificate>
@@ -36,22 +37,30 @@ export function CertificateFormPage() {
   const { id } = useParams()
   const isEdit = !!id && id !== 'new'
   const { data: existing, isLoading } = useCertificate(isEdit ? id : undefined)
+  // Ortak yazıcı kalibrasyonu sunucudan gelir; form kutuları bununla açılır
+  const cal = usePrintCalibration()
 
-  if (isEdit && isLoading) {
+  if ((isEdit && isLoading) || cal.isLoading) {
     return <div className="p-10 flex justify-center"><Loader2 className="w-5 h-5 animate-spin" /></div>
   }
   // key: kayit degisince form state'i bastan kurulur (effect ile set etmeye gerek yok)
-  return <CertificateEditor key={isEdit ? String(existing?.id ?? id) : 'new'} initial={existing} isEdit={isEdit} id={id} />
+  return <CertificateEditor key={isEdit ? String(existing?.id ?? id) : 'new'} initial={existing} isEdit={isEdit} id={id}
+                            calibration={cal.data} />
 }
 
-function CertificateEditor({ initial, isEdit, id }: { initial?: Certificate; isEdit: boolean; id?: string }) {
+function CertificateEditor({ initial, isEdit, id, calibration }: {
+  initial?: Certificate; isEdit: boolean; id?: string; calibration?: PrintOffset & { defaults?: PrintOffset }
+}) {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const saveMut = useSaveCertificate()
   const [form, setForm] = useState<FormState>(initial ? { ...initial } : EMPTY)
   // Kalibrasyon kutulari metin olarak tutulur: "2.5" yazarken ara degerler
   // ("2." gibi) sayiya cevrilince kullanicinin yazdigi kayboluyordu.
-  const savedOffset = loadPrintOffset()
+  // Kalibrasyon okunamadıysa ekrandaki kutular varsayılanla açılır ama baskıda
+  // gönderilmez — sunucu kendi kayıtlı değerini uygular.
+  const savedOffset: PrintOffset = calibration || { dx: 0, dy: 0, mv: CAL_V, mh: CAL_H }
+  const saveCalMut = useSavePrintCalibration()
   const [dxText, setDxText] = useState(String(savedOffset.dx))
   const [dyText, setDyText] = useState(String(savedOffset.dy))
   const [mvText, setMvText] = useState(String(savedOffset.mv))
@@ -63,6 +72,14 @@ function CertificateEditor({ initial, isEdit, id }: { initial?: Certificate; isE
     mh: parseFloat(mhText) || CAL_H,
   }
   const scale = printScale(offset)
+  const calChanged = !!calibration && (offset.dx !== calibration.dx || offset.dy !== calibration.dy
+    || offset.mv !== calibration.mv || offset.mh !== calibration.mh)
+  const saveCalibration = (silent = false) => {
+    saveCalMut.mutate(offset, {
+      onSuccess: () => { if (!silent) toast.success(t('cert.offset_saved')) },
+      onError: (e: Error) => toast.error(e.message),
+    })
+  }
 
   const set = (key: keyof Certificate, value: string | number | null) =>
     setForm((prev) => ({ ...prev, [key]: value }))
@@ -114,8 +131,8 @@ function CertificateEditor({ initial, isEdit, id }: { initial?: Certificate; isE
 
   /** Önce kaydet, sonra yazdır — kağıda her zaman güncel hali gider */
   const saveAndPrint = (grid: boolean) => {
-    savePrintOffset(offset)
-    submit((certId) => openPdf(getCertificateUrl(certId, offset, grid)))
+    if (calChanged) saveCalibration(true)
+    submit((certId) => openPdf(getCertificateUrl(certId, calibration ? offset : undefined, grid)))
   }
 
   const isEur1 = form.cert_type === 'eur1'
@@ -263,7 +280,7 @@ function CertificateEditor({ initial, isEdit, id }: { initial?: Certificate; isE
         {area('notes', t('cert.fields.notes'), 2)}
       </Card>
 
-      {/* Yazdırma kalibrasyonu — yazıcıdan yazıcıya değişir, tarayıcıda saklanır */}
+      {/* Yazdırma kalibrasyonu — yazıcıdan yazıcıya değişir, sunucuda herkes için ortak */}
       <Card className="p-4 space-y-3">
         <h2 className="text-sm font-semibold">{t('cert.sections.print')}</h2>
         <p className="text-xs text-muted-foreground">{t('cert.print_hint')}</p>
@@ -296,10 +313,21 @@ function CertificateEditor({ initial, isEdit, id }: { initial?: Certificate; isE
             {t('cert.scale_now', { x: (scale.sx * 100).toFixed(1), y: (scale.sy * 100).toFixed(1) })}
           </p>
           <Button type="button" variant="outline" size="sm"
-                  onClick={() => { savePrintOffset(offset); toast.success(t('cert.offset_saved')) }}>
+                  disabled={!calibration || saveCalMut.isPending}
+                  onClick={() => saveCalibration()}>
             <Download className="w-4 h-4" />
             {t('cert.offset_save')}
           </Button>
+          {calibration?.defaults && (
+            <Button type="button" variant="ghost" size="sm"
+                    onClick={() => {
+                      const d = calibration.defaults!
+                      setDxText(String(d.dx)); setDyText(String(d.dy))
+                      setMhText(String(d.mh)); setMvText(String(d.mv))
+                    }}>
+              {t('cert.offset_reset')}
+            </Button>
+          )}
         </div>
       </Card>
     </div>
